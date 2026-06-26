@@ -174,7 +174,6 @@ export default function App() {
           {renderRoute()}
           </Animated.View>
         </ScrollView>
-        <View style={styles.navScrim} pointerEvents="none" />
         <View style={[styles.bottomNav, { backgroundColor: 'rgba(255,255,255,0.84)', borderColor: 'rgba(255,255,255,0.58)' }]}>
           <NavItem label="Home" active={route.name === 'home'} onPress={() => setRoute({ name: 'home' })} />
           <NavItem label="Ideas" active={route.name === 'echo' || route.name === 'detail' || route.name === 'addIdea' || route.name === 'newTrip'} onPress={() => setRoute({ name: 'echo' })} />
@@ -223,7 +222,6 @@ const styles = StyleSheet.create({
   logoShimmer: { position: 'absolute', top: 0, bottom: 0, width: 42, left: 28, backgroundColor: '#A8F0D4', transform: [{ skewX: '-18deg' }] },
   content: { flex: 1 },
   contentInner: { paddingHorizontal: 28, paddingBottom: 178 },
-  navScrim: { position: 'absolute', left: 0, right: 0, bottom: 0, height: 146, backgroundColor: 'rgba(238,248,244,0.58)' },
   bottomNav: { position: 'absolute', width: '76%', maxWidth: 340, alignSelf: 'center', bottom: 18, minHeight: 58, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 3, paddingHorizontal: 10, paddingVertical: 7, borderRadius: 24, borderWidth: 1, shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 22, shadowOffset: { width: 0, height: 9 }, elevation: 10 },
   navItem: { flex: 1, maxWidth: 72, minHeight: 44, alignItems: 'center', justifyContent: 'center', borderRadius: 16, paddingHorizontal: 4 },
   navItemActive: { backgroundColor: 'rgba(168,240,212,0.42)' },

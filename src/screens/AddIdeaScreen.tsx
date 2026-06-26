@@ -118,7 +118,7 @@ function StepHeader({ number, title, active, done, onPress }: { number: number; 
   return (
     <TouchableOpacity style={[styles.stepHeader, active && styles.stepHeaderActive]} onPress={onPress}>
       <View style={[styles.stepNumber, done && styles.stepNumberDone]}>
-        <Text style={styles.stepNumberText}>{done ? '✓' : number}</Text>
+        <Text style={styles.stepNumberText}>{done ? 'OK' : number}</Text>
       </View>
       <Text style={styles.stepTitle}>{title}</Text>
       <Text style={styles.stepAction}>{active ? 'Open' : 'Edit'}</Text>

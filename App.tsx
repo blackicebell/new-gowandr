@@ -14,6 +14,7 @@ import { VotingScreen } from './src/screens/VotingScreen';
 import { ResultsScreen } from './src/screens/ResultsScreen';
 import { TripLabScreen } from './src/screens/TripLabScreen';
 import { OnboardingScreen } from './src/screens/OnboardingScreen';
+import { NewTripScreen } from './src/screens/NewTripScreen';
 import { loadTrips, saveTrips } from './src/storage/tripsStorage';
 import { loadHasSeenOnboarding, saveHasSeenOnboarding } from './src/storage/onboardingStorage';
 
@@ -21,6 +22,7 @@ type Tab = 'home' | 'ideas' | 'matchup' | 'lab';
 type Route =
   | { name: 'home' }
   | { name: 'echo' }
+  | { name: 'newTrip' }
   | { name: 'detail'; tripId: string }
   | { name: 'addIdea'; tripId: string }
   | { name: 'createMatchup' }
@@ -60,6 +62,11 @@ export default function App() {
     return trips.find((trip) => trip.id === route.tripId);
   }, [route, trips]);
 
+  const createTrip = (trip: TripDraft) => {
+    setTrips((current) => [trip, ...current]);
+    setRoute({ name: 'detail', tripId: trip.id });
+  };
+
   const addIdea = (tripId: string, idea: TripIdea) => {
     setTrips((current) =>
       current.map((trip) => (trip.id === tripId ? { ...trip, ideas: [idea, ...trip.ideas] } : trip)),
@@ -67,13 +74,22 @@ export default function App() {
     setRoute({ name: 'detail', tripId });
   };
 
+  const openFastAdd = () => {
+    if (trips.length) setRoute({ name: 'addIdea', tripId: trips[0].id });
+    else setRoute({ name: 'newTrip' });
+  };
+
   const renderRoute = () => {
     if (route.name === 'home') {
-      return <HomeScreen trips={trips} onOpenTrip={(tripId) => setRoute({ name: 'detail', tripId })} onStartDraft={() => setRoute({ name: 'echo' })} onStartMatchup={() => setRoute({ name: 'createMatchup' })} onAddIdea={() => setRoute({ name: 'addIdea', tripId: trips[0].id })} onTryDemo={() => setRoute({ name: 'voting', tripIds: ['miami', 'new-orleans', 'jamaica'], matchupName: 'Weekend Escape' })} />;
+      return <HomeScreen trips={trips} onOpenTrip={(tripId) => setRoute({ name: 'detail', tripId })} onStartDraft={() => setRoute({ name: 'newTrip' })} onStartMatchup={() => setRoute({ name: 'createMatchup' })} onAddIdea={openFastAdd} onTryDemo={() => setRoute({ name: 'voting', tripIds: ['miami', 'new-orleans', 'jamaica'], matchupName: 'Weekend Escape' })} />;
     }
 
     if (route.name === 'echo') {
-      return <EchoScreen trips={trips} onOpenTrip={(tripId) => setRoute({ name: 'detail', tripId })} onCreateMatchup={() => setRoute({ name: 'createMatchup' })} />;
+      return <EchoScreen trips={trips} onOpenTrip={(tripId) => setRoute({ name: 'detail', tripId })} onCreateTrip={() => setRoute({ name: 'newTrip' })} onCreateMatchup={() => setRoute({ name: 'createMatchup' })} />;
+    }
+
+    if (route.name === 'newTrip') {
+      return <NewTripScreen onBack={() => setRoute({ name: 'echo' })} onCreate={createTrip} />;
     }
 
     if (route.name === 'detail' && selectedTrip) {
@@ -107,7 +123,7 @@ export default function App() {
   const finishOnboarding = async () => {
     setHasSeenOnboarding(true);
     await saveHasSeenOnboarding();
-    setRoute({ name: 'echo' });
+    setRoute({ name: 'newTrip' });
   };
 
   const tryDemoFromOnboarding = async () => {
@@ -140,7 +156,7 @@ export default function App() {
         </ScrollView>
         <View style={styles.bottomNav}>
           <NavItem label="Home" active={route.name === 'home'} onPress={() => setRoute({ name: 'home' })} />
-          <NavItem label="Ideas" active={route.name === 'echo' || route.name === 'detail' || route.name === 'addIdea'} onPress={() => setRoute({ name: 'echo' })} />
+          <NavItem label="Ideas" active={route.name === 'echo' || route.name === 'detail' || route.name === 'addIdea' || route.name === 'newTrip'} onPress={() => setRoute({ name: 'echo' })} />
           <NavItem label="Matchup" active={route.name === 'createMatchup' || route.name === 'voting' || route.name === 'results'} onPress={() => setRoute({ name: 'createMatchup' })} />
           <NavItem label="Lab" active={route.name === 'lab'} onPress={() => setRoute({ name: 'lab' })} />
         </View>

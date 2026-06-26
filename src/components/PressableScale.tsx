@@ -1,5 +1,6 @@
 import React, { useRef } from 'react';
 import { Animated, GestureResponderEvent, Pressable, PressableProps, StyleProp, ViewStyle } from 'react-native';
+import * as Haptics from 'expo-haptics';
 
 type PressableScaleProps = Omit<PressableProps, 'children' | 'style'> & {
   children: React.ReactNode;
@@ -19,6 +20,7 @@ export function PressableScale({ children, style, onPress, disabled, ...props }:
   };
 
   const handlePress = (event: GestureResponderEvent) => {
+    Haptics.selectionAsync().catch(() => undefined);
     onPress?.(event);
   };
 

@@ -11,7 +11,7 @@ export function Button({ label, onPress, variant = 'primary', disabled = false }
   return (
     <PressableScale disabled={disabled} onPress={onPress} style={[styles.pressShell, disabled && styles.disabled]}>
       {isPrimary ? (
-        <LinearGradient colors={[colors.teal, colors.tealDark]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.button}>
+        <LinearGradient colors={['#0EA5E9', '#2563EB']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.button}>
           <View style={styles.innerHighlight} />
           <Text style={[styles.label, { color: colors.canvasDeep, fontFamily: font.family }]}>{label}</Text>
         </LinearGradient>

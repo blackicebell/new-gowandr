@@ -1,8 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Animated, Image, SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
-import { font, ThemeName, ThemeProvider, themes, useThemeColors } from './src/theme/colors';
+import { font, ThemeProvider, themes, useThemeColors } from './src/theme/colors';
 import { TripDraft, TripIdea, VoteAnswer } from './src/types';
 import { demoTrips } from './src/data/demoTrips';
 import { HomeScreen } from './src/screens/HomeScreen';
@@ -17,8 +16,8 @@ import { OnboardingScreen } from './src/screens/OnboardingScreen';
 import { NewTripScreen } from './src/screens/NewTripScreen';
 import { loadTrips, saveTrips } from './src/storage/tripsStorage';
 import { loadHasSeenOnboarding, saveHasSeenOnboarding } from './src/storage/onboardingStorage';
-import { loadThemeName, saveThemeName } from './src/storage/themeStorage';
 import { PremiumBackground } from './src/components/PremiumBackground';
+import { PressableScale } from './src/components/PressableScale';
 
 type Tab = 'home' | 'ideas' | 'matchup' | 'lab';
 type Route =
@@ -37,16 +36,15 @@ export default function App() {
   const [trips, setTrips] = useState<TripDraft[]>(demoTrips);
   const [hasSeenOnboarding, setHasSeenOnboarding] = useState<boolean | undefined>();
   const [hasLoadedTrips, setHasLoadedTrips] = useState(false);
-  const [themeName, setThemeName] = useState<ThemeName>('green');
-  const theme = themes[themeName];
+  const theme = themes.green;
+  const routeProgress = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     let isMounted = true;
     async function hydrate() {
-      const [savedTrips, seenOnboarding, savedThemeName] = await Promise.all([loadTrips(), loadHasSeenOnboarding(), loadThemeName()]);
+      const [savedTrips, seenOnboarding] = await Promise.all([loadTrips(), loadHasSeenOnboarding()]);
       if (!isMounted) return;
       if (savedTrips?.length) setTrips(savedTrips);
-      setThemeName(savedThemeName);
       setHasSeenOnboarding(seenOnboarding);
       setHasLoadedTrips(true);
     }
@@ -61,6 +59,15 @@ export default function App() {
       saveTrips(trips).catch(() => undefined);
     }
   }, [hasLoadedTrips, trips]);
+
+  useEffect(() => {
+    routeProgress.setValue(0);
+    Animated.timing(routeProgress, {
+      toValue: 1,
+      duration: 140,
+      useNativeDriver: true,
+    }).start();
+  }, [route, routeProgress]);
 
   const selectedTrip = useMemo(() => {
     if (route.name !== 'detail' && route.name !== 'addIdea') return undefined;
@@ -137,11 +144,6 @@ export default function App() {
     setRoute({ name: 'voting', tripIds: ['miami', 'new-orleans', 'jamaica'], matchupName: 'Weekend Escape' });
   };
 
-  const changeTheme = (nextTheme: ThemeName) => {
-    setThemeName(nextTheme);
-    saveThemeName(nextTheme).catch(() => undefined);
-  };
-
   if (hasSeenOnboarding === undefined) {
     return <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.canvasDeep }]} />;
   }
@@ -166,10 +168,11 @@ export default function App() {
             <Image source={require('./assets/brand/gowandr-logo-full-white.png')} style={styles.logo} resizeMode="contain" />
             <LogoShimmer />
           </TouchableOpacity>
-          <ThemePicker activeTheme={themeName} onChange={changeTheme} />
         </View>
         <ScrollView style={styles.content} contentContainerStyle={styles.contentInner} showsVerticalScrollIndicator={false}>
+          <Animated.View style={{ opacity: routeProgress, transform: [{ translateY: routeProgress.interpolate({ inputRange: [0, 1], outputRange: [8, 0] }) }] }}>
           {renderRoute()}
+          </Animated.View>
         </ScrollView>
         <View style={[styles.bottomNav, { backgroundColor: 'rgba(20,20,20,0.35)', borderColor: 'rgba(255,255,255,0.18)' }]}>
           <NavItem label="Home" active={route.name === 'home'} onPress={() => setRoute({ name: 'home' })} />
@@ -186,29 +189,10 @@ export default function App() {
 function NavItem({ label, active, onPress }: { label: Tab | string; active: boolean; onPress: () => void }) {
   const theme = useThemeColors();
   return (
-    <TouchableOpacity onPress={onPress} style={styles.navItem}>
+    <PressableScale onPress={onPress} style={styles.navItem}>
       <Text style={[styles.navText, { color: active ? theme.charcoal : theme.muted, fontFamily: font.family }]}>{label}</Text>
       <View style={[styles.navIndicator, { backgroundColor: active ? theme.teal : 'transparent' }]} />
-    </TouchableOpacity>
-  );
-}
-
-function ThemePicker({ activeTheme, onChange }: { activeTheme: ThemeName; onChange: (themeName: ThemeName) => void }) {
-  return (
-    <View style={styles.themePicker}>
-      {(['green', 'pink', 'blue'] as ThemeName[]).map((name) => {
-        const theme = themes[name];
-        return (
-          <TouchableOpacity key={name} onPress={() => onChange(name)} style={styles.themeDotOuter}>
-            <LinearGradient colors={[theme.teal, theme.accent]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[styles.themeDotRing, activeTheme === name && styles.themeDotRingActive]}>
-              <View style={[styles.themeDot, { backgroundColor: theme.canvasDeep }]}>
-                <Text style={[styles.themeDotText, { color: theme.charcoal, fontFamily: font.family }]}>{name.charAt(0).toUpperCase()}</Text>
-              </View>
-            </LinearGradient>
-          </TouchableOpacity>
-        );
-      })}
-    </View>
+    </PressableScale>
   );
 }
 
@@ -232,18 +216,12 @@ function LogoShimmer() {
 const styles = StyleSheet.create({
   safeArea: { flex: 1 },
   shell: { flex: 1, width: '100%', maxWidth: 680, alignSelf: 'center' },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 24, paddingTop: 14, paddingBottom: 14 },
-  logoShell: { borderRadius: 22, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: 'rgba(255,255,255,0.12)', borderWidth: 1, overflow: 'hidden' },
-  logo: { width: 142, height: 34 },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 28, paddingTop: 16, paddingBottom: 16 },
+  logoShell: { borderRadius: 22, paddingHorizontal: 14, paddingVertical: 9, backgroundColor: 'rgba(20,20,20,0.35)', borderWidth: 1, overflow: 'hidden', shadowColor: '#38BDF8', shadowOpacity: 0.25, shadowRadius: 12, shadowOffset: { width: 0, height: 0 } },
+  logo: { width: 128, height: 31 },
   logoShimmer: { position: 'absolute', top: 0, bottom: 0, width: 42, left: 28, backgroundColor: '#FFFFFF', transform: [{ skewX: '-18deg' }] },
-  themePicker: { flexDirection: 'row', alignItems: 'center', gap: 8, padding: 6, borderRadius: 999, backgroundColor: 'rgba(255,255,255,0.12)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.18)' },
-  themeDotOuter: { shadowColor: '#000', shadowOpacity: 0.22, shadowRadius: 8, shadowOffset: { width: 0, height: 3 } },
-  themeDotRing: { width: 32, height: 32, borderRadius: 16, padding: 2 },
-  themeDotRingActive: { padding: 3 },
-  themeDot: { flex: 1, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },
-  themeDotText: { fontSize: 11, fontWeight: '900' },
   content: { flex: 1 },
-  contentInner: { paddingHorizontal: 24, paddingBottom: 124 },
+  contentInner: { paddingHorizontal: 28, paddingBottom: 128 },
   bottomNav: { position: 'absolute', left: 18, right: 18, bottom: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 8, paddingTop: 9, paddingBottom: 7, borderRadius: 30, borderWidth: 1, shadowColor: '#000', shadowOpacity: 0.28, shadowRadius: 22, shadowOffset: { width: 0, height: 8 }, elevation: 8 },
   navItem: { flex: 1, alignItems: 'center', paddingVertical: 8, borderRadius: 20 },
   navText: { fontWeight: '900', fontSize: 12, letterSpacing: 0 },

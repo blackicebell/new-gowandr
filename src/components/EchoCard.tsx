@@ -1,5 +1,5 @@
-import React from 'react';
-import { ImageBackground, StyleSheet, Text, View } from 'react-native';
+import React, { useRef } from 'react';
+import { Animated, ImageBackground, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { font, useThemeColors } from '../theme/colors';
 import { TripDraft } from '../types';
@@ -9,9 +9,20 @@ import { PressableScale } from './PressableScale';
 export function EchoCard({ trip, onPress }: { trip: TripDraft; onPress: () => void }) {
   const colors = useThemeColors();
   const score = calculateClarityScore(trip).score;
+  const imageOpacity = useRef(new Animated.Value(0)).current;
+
+  const fadeInImage = () => {
+    Animated.timing(imageOpacity, {
+      toValue: 1,
+      duration: 180,
+      useNativeDriver: true,
+    }).start();
+  };
+
   return (
     <PressableScale onPress={onPress} style={[styles.card, { backgroundColor: colors.paper, borderColor: 'rgba(255,255,255,0.15)' }]}>
-      <ImageBackground source={{ uri: trip.heroImage }} style={styles.image} imageStyle={styles.imageRadius}>
+      <Animated.View style={{ opacity: imageOpacity }}>
+      <ImageBackground source={{ uri: trip.heroImage }} onLoad={fadeInImage} style={styles.image} imageStyle={styles.imageRadius}>
         <LinearGradient colors={['rgba(0,0,0,0.25)', 'rgba(0,0,0,0.45)']} style={StyleSheet.absoluteFill} />
         <View style={styles.scorePill}>
           <Text style={[styles.scoreText, { color: '#F8F8F6', fontFamily: font.family }]}>{score}% clear</Text>
@@ -21,6 +32,7 @@ export function EchoCard({ trip, onPress }: { trip: TripDraft; onPress: () => vo
           <Text style={[styles.subtitle, { fontFamily: font.family }]}>{trip.subtitle}</Text>
         </View>
       </ImageBackground>
+      </Animated.View>
     </PressableScale>
   );
 }

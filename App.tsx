@@ -164,8 +164,8 @@ export default function App() {
       <View style={[styles.shell, { backgroundColor: theme.canvas }]}>
         <PremiumBackground />
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => setRoute({ name: 'home' })} style={[styles.logoShell, { borderColor: 'rgba(255,255,255,0.22)' }]}>
-            <Image source={require('./assets/brand/gowandr-logo-full-white.png')} style={styles.logo} resizeMode="contain" />
+          <TouchableOpacity onPress={() => setRoute({ name: 'home' })} style={[styles.logoShell, { borderColor: 'rgba(255,255,255,0.78)' }]}>
+            <Image source={require('./assets/brand/gowandr-logo-full-color.png')} style={styles.logo} resizeMode="contain" />
             <LogoShimmer />
           </TouchableOpacity>
         </View>
@@ -175,7 +175,7 @@ export default function App() {
           </Animated.View>
         </ScrollView>
         <View style={styles.navScrim} pointerEvents="none" />
-        <View style={[styles.bottomNav, { backgroundColor: 'rgba(255,255,255,0.74)', borderColor: 'rgba(255,255,255,0.42)' }]}>
+        <View style={[styles.bottomNav, { backgroundColor: 'rgba(255,255,255,0.78)', borderColor: 'rgba(255,255,255,0.48)' }]}>
           <NavItem label="Home" active={route.name === 'home'} onPress={() => setRoute({ name: 'home' })} />
           <NavItem label="Ideas" active={route.name === 'echo' || route.name === 'detail' || route.name === 'addIdea' || route.name === 'newTrip'} onPress={() => setRoute({ name: 'echo' })} />
           <NavItem label="Matchup" active={route.name === 'createMatchup' || route.name === 'voting' || route.name === 'results'} onPress={() => setRoute({ name: 'createMatchup' })} />
@@ -211,22 +211,22 @@ function LogoShimmer() {
     return () => loop.stop();
   }, [shimmer]);
 
-  return <Animated.View pointerEvents="none" style={[styles.logoShimmer, { opacity: shimmer.interpolate({ inputRange: [0, 1], outputRange: [0.03, 0.14] }) }]} />;
+  return <Animated.View pointerEvents="none" style={[styles.logoShimmer, { opacity: shimmer.interpolate({ inputRange: [0, 1], outputRange: [0.01, 0.05] }) }]} />;
 }
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1 },
   shell: { flex: 1, width: '100%', maxWidth: 680, alignSelf: 'center' },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 28, paddingTop: 16, paddingBottom: 16 },
-  logoShell: { borderRadius: 22, paddingHorizontal: 14, paddingVertical: 9, backgroundColor: 'rgba(255,255,255,0.34)', borderWidth: 1, overflow: 'hidden', shadowColor: '#6ED8B5', shadowOpacity: 0.35, shadowRadius: 14, shadowOffset: { width: 0, height: 0 } },
+  logoShell: { borderRadius: 22, paddingHorizontal: 14, paddingVertical: 9, backgroundColor: 'rgba(255,255,255,0.86)', borderWidth: 1, overflow: 'hidden', shadowColor: '#6ED8B5', shadowOpacity: 0.32, shadowRadius: 16, shadowOffset: { width: 0, height: 0 } },
   logo: { width: 128, height: 31 },
   logoShimmer: { position: 'absolute', top: 0, bottom: 0, width: 42, left: 28, backgroundColor: '#A8F0D4', transform: [{ skewX: '-18deg' }] },
   content: { flex: 1 },
   contentInner: { paddingHorizontal: 28, paddingBottom: 178 },
   navScrim: { position: 'absolute', left: 0, right: 0, bottom: 0, height: 146, backgroundColor: 'rgba(238,248,244,0.58)' },
-  bottomNav: { position: 'absolute', left: 16, right: 16, bottom: 18, minHeight: 72, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 6, paddingHorizontal: 10, paddingVertical: 10, borderRadius: 34, borderWidth: 1, shadowColor: '#000', shadowOpacity: 0.18, shadowRadius: 24, shadowOffset: { width: 0, height: 10 }, elevation: 10 },
-  navItem: { flex: 1, minHeight: 52, alignItems: 'center', justifyContent: 'center', borderRadius: 24, paddingHorizontal: 4 },
-  navItemActive: { backgroundColor: 'rgba(168,240,212,0.42)' },
+  bottomNav: { position: 'absolute', width: '84%', maxWidth: 370, alignSelf: 'center', bottom: 18, minHeight: 68, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 9, borderRadius: 34, borderWidth: 1, shadowColor: '#000', shadowOpacity: 0.16, shadowRadius: 24, shadowOffset: { width: 0, height: 10 }, elevation: 10 },
+  navItem: { flex: 1, maxWidth: 76, minHeight: 50, alignItems: 'center', justifyContent: 'center', borderRadius: 22, paddingHorizontal: 4 },
+  navItemActive: { backgroundColor: 'rgba(168,240,212,0.36)' },
   navText: { fontWeight: '700', fontSize: 12, lineHeight: 14, letterSpacing: -0.1, textAlign: 'center' },
   navIndicator: { width: 24, height: 4, borderRadius: 999, marginTop: 6 },
 });

@@ -17,7 +17,7 @@ export function Button({ label, onPress, variant = 'primary', disabled = false }
         </LinearGradient>
       ) : (
         <View style={[styles.button, variantStyle(variant, colors)]}>
-          <Text style={[styles.label, { fontFamily: font.family, color: colors.charcoal }]}>{label}</Text>
+          <Text style={[styles.label, styles.secondaryLabel, { fontFamily: font.family, color: colors.charcoal }]}>{label}</Text>
         </View>
       )}
     </PressableScale>
@@ -25,8 +25,15 @@ export function Button({ label, onPress, variant = 'primary', disabled = false }
 }
 
 function variantStyle(variant: 'primary' | 'secondary' | 'ghost', colors: ReturnType<typeof useThemeColors>) {
-  if (variant === 'secondary') return { backgroundColor: colors.glass, borderWidth: 1, borderColor: colors.line };
-  if (variant === 'ghost') return { backgroundColor: 'transparent', borderWidth: 1, borderColor: colors.line };
+  if (variant === 'secondary') {
+    return {
+      backgroundColor: 'rgba(248,250,249,0.84)',
+      borderWidth: 1,
+      borderColor: 'rgba(255,255,255,0.74)',
+      shadowOpacity: 0.16,
+    };
+  }
+  if (variant === 'ghost') return { backgroundColor: 'rgba(255,255,255,0.48)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.62)' };
   return { backgroundColor: colors.teal };
 }
 
@@ -36,4 +43,5 @@ const styles = StyleSheet.create({
   innerHighlight: { position: 'absolute', left: 1, right: 1, top: 1, height: 1, backgroundColor: 'rgba(255,255,255,0.35)' },
   disabled: { opacity: 0.45 },
   label: { color: '#07110D', fontWeight: '900', fontSize: 15, letterSpacing: 0 },
+  secondaryLabel: { fontWeight: '800' },
 });

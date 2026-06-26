@@ -192,7 +192,7 @@ const styles = StyleSheet.create({
   localPrimary: { minHeight: 50, borderRadius: 18, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 22, overflow: 'hidden' },
   innerHighlight: { position: 'absolute', top: 1, left: 1, right: 1, height: 1, backgroundColor: 'rgba(255,255,255,0.25)' },
   localPrimaryText: { color: '#05070B', fontWeight: '800', fontSize: 15 },
-  localSecondary: { minHeight: 48, borderRadius: 18, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 22, backgroundColor: 'rgba(255,255,255,0.06)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.10)' },
+  localSecondary: { minHeight: 48, borderRadius: 18, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 22, marginTop: 12, backgroundColor: 'rgba(255,255,255,0.06)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.10)' },
   localSecondaryText: { color: '#F8F8F6', fontWeight: '700', fontSize: 14.5 },
   disabledButton: { opacity: 0.42 },
   mutedAction: { opacity: 0.78 },

@@ -1,0 +1,16 @@
+export const colors = {
+  canvas: '#F8F4EC',
+  paper: '#FFFDF8',
+  cloud: '#EAF3F1',
+  mist: '#D8E8E4',
+  teal: '#0B7F78',
+  tealDark: '#075D58',
+  sky: '#BFD9E0',
+  coral: '#F07F67',
+  sun: '#F2B84B',
+  charcoal: '#172321',
+  muted: '#64736F',
+  line: '#E6DED1',
+  white: '#FFFFFF',
+  danger: '#A84D3D',
+};

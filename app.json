@@ -1,0 +1,32 @@
+{
+  "expo": {
+    "name": "GoWandr",
+    "slug": "new-gowandr",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/brand/gowandr-logo-icon-color.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/brand/gowandr-logo-icon-color.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#F8F4EC"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.gowandr.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/brand/gowandr-logo-icon-color.png",
+        "backgroundColor": "#F8F4EC"
+      },
+      "package": "com.gowandr.app"
+    },
+    "web": {
+      "favicon": "./assets/brand/gowandr-logo-icon-color.png"
+    }
+  }
+}

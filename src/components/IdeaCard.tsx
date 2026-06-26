@@ -1,11 +1,18 @@
-import React from 'react';
-import { ImageBackground, Linking, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useRef } from 'react';
+import { Animated, ImageBackground, Linking, StyleSheet, Text, View } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { font, useThemeColors } from '../theme/colors';
 import { TripIdea } from '../types';
+import { PressableScale } from './PressableScale';
 
 export function IdeaCard({ idea }: { idea: TripIdea }) {
   const colors = useThemeColors();
   const hasLink = !!idea.link?.trim();
+  const imageOpacity = useRef(new Animated.Value(0)).current;
+
+  const fadeInImage = () => {
+    Animated.timing(imageOpacity, { toValue: 1, duration: 180, useNativeDriver: true }).start();
+  };
 
   const openLink = async () => {
     if (!idea.link?.trim()) return;
@@ -20,22 +27,29 @@ export function IdeaCard({ idea }: { idea: TripIdea }) {
   };
 
   return (
-    <TouchableOpacity activeOpacity={hasLink ? 0.82 : 1} disabled={!hasLink} onPress={openLink} style={[styles.card, { backgroundColor: colors.paper, borderColor: colors.line }, hasLink && { borderColor: colors.teal }]}>
-      <ImageBackground source={{ uri: idea.imageUrl ?? fallbackForCategory(idea.category) }} style={styles.image} imageStyle={styles.imageRadius}>
-        <View style={[styles.priority, { backgroundColor: colors.charcoal }]}>
-          <Text style={[styles.priorityText, { color: colors.canvasDeep, fontFamily: font.family }]}>{idea.priority}</Text>
+    <PressableScale disabled={!hasLink} onPress={openLink} style={[styles.card, { borderColor: hasLink ? '#0A84FF' : 'rgba(255,255,255,0.15)' }]}>
+      <Animated.View style={{ opacity: imageOpacity }}>
+      <ImageBackground source={{ uri: idea.imageUrl ?? fallbackForCategory(idea.category) }} onLoad={fadeInImage} style={styles.image} imageStyle={styles.imageRadius}>
+        <LinearGradient colors={['rgba(0,0,0,0.15)', 'rgba(0,0,0,0.55)']} style={StyleSheet.absoluteFill} />
+        <View style={styles.priority}>
+          <Text style={[styles.priorityText, { fontFamily: font.family }]}>{idea.priority}</Text>
         </View>
       </ImageBackground>
+      </Animated.View>
       <View style={styles.body}>
         <View style={styles.metaRow}>
-          <Text style={[styles.category, { color: colors.coral, fontFamily: font.family }]}>{idea.category}</Text>
-          {hasLink && <Text style={[styles.openCue, { color: colors.teal, fontFamily: font.family }]}>Open link</Text>}
+          <Text style={[styles.category, { fontFamily: font.family }]}>{idea.category}</Text>
+          {hasLink && (
+            <View style={styles.openPill}>
+              <Text style={[styles.openCue, { fontFamily: font.family }]}>Open link</Text>
+            </View>
+          )}
         </View>
-        <Text style={[styles.title, { color: colors.charcoal, fontFamily: font.family }]}>{idea.title}</Text>
-        {!!idea.note && <Text style={[styles.note, { color: colors.muted, fontFamily: font.family }]}>{idea.note}</Text>}
-        {hasLink && <Text style={[styles.linkText, { color: colors.teal, fontFamily: font.family }]} numberOfLines={1}>{getPlatformLabel(idea.link ?? '')}</Text>}
+        <Text style={[styles.title, { fontFamily: font.family }]}>{idea.title}</Text>
+        {!!idea.note && <Text style={[styles.note, { fontFamily: font.family }]}>{idea.note}</Text>}
+        {hasLink && <Text style={[styles.linkText, { fontFamily: font.family }]} numberOfLines={1}>{getPlatformLabel(idea.link ?? '')}</Text>}
       </View>
-    </TouchableOpacity>
+    </PressableScale>
   );
 }
 
@@ -61,16 +75,17 @@ function fallbackForCategory(category: string) {
 }
 
 const styles = StyleSheet.create({
-  card: { width: '48%', marginBottom: 14, borderRadius: 20, overflow: 'hidden', borderWidth: 1 },
-  image: { height: 104, alignItems: 'flex-start', justifyContent: 'flex-start' },
-  imageRadius: { borderTopLeftRadius: 20, borderTopRightRadius: 20 },
-  priority: { margin: 8, paddingHorizontal: 9, paddingVertical: 6, borderRadius: 999, backgroundColor: 'rgba(255,255,255,0.92)' },
-  priorityText: { fontSize: 10, fontWeight: '900', letterSpacing: 0 },
-  body: { padding: 12 },
+  card: { width: '48%', marginBottom: 18, borderRadius: 24, overflow: 'hidden', borderWidth: 1, backgroundColor: 'rgba(255,255,255,0.06)', shadowColor: '#000', shadowOpacity: 0.22, shadowRadius: 28, shadowOffset: { width: 0, height: 10 }, elevation: 8 },
+  image: { height: 124, alignItems: 'flex-start', justifyContent: 'flex-start' },
+  imageRadius: { borderTopLeftRadius: 24, borderTopRightRadius: 24 },
+  priority: { margin: 10, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12, backgroundColor: 'rgba(0,0,0,0.45)' },
+  priorityText: { color: '#F8F8F6', fontSize: 10, fontWeight: '700', letterSpacing: 0 },
+  body: { padding: 14 },
   metaRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 6 },
-  category: { fontWeight: '900', fontSize: 10, textTransform: 'uppercase', letterSpacing: 0 },
-  openCue: { fontWeight: '900', fontSize: 10, letterSpacing: 0 },
-  title: { fontWeight: '900', fontSize: 15, marginTop: 5, letterSpacing: 0 },
-  note: { fontSize: 12, marginTop: 4, lineHeight: 17 },
-  linkText: { fontWeight: '800', fontSize: 11, marginTop: 7, letterSpacing: 0 },
+  category: { color: '#F4D06F', fontWeight: '900', fontSize: 10, textTransform: 'uppercase', letterSpacing: 0 },
+  openPill: { backgroundColor: 'rgba(0,0,0,0.45)', paddingHorizontal: 9, paddingVertical: 5, borderRadius: 12 },
+  openCue: { color: '#38BDF8', fontWeight: '700', fontSize: 10, letterSpacing: 0 },
+  title: { color: '#F8F8F6', fontWeight: '700', fontSize: 16, marginTop: 7, letterSpacing: -0.16 },
+  note: { color: 'rgba(255,255,255,0.75)', fontSize: 12, marginTop: 5, lineHeight: 17 },
+  linkText: { color: '#0A84FF', fontWeight: '800', fontSize: 11, marginTop: 8, letterSpacing: 0 },
 });

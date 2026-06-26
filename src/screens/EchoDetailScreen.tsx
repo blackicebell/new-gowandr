@@ -34,7 +34,7 @@ export function EchoDetailScreen({ trip, onBack, onAddIdea, onCompare, onOpenLab
         </View>
       </ImageBackground>
 
-      <View style={[styles.summaryCard, { borderColor: 'rgba(255,255,255,0.12)' }]}>
+      <View style={styles.summaryCard}>
         <View style={styles.clarityBadge}>
           <Text style={[styles.clarityScore, { fontFamily: font.family }]}>{clarity.score}</Text>
           <Text style={[styles.clarityLabel, { fontFamily: font.family }]}>clarity</Text>
@@ -53,7 +53,7 @@ export function EchoDetailScreen({ trip, onBack, onAddIdea, onCompare, onOpenLab
         ))}
       </View>
 
-      <LinearGradient colors={['rgba(14,165,233,0.15)', 'rgba(37,99,235,0.15)']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[styles.paceCard, { borderColor: colors.line }]}>
+      <LinearGradient colors={['rgba(255,255,255,0.84)', 'rgba(226,248,240,0.88)']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.paceCard}>
         <View style={styles.paceHeader}>
           <View style={styles.paceIcon}>
             <Text style={styles.paceIconText}>{getPaceIcon(trip.pace)}</Text>
@@ -119,39 +119,39 @@ function getPaceIcon(pace: TripDraft['pace']) {
 const styles = StyleSheet.create({
   screen: { gap: 18 },
   back: { alignSelf: 'flex-start', paddingVertical: 10, paddingHorizontal: 2 },
-  backText: { fontWeight: '900', fontSize: 14 },
+  backText: { fontWeight: '800', fontSize: 14 },
   hero: { minHeight: 340, justifyContent: 'flex-end', borderRadius: 30, overflow: 'hidden', borderWidth: 1, shadowColor: '#000', shadowOpacity: 0.22, shadowRadius: 28, shadowOffset: { width: 0, height: 10 }, elevation: 8 },
   heroImage: { borderRadius: 30 },
   heroCopy: { padding: 24 },
   title: { color: '#F8F8F6', fontWeight: '700', fontSize: 41, lineHeight: 49, letterSpacing: -0.41, textShadowColor: 'rgba(0,0,0,0.35)', textShadowRadius: 4, textShadowOffset: { width: 0, height: 2 } },
   subtitle: { color: 'rgba(255,255,255,0.75)', fontSize: 16, lineHeight: 23, marginTop: 8, fontWeight: '500' },
-  summaryCard: { flexDirection: 'row', gap: 18, alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: 26, padding: 22, borderWidth: 1, shadowColor: '#000', shadowOpacity: 0.22, shadowRadius: 28, shadowOffset: { width: 0, height: 10 }, elevation: 8 },
-  clarityBadge: { minWidth: 88, minHeight: 88, alignItems: 'center', justifyContent: 'center', borderRadius: 18, backgroundColor: 'rgba(0,0,0,0.45)', borderWidth: 2, borderColor: '#A8F0D4', paddingHorizontal: 14, paddingVertical: 8 },
-  clarityScore: { color: '#F8F8F6', fontSize: 26, fontWeight: '700', letterSpacing: -0.26 },
-  clarityLabel: { color: 'rgba(255,255,255,0.75)', fontSize: 11, fontWeight: '600', marginTop: 2 },
+  summaryCard: { flexDirection: 'row', gap: 18, alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.82)', borderRadius: 26, padding: 22, borderWidth: 1, borderColor: 'rgba(32,38,35,0.06)', shadowColor: '#000', shadowOpacity: 0.10, shadowRadius: 22, shadowOffset: { width: 0, height: 8 }, elevation: 5 },
+  clarityBadge: { minWidth: 88, minHeight: 88, alignItems: 'center', justifyContent: 'center', borderRadius: 18, backgroundColor: 'rgba(32,38,35,0.62)', borderWidth: 2, borderColor: '#6ED8B5', paddingHorizontal: 14, paddingVertical: 8 },
+  clarityScore: { color: '#FFFFFF', fontSize: 26, fontWeight: '700', letterSpacing: -0.26 },
+  clarityLabel: { color: 'rgba(255,255,255,0.82)', fontSize: 11, fontWeight: '600', marginTop: 2 },
   summaryCopy: { flex: 1 },
-  summaryLabel: { color: '#F4D06F', fontWeight: '900', fontSize: 11, textTransform: 'uppercase' },
-  summary: { color: '#F8F8F6', fontSize: 17, lineHeight: 25, marginTop: 7, fontWeight: '700' },
+  summaryLabel: { color: '#137D68', fontWeight: '800', fontSize: 11, textTransform: 'uppercase' },
+  summary: { color: '#202623', fontSize: 17, lineHeight: 25, marginTop: 7, fontWeight: '700' },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  tagPill: { backgroundColor: 'rgba(255,255,255,0.12)', borderRadius: 12, paddingHorizontal: 12, paddingVertical: 7, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)' },
-  tagText: { color: '#F8F8F6', fontSize: 12, fontWeight: '600', textTransform: 'capitalize' },
-  paceCard: { borderRadius: 26, padding: 22, borderWidth: 1 },
+  tagPill: { backgroundColor: 'rgba(255,255,255,0.72)', borderRadius: 12, paddingHorizontal: 12, paddingVertical: 7, borderWidth: 1, borderColor: 'rgba(32,38,35,0.06)' },
+  tagText: { color: '#202623', fontSize: 12, fontWeight: '700', textTransform: 'capitalize' },
+  paceCard: { borderRadius: 26, padding: 22, borderWidth: 1, borderColor: 'rgba(32,38,35,0.07)', shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 18, shadowOffset: { width: 0, height: 7 }, elevation: 4 },
   paceHeader: { flexDirection: 'row', alignItems: 'center', gap: 14 },
-  paceIcon: { width: 42, height: 42, borderRadius: 16, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.45)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)' },
-  paceIconText: { color: '#A8F0D4', fontWeight: '900', fontSize: 18 },
+  paceIcon: { width: 42, height: 42, borderRadius: 16, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(32,38,35,0.62)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.52)' },
+  paceIconText: { color: '#FFFFFF', fontWeight: '800', fontSize: 18 },
   paceCopy: { flex: 1 },
-  paceLabel: { color: '#F4D06F', fontWeight: '900', fontSize: 11, textTransform: 'uppercase' },
-  paceTitle: { color: '#F8F8F6', fontWeight: '700', fontSize: 18, marginTop: 5, letterSpacing: -0.18 },
-  paceBody: { color: 'rgba(255,255,255,0.75)', fontSize: 15, lineHeight: 22, marginTop: 14 },
+  paceLabel: { color: '#137D68', fontWeight: '800', fontSize: 11, textTransform: 'uppercase' },
+  paceTitle: { color: '#202623', fontWeight: '700', fontSize: 18, marginTop: 5, letterSpacing: -0.18 },
+  paceBody: { color: 'rgba(32,38,35,0.66)', fontSize: 15, lineHeight: 22, marginTop: 14 },
   paceMeter: { flexDirection: 'row', gap: 8, marginTop: 18 },
   paceMeterItem: { flex: 1 },
-  paceMeterBar: { height: 5, borderRadius: 999, backgroundColor: 'rgba(255,255,255,0.12)' },
+  paceMeterBar: { height: 5, borderRadius: 999, backgroundColor: 'rgba(32,38,35,0.08)' },
   paceMeterBarActive: { backgroundColor: '#6ED8B5' },
-  paceMeterText: { color: 'rgba(255,255,255,0.55)', fontSize: 10, fontWeight: '700', marginTop: 6 },
-  paceMeterTextActive: { color: '#F8F8F6' },
+  paceMeterText: { color: 'rgba(32,38,35,0.48)', fontSize: 10, fontWeight: '700', marginTop: 6 },
+  paceMeterTextActive: { color: '#137D68' },
   actions: { gap: 12, marginVertical: 4 },
   sectionHeader: { gap: 10, marginTop: 8 },
-  sectionTitle: { color: '#F8F8F6', fontWeight: '700', fontSize: 25, letterSpacing: -0.25 },
-  sectionDivider: { height: 1, backgroundColor: 'rgba(255,255,255,0.08)' },
+  sectionTitle: { color: '#202623', fontWeight: '800', fontSize: 25, letterSpacing: -0.25 },
+  sectionDivider: { height: 1, backgroundColor: 'rgba(32,38,35,0.08)' },
   grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', marginBottom: 8 },
 });

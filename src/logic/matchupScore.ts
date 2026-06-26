@@ -19,13 +19,13 @@ export function scoreMatchup(trips: TripDraft[], votes: VoteAnswer[]): MatchupRe
       const ease = tripVotes.filter((vote) => vote.prompt === 'easy' || vote.prompt === 'groupFit').length;
       const commitment = tripVotes.reduce((sum, vote) => sum + vote.commitment, 0);
       const dealbreakers = tripVotes.filter((vote) => vote.dealbreaker).length;
-      const tooPricey = tripVotes.filter((vote) => vote.reaction === 'Too pricey').length;
-      const easyYes = tripVotes.filter((vote) => vote.reaction === 'Easy yes' || vote.reaction === "I'm in").length;
+      const budgetConcern = tripVotes.filter((vote) => vote.dealbreaker === 'Too expensive' || vote.dealbreaker === 'Budget check' || vote.dealbreaker === 'Needs budget check').length;
+      const easyYes = tripVotes.filter((vote) => ['Easy yes', "I'm in", 'Everyone can go', 'Fits budget', 'Dates work', 'Ready to plan'].includes(vote.reaction ?? '')).length;
       const mustDos = trip.ideas.filter((idea) => idea.priority === 'Must-do').length;
       const clarity = calculateClarityScore(trip).score / 10;
       const paceRisk = getPaceHealth(trip).tone === 'warning' ? 8 : 0;
       const lowCommitPackedRisk = trip.pace === 'Packed' && commitment < 8 ? 6 : 0;
-      const score = excitement * 12 + ease * 14 + commitment * 6 + easyYes * 8 + mustDos * 2 + clarity - dealbreakers * 10 - tooPricey * 8 - paceRisk - lowCommitPackedRisk;
+      const score = excitement * 12 + ease * 14 + commitment * 6 + easyYes * 8 + mustDos * 2 + clarity - dealbreakers * 10 - budgetConcern * 8 - paceRisk - lowCommitPackedRisk;
 
       return { trip, score: Math.round(score), commitment, dealbreakers, easyYes, excitement };
     })

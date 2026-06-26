@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import * as Clipboard from 'expo-clipboard';
-import { Button } from '../components/Button';
 import { Chip } from '../components/Chip';
 import { colors, font, useThemeColors } from '../theme/colors';
 import { IdeaCategory, IdeaPriority, TripDraft, TripIdea } from '../types';
+import { PressableScale } from '../components/PressableScale';
 
 const categories: IdeaCategory[] = ['Food', 'Stay', 'Beach', 'Nightlife', 'Culture', 'Adventure', 'Shopping', 'Photo Spot', 'Relax', 'Other'];
 const tags = ['Must-do', 'Maybe', 'Chill', 'Active', 'Romantic', 'Friends', 'Family', 'Solo', 'Food', 'Nightlife', 'Beach', 'Culture', 'Luxury', 'Low-key'];
@@ -19,6 +20,7 @@ export function AddIdeaScreen({ trip, onBack, onSave }: { trip: TripDraft; onBac
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [pasteMessage, setPasteMessage] = useState('');
+  const canSave = !!link.trim() || !!title.trim() || !!note.trim();
 
   const pasteFromClipboard = async () => {
     const pastedText = await Clipboard.getStringAsync();
@@ -59,14 +61,13 @@ export function AddIdeaScreen({ trip, onBack, onSave }: { trip: TripDraft; onBac
         <View style={styles.stepCard}>
           <Text style={styles.stepBody}>Copy a TikTok, Reel, YouTube, blog, restaurant, or destination link, then paste it here.</Text>
           <View style={styles.linkRow}>
-            <TextInput placeholder="Paste travel link here" placeholderTextColor={theme.muted} value={link} onChangeText={setLink} style={[styles.input, styles.linkInput, { backgroundColor: theme.canvas, borderColor: theme.line, color: theme.charcoal, fontFamily: font.family }]} autoCapitalize="none" />
-            <TouchableOpacity style={[styles.pasteButton, { backgroundColor: theme.teal }]} onPress={pasteFromClipboard}>
-              <Text style={[styles.pasteText, { color: theme.canvasDeep, fontFamily: font.family }]}>Paste here</Text>
-            </TouchableOpacity>
+            <Text style={[styles.inputLabel, { fontFamily: font.family }]}>Travel link</Text>
+            <TextInput placeholder="Paste TikTok, Reel, YouTube, blog, or restaurant link" placeholderTextColor={theme.muted} value={link} onChangeText={setLink} style={[styles.input, styles.linkInput, { color: theme.charcoal, fontFamily: font.family }]} autoCapitalize="none" />
+            <PrimaryLocalButton label="Paste here" onPress={pasteFromClipboard} />
           </View>
           {!!pasteMessage && <Text style={styles.detected}>{pasteMessage}</Text>}
           {!!link && <Text style={styles.detected}>{detectPlatform(link) ? `${detectPlatform(link)} detected. We will save the link even if a thumbnail is not available.` : 'Saved as a regular link with a polished fallback card.'}</Text>}
-          <Button label="Next: Add a quick label" disabled={!link.trim()} onPress={() => setStep(2)} />
+          <SecondaryLocalButton label="Next: Add a quick label" disabled={!link.trim()} onPress={() => setStep(2)} />
         </View>
       )}
 
@@ -74,9 +75,9 @@ export function AddIdeaScreen({ trip, onBack, onSave }: { trip: TripDraft; onBac
       {step === 2 && (
         <View style={styles.stepCard}>
           <Text style={styles.stepBody}>Give it just enough context so future-you remembers why it mattered.</Text>
-          <TextInput placeholder="Title, like Rooftop dinner or Beach club" placeholderTextColor={theme.muted} value={title} onChangeText={setTitle} style={[styles.input, { backgroundColor: theme.canvas, borderColor: theme.line, color: theme.charcoal, fontFamily: font.family }]} />
-          <TextInput placeholder="Optional note" placeholderTextColor={theme.muted} value={note} onChangeText={setNote} style={[styles.input, styles.note, { backgroundColor: theme.canvas, borderColor: theme.line, color: theme.charcoal, fontFamily: font.family }]} multiline />
-          <Button label="Next: Organize it" onPress={() => setStep(3)} />
+          <TextInput placeholder="Title, like Rooftop dinner or Beach club" placeholderTextColor={theme.muted} value={title} onChangeText={setTitle} style={[styles.input, { color: theme.charcoal, fontFamily: font.family }]} />
+          <TextInput placeholder="Optional note" placeholderTextColor={theme.muted} value={note} onChangeText={setNote} style={[styles.input, styles.note, { color: theme.charcoal, fontFamily: font.family }]} multiline />
+          <SecondaryLocalButton label="Next: Organize it" onPress={() => setStep(3)} />
         </View>
       )}
 
@@ -108,22 +109,43 @@ export function AddIdeaScreen({ trip, onBack, onSave }: { trip: TripDraft; onBac
         </View>
       )}
 
-      <View style={styles.save}>
-        <Button label="Save Inspiration" disabled={!link.trim() && !title.trim() && !note.trim()} onPress={save} />
-      </View>
+      {canSave && (
+        <View style={styles.save}>
+          <PrimaryLocalButton label="Save Inspiration" onPress={save} muted={step === 1 && !title.trim() && !note.trim()} />
+        </View>
+      )}
     </View>
+  );
+}
+
+function PrimaryLocalButton({ label, onPress, muted = false }: { label: string; onPress: () => void; muted?: boolean }) {
+  return (
+    <PressableScale onPress={onPress} style={[styles.localButtonShell, muted && styles.mutedAction]}>
+      <LinearGradient colors={['#0EA5E9', '#2563EB']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.localPrimary}>
+        <View style={styles.innerHighlight} />
+        <Text style={[styles.localPrimaryText, { fontFamily: font.family }]}>{label}</Text>
+      </LinearGradient>
+    </PressableScale>
+  );
+}
+
+function SecondaryLocalButton({ label, onPress, disabled = false }: { label: string; onPress: () => void; disabled?: boolean }) {
+  return (
+    <PressableScale disabled={disabled} onPress={onPress} style={[styles.localSecondary, disabled && styles.disabledButton]}>
+      <Text style={[styles.localSecondaryText, { fontFamily: font.family }]}>{label}</Text>
+    </PressableScale>
   );
 }
 
 function StepHeader({ number, title, active, done, onPress }: { number: number; title: string; active: boolean; done: boolean; onPress: () => void }) {
   const theme = useThemeColors();
   return (
-    <TouchableOpacity style={[styles.stepHeader, { backgroundColor: theme.paper, borderColor: active ? theme.teal : theme.line }]} onPress={onPress}>
-      <View style={[styles.stepNumber, { backgroundColor: done ? theme.teal : theme.cloud }]}>
-        <Text style={[styles.stepNumberText, { color: done ? theme.canvasDeep : theme.charcoal, fontFamily: font.family }]}>{done ? 'OK' : number}</Text>
+    <TouchableOpacity style={[styles.stepHeader, active && styles.stepHeaderActive]} onPress={onPress}>
+      <View style={[styles.stepNumber, done && styles.stepNumberDone, active && !done && styles.stepNumberActive]}>
+        <Text style={[styles.stepNumberText, { fontFamily: font.family }]}>{done ? 'OK' : number}</Text>
       </View>
-      <Text style={[styles.stepTitle, { color: theme.charcoal, fontFamily: font.family }]}>{title}</Text>
-      <Text style={[styles.stepAction, { color: theme.teal, fontFamily: font.family }]}>{active ? 'Open' : 'Edit'}</Text>
+      <Text style={[styles.stepTitle, { fontFamily: font.family }]}>{title}</Text>
+      {active ? <Text style={[styles.activePill, { fontFamily: font.family }]}>Active</Text> : done ? <Text style={[styles.stepAction, { fontFamily: font.family }]}>Edit</Text> : null}
     </TouchableOpacity>
   );
 }
@@ -143,26 +165,35 @@ function youtubeThumbnail(link: string) {
 }
 
 const styles = StyleSheet.create({
-  back: { color: colors.tealDark, fontWeight: '900', paddingVertical: 10 },
-  title: { color: colors.charcoal, fontWeight: '900', fontSize: 36 },
-  body: { color: colors.muted, fontSize: 16, lineHeight: 23, marginTop: 8, marginBottom: 18 },
-  stepHeader: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12, borderRadius: 18, backgroundColor: colors.paper, borderWidth: 1, borderColor: colors.line, marginBottom: 8 },
-  stepHeaderActive: { borderColor: colors.teal, backgroundColor: colors.cloud },
-  stepNumber: { width: 30, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.mist },
-  stepNumberDone: { backgroundColor: colors.teal },
-  stepNumberText: { color: colors.white, fontWeight: '900', fontSize: 13 },
-  stepTitle: { flex: 1, color: colors.charcoal, fontWeight: '900', fontSize: 16 },
-  stepAction: { color: colors.tealDark, fontWeight: '900', fontSize: 12 },
-  stepCard: { backgroundColor: colors.paper, borderWidth: 1, borderColor: colors.line, borderRadius: 22, padding: 14, marginTop: -2, marginBottom: 10 },
-  stepBody: { color: colors.muted, fontSize: 14, lineHeight: 20, marginBottom: 12 },
+  back: { fontWeight: '800', paddingVertical: 10 },
+  title: { fontWeight: '700', fontSize: 38, lineHeight: 46, letterSpacing: -0.4 },
+  body: { fontSize: 16, lineHeight: 24, marginTop: 8, marginBottom: 22, fontWeight: '500' },
+  stepHeader: { minHeight: 52, flexDirection: 'row', alignItems: 'center', gap: 11, paddingHorizontal: 12, paddingVertical: 10, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.045)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.10)', marginBottom: 8 },
+  stepHeaderActive: { backgroundColor: 'rgba(255,255,255,0.06)', borderColor: 'rgba(255,255,255,0.14)' },
+  stepNumber: { width: 30, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.08)' },
+  stepNumberActive: { backgroundColor: 'rgba(56,189,248,0.18)' },
+  stepNumberDone: { backgroundColor: '#0A84FF' },
+  stepNumberText: { color: '#F8F8F6', fontWeight: '700', fontSize: 12 },
+  stepTitle: { flex: 1, color: '#F8F8F6', fontWeight: '700', fontSize: 15.5 },
+  stepAction: { color: 'rgba(255,255,255,0.55)', fontWeight: '700', fontSize: 12 },
+  activePill: { color: '#38BDF8', fontWeight: '700', fontSize: 11, paddingHorizontal: 9, paddingVertical: 5, borderRadius: 999, backgroundColor: 'rgba(56,189,248,0.12)', overflow: 'hidden' },
+  stepCard: { backgroundColor: 'rgba(255,255,255,0.055)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)', borderRadius: 24, padding: 16, marginTop: -2, marginBottom: 12, shadowColor: '#000', shadowOpacity: 0.14, shadowRadius: 22, shadowOffset: { width: 0, height: 8 }, elevation: 5 },
+  stepBody: { color: 'rgba(255,255,255,0.75)', fontSize: 14.5, lineHeight: 21, marginBottom: 14, fontWeight: '500' },
   linkRow: { gap: 10 },
-  input: { minHeight: 52, borderRadius: 18, borderWidth: 1, borderColor: colors.line, backgroundColor: colors.canvas, paddingHorizontal: 16, color: colors.charcoal, fontSize: 15, marginBottom: 10 },
+  inputLabel: { color: 'rgba(255,255,255,0.72)', fontSize: 12, fontWeight: '700', marginBottom: -2 },
+  input: { minHeight: 54, borderRadius: 18, borderWidth: 1, borderColor: 'rgba(255,255,255,0.10)', backgroundColor: 'rgba(255,255,255,0.05)', paddingHorizontal: 16, color: colors.charcoal, fontSize: 15, marginBottom: 10 },
   linkInput: { marginBottom: 0 },
-  pasteButton: { minHeight: 48, alignItems: 'center', justifyContent: 'center', borderRadius: 18, backgroundColor: colors.teal },
-  pasteText: { color: colors.white, fontWeight: '900', fontSize: 15 },
   note: { minHeight: 96, paddingTop: 14, textAlignVertical: 'top' },
-  detected: { color: colors.tealDark, fontWeight: '800', marginBottom: 10 },
-  label: { color: colors.charcoal, fontWeight: '900', fontSize: 16, marginTop: 14, marginBottom: 10 },
+  detected: { color: '#38BDF8', fontWeight: '700', marginBottom: 10, fontSize: 13, lineHeight: 18 },
+  label: { color: '#F8F8F6', fontWeight: '700', fontSize: 15.5, marginTop: 14, marginBottom: 10 },
   wrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  save: { marginTop: 22 },
+  save: { marginTop: 18 },
+  localButtonShell: { borderRadius: 18 },
+  localPrimary: { minHeight: 50, borderRadius: 18, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 22, overflow: 'hidden' },
+  innerHighlight: { position: 'absolute', top: 1, left: 1, right: 1, height: 1, backgroundColor: 'rgba(255,255,255,0.25)' },
+  localPrimaryText: { color: '#05070B', fontWeight: '800', fontSize: 15 },
+  localSecondary: { minHeight: 48, borderRadius: 18, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 22, backgroundColor: 'rgba(255,255,255,0.06)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.10)' },
+  localSecondaryText: { color: '#F8F8F6', fontWeight: '700', fontSize: 14.5 },
+  disabledButton: { opacity: 0.42 },
+  mutedAction: { opacity: 0.78 },
 });

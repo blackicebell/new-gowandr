@@ -1,8 +1,9 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { Animated, ImageBackground, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Button } from '../components/Button';
 import { IdeaCard } from '../components/IdeaCard';
+import { starterPhotos } from '../data/starterPhotos';
 import { calculateClarityScore } from '../logic/clarityScore';
 import { getEchoSummary } from '../logic/summaries';
 import { getPaceHealth, paceGuidance } from '../logic/tripPace';
@@ -16,11 +17,18 @@ export function EchoDetailScreen({ trip, onBack, onAddIdea, onCompare, onOpenLab
   const paceHealth = getPaceHealth(trip);
   const mustDos = trip.ideas.filter((idea) => idea.priority === 'Must-do');
   const maybes = trip.ideas.filter((idea) => idea.priority !== 'Must-do');
+  const [showShareComposer, setShowShareComposer] = useState(false);
+  const [sharePhotoUri, setSharePhotoUri] = useState(trip.heroImage);
   const fade = useRef(new Animated.Value(0)).current;
 
   React.useEffect(() => {
     Animated.timing(fade, { toValue: 1, duration: 160, useNativeDriver: true }).start();
   }, [fade]);
+
+  React.useEffect(() => {
+    setSharePhotoUri(trip.heroImage);
+    setShowShareComposer(false);
+  }, [trip.id, trip.heroImage]);
 
   return (
     <Animated.View style={[styles.screen, { opacity: fade, transform: [{ translateY: fade.interpolate({ inputRange: [0, 1], outputRange: [8, 0] }) }] }]}>
@@ -70,10 +78,19 @@ export function EchoDetailScreen({ trip, onBack, onAddIdea, onCompare, onOpenLab
 
       <View style={styles.actions}>
         <Button label="Add Idea" onPress={onAddIdea} />
-        <Button label="Share Trip Card" variant="secondary" onPress={() => shareTripCard(trip)} />
+        <Button label="Share Trip Card" variant="secondary" onPress={() => setShowShareComposer((current) => !current)} />
         <Button label="Compare This Trip" variant="secondary" onPress={onCompare} />
         <Button label="Pick Top 3" variant="ghost" onPress={onOpenLab} />
       </View>
+      {showShareComposer && (
+        <ShareTripComposer
+          trip={trip}
+          photoUri={sharePhotoUri}
+          onSelectPhoto={setSharePhotoUri}
+          onShare={() => shareTripCard(trip, sharePhotoUri)}
+          onClose={() => setShowShareComposer(false)}
+        />
+      )}
 
       <View style={styles.sectionHeader}>
         <Text style={[styles.sectionTitle, { fontFamily: font.family }]}>Must-dos</Text>
@@ -95,6 +112,49 @@ export function EchoDetailScreen({ trip, onBack, onAddIdea, onCompare, onOpenLab
         ))}
       </View>
     </Animated.View>
+  );
+}
+
+function ShareTripComposer({ trip, photoUri, onSelectPhoto, onShare, onClose }: { trip: TripDraft; photoUri: string; onSelectPhoto: (uri: string) => void; onShare: () => void; onClose: () => void }) {
+  const photoOptions = [{ id: 'current', uri: trip.heroImage }, ...starterPhotos.map((photo) => ({ id: photo.id, uri: photo.uri }))];
+  const topIdeas = trip.ideas.filter((idea) => idea.priority === 'Must-do').slice(0, 3);
+
+  return (
+    <View style={styles.shareComposer}>
+      <Text style={[styles.shareComposerKicker, { fontFamily: font.family }]}>Share card</Text>
+      <Text style={[styles.shareComposerTitle, { fontFamily: font.family }]}>Choose the photo people will see.</Text>
+      <ImageBackground source={{ uri: photoUri }} style={styles.sharePreview} imageStyle={styles.sharePreviewImage}>
+        <LinearGradient colors={['rgba(0,0,0,0.08)', 'rgba(0,0,0,0.62)']} style={StyleSheet.absoluteFill} />
+        <View style={styles.shareBrandPill}>
+          <Text style={[styles.shareBrandText, { fontFamily: font.family }]}>GoWandr</Text>
+        </View>
+        <View style={styles.sharePreviewCopy}>
+          <Text style={[styles.sharePreviewTitle, { fontFamily: font.family }]}>{trip.title}</Text>
+          <Text style={[styles.sharePreviewBody, { fontFamily: font.family }]}>{trip.subtitle}</Text>
+          <View style={styles.shareIdeaList}>
+            {(topIdeas.length ? topIdeas : trip.ideas.slice(0, 2)).slice(0, 3).map((idea, index) => (
+              <Text key={idea.id} style={[styles.shareIdeaText, { fontFamily: font.family }]}>{index + 1}. {idea.title}</Text>
+            ))}
+          </View>
+        </View>
+      </ImageBackground>
+      <View style={styles.sharePhotoGrid}>
+        {photoOptions.map((photo, index) => {
+          const active = photo.uri === photoUri;
+          return (
+            <TouchableOpacity key={`${photo.id}-${index}`} onPress={() => onSelectPhoto(photo.uri)} style={[styles.sharePhotoOption, active && styles.sharePhotoOptionActive]}>
+              <ImageBackground source={{ uri: photo.uri }} style={styles.sharePhotoThumb} imageStyle={styles.sharePhotoThumbImage}>
+                {active && <View style={styles.sharePhotoCheck}><Text style={styles.sharePhotoCheckText}>OK</Text></View>}
+              </ImageBackground>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+      <View style={styles.shareComposerActions}>
+        <Button label="Share Card" onPress={onShare} />
+        <Button label="Close Preview" variant="secondary" onPress={onClose} />
+      </View>
+    </View>
   );
 }
 
@@ -156,4 +216,24 @@ const styles = StyleSheet.create({
   sectionTitle: { color: '#202623', fontWeight: '800', fontSize: 25, letterSpacing: -0.25 },
   sectionDivider: { height: 1, backgroundColor: 'rgba(32,38,35,0.08)' },
   grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', marginBottom: 8 },
+  shareComposer: { backgroundColor: 'rgba(255,255,255,0.84)', borderRadius: 26, padding: 18, borderWidth: 1, borderColor: 'rgba(32,38,35,0.06)', shadowColor: '#000', shadowOpacity: 0.10, shadowRadius: 20, shadowOffset: { width: 0, height: 8 }, elevation: 5 },
+  shareComposerKicker: { color: '#137D68', fontWeight: '800', fontSize: 11, textTransform: 'uppercase' },
+  shareComposerTitle: { color: '#202623', fontWeight: '800', fontSize: 20, lineHeight: 25, marginTop: 5, marginBottom: 14, letterSpacing: -0.2 },
+  sharePreview: { minHeight: 420, borderRadius: 26, overflow: 'hidden', justifyContent: 'space-between', marginBottom: 14 },
+  sharePreviewImage: { borderRadius: 26 },
+  shareBrandPill: { alignSelf: 'flex-start', margin: 16, paddingHorizontal: 12, paddingVertical: 7, borderRadius: 999, backgroundColor: 'rgba(255,255,255,0.86)' },
+  shareBrandText: { color: '#137D68', fontWeight: '800', fontSize: 13 },
+  sharePreviewCopy: { padding: 20 },
+  sharePreviewTitle: { color: '#FFFFFF', fontWeight: '800', fontSize: 34, lineHeight: 40, letterSpacing: -0.34, textShadowColor: 'rgba(0,0,0,0.35)', textShadowRadius: 4, textShadowOffset: { width: 0, height: 2 } },
+  sharePreviewBody: { color: 'rgba(255,255,255,0.88)', fontSize: 15, lineHeight: 22, marginTop: 7, fontWeight: '600' },
+  shareIdeaList: { marginTop: 14, gap: 5 },
+  shareIdeaText: { color: '#FFFFFF', fontSize: 13, lineHeight: 18, fontWeight: '700' },
+  sharePhotoGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  sharePhotoOption: { width: '30%', borderRadius: 16, borderWidth: 2, borderColor: 'transparent', overflow: 'hidden' },
+  sharePhotoOptionActive: { borderColor: '#2FAF8A' },
+  sharePhotoThumb: { height: 74, justifyContent: 'flex-start' },
+  sharePhotoThumbImage: { borderRadius: 14 },
+  sharePhotoCheck: { alignSelf: 'flex-start', margin: 7, paddingHorizontal: 7, paddingVertical: 4, borderRadius: 999, backgroundColor: 'rgba(255,255,255,0.88)' },
+  sharePhotoCheckText: { color: '#137D68', fontWeight: '800', fontSize: 10 },
+  shareComposerActions: { gap: 10, marginTop: 14 },
 });

@@ -8,8 +8,9 @@ function topIdeaLines(ideas: TripIdea[], fallback = 'Save a few must-dos first.'
   return topIdeas.map((idea, index) => `${index + 1}. ${idea.title}`).join('\n');
 }
 
-export function shareTripCard(trip: TripDraft) {
+export function shareTripCard(trip: TripDraft, photoUri?: string) {
   return Share.share({
+    url: photoUri ?? trip.heroImage,
     message: `${trip.title}\n${trip.subtitle}\n\nTop must-dos:\n${topIdeaLines(trip.ideas)}\n\nMade with GoWandr.`,
   }).catch(() => undefined);
 }

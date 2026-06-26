@@ -175,7 +175,7 @@ export default function App() {
           </Animated.View>
         </ScrollView>
         <View style={styles.navScrim} pointerEvents="none" />
-        <View style={[styles.bottomNav, { backgroundColor: 'rgba(255,255,255,0.78)', borderColor: 'rgba(255,255,255,0.48)' }]}>
+        <View style={[styles.bottomNav, { backgroundColor: 'rgba(255,255,255,0.84)', borderColor: 'rgba(255,255,255,0.58)' }]}>
           <NavItem label="Home" active={route.name === 'home'} onPress={() => setRoute({ name: 'home' })} />
           <NavItem label="Ideas" active={route.name === 'echo' || route.name === 'detail' || route.name === 'addIdea' || route.name === 'newTrip'} onPress={() => setRoute({ name: 'echo' })} />
           <NavItem label="Matchup" active={route.name === 'createMatchup' || route.name === 'voting' || route.name === 'results'} onPress={() => setRoute({ name: 'createMatchup' })} />
@@ -224,9 +224,9 @@ const styles = StyleSheet.create({
   content: { flex: 1 },
   contentInner: { paddingHorizontal: 28, paddingBottom: 178 },
   navScrim: { position: 'absolute', left: 0, right: 0, bottom: 0, height: 146, backgroundColor: 'rgba(238,248,244,0.58)' },
-  bottomNav: { position: 'absolute', width: '84%', maxWidth: 370, alignSelf: 'center', bottom: 18, minHeight: 68, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 9, borderRadius: 34, borderWidth: 1, shadowColor: '#000', shadowOpacity: 0.16, shadowRadius: 24, shadowOffset: { width: 0, height: 10 }, elevation: 10 },
-  navItem: { flex: 1, maxWidth: 76, minHeight: 50, alignItems: 'center', justifyContent: 'center', borderRadius: 22, paddingHorizontal: 4 },
-  navItemActive: { backgroundColor: 'rgba(168,240,212,0.36)' },
+  bottomNav: { position: 'absolute', width: '76%', maxWidth: 340, alignSelf: 'center', bottom: 18, minHeight: 58, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 3, paddingHorizontal: 10, paddingVertical: 7, borderRadius: 24, borderWidth: 1, shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 22, shadowOffset: { width: 0, height: 9 }, elevation: 10 },
+  navItem: { flex: 1, maxWidth: 72, minHeight: 44, alignItems: 'center', justifyContent: 'center', borderRadius: 16, paddingHorizontal: 4 },
+  navItemActive: { backgroundColor: 'rgba(168,240,212,0.42)' },
   navText: { fontWeight: '700', fontSize: 12, lineHeight: 14, letterSpacing: -0.1, textAlign: 'center' },
-  navIndicator: { width: 24, height: 4, borderRadius: 999, marginTop: 6 },
+  navIndicator: { width: 22, height: 4, borderRadius: 999, marginTop: 5 },
 });

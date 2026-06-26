@@ -5,6 +5,7 @@ import { Chip } from '../components/Chip';
 import { getPaceHealth, paceGuidance } from '../logic/tripPace';
 import { colors } from '../theme/colors';
 import { TripDraft } from '../types';
+import { shareTripPlan } from '../utils/shareCards';
 
 export function TripLabScreen({ trip, onBack }: { trip: TripDraft; onBack: () => void }) {
   const [pace, setPace] = useState(trip.pace);
@@ -70,7 +71,10 @@ export function TripLabScreen({ trip, onBack }: { trip: TripDraft; onBack: () =>
         <Text style={styles.finalBody}>{pace} pace means {guidance.short.toLowerCase()} Top must-do: {topIdeas[0]?.title ?? 'choose one anchor'}.</Text>
       </View>
 
-      <Button label="Save Final Plan" onPress={onBack} />
+      <View style={styles.actions}>
+        <Button label="Share Plan Card" onPress={() => shareTripPlan(trip, pace, topIdeas)} />
+        <Button label="Save Final Plan" variant="secondary" onPress={onBack} />
+      </View>
     </View>
   );
 }
@@ -129,4 +133,5 @@ const styles = StyleSheet.create({
   finalLabel: { color: colors.sun, fontWeight: '900', textTransform: 'uppercase', fontSize: 11 },
   finalTitle: { color: colors.white, fontWeight: '900', fontSize: 25, marginTop: 6 },
   finalBody: { color: colors.mist, fontSize: 15, lineHeight: 22, marginTop: 8 },
+  actions: { gap: 10 },
 });

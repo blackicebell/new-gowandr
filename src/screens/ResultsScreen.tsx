@@ -1,25 +1,22 @@
 import React, { useMemo } from 'react';
-import { ImageBackground, Share, StyleSheet, Text, View } from 'react-native';
+import { ImageBackground, StyleSheet, Text, View } from 'react-native';
 import { Button } from '../components/Button';
 import { colors } from '../theme/colors';
 import { explainResult, scoreMatchup } from '../logic/matchupScore';
 import { TripDraft, VoteAnswer } from '../types';
+import { shareMatchupResult } from '../utils/shareCards';
 
 export function ResultsScreen({ trips, votes, matchupName, onRestart, onOpenLab }: { trips: TripDraft[]; votes: VoteAnswer[]; matchupName: string; onRestart: () => void; onOpenLab: (tripId: string) => void }) {
   const results = useMemo(() => scoreMatchup(trips, votes), [trips, votes]);
   const winner = results[0];
   const groupMatch = Math.max(62, Math.min(94, Math.round(72 + winner.score / 8)));
-  const shareResults = () => {
-    Share.share({
-      message: `GoWandr matchup result for ${matchupName}:\n\nWinner: ${winner.trip.title}\n${groupMatch}% group match\n\n${explainResult(results)}\n\nNext step: move the winner into Trip Lab and plan the must-dos.`,
-    }).catch(() => undefined);
-  };
+  const explanation = explainResult(results);
 
   return (
     <View>
       <Text style={styles.kicker}>{matchupName} result</Text>
       <Text style={styles.title}>Best Choice: {winner.trip.title}</Text>
-      <Text style={styles.body}>{groupMatch}% group match. {explainResult(results)}</Text>
+      <Text style={styles.body}>{groupMatch}% group match. {explanation}</Text>
 
       <ImageBackground source={{ uri: winner.trip.heroImage }} style={styles.winner} imageStyle={styles.winnerImage}>
         <View style={styles.shade} />
@@ -38,7 +35,7 @@ export function ResultsScreen({ trips, votes, matchupName, onRestart, onOpenLab 
 
       <View style={styles.actions}>
         <Button label="Move to Trip Lab" onPress={() => onOpenLab(winner.trip.id)} />
-        <Button label="Share Result" variant="secondary" onPress={shareResults} />
+        <Button label="Share Result" variant="secondary" onPress={() => shareMatchupResult(matchupName, winner, groupMatch, explanation)} />
         <Button label="Run Another Matchup" variant="secondary" onPress={onRestart} />
       </View>
     </View>

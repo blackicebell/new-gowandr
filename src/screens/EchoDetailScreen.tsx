@@ -8,6 +8,7 @@ import { getEchoSummary } from '../logic/summaries';
 import { getPaceHealth, paceGuidance } from '../logic/tripPace';
 import { font, useThemeColors } from '../theme/colors';
 import { TripDraft } from '../types';
+import { shareTripCard } from '../utils/shareCards';
 
 export function EchoDetailScreen({ trip, onBack, onAddIdea, onCompare, onOpenLab }: { trip: TripDraft; onBack: () => void; onAddIdea: () => void; onCompare: () => void; onOpenLab: () => void }) {
   const colors = useThemeColors();
@@ -69,6 +70,7 @@ export function EchoDetailScreen({ trip, onBack, onAddIdea, onCompare, onOpenLab
 
       <View style={styles.actions}>
         <Button label="Add Idea" onPress={onAddIdea} />
+        <Button label="Share Trip Card" variant="secondary" onPress={() => shareTripCard(trip)} />
         <Button label="Compare This Trip" variant="secondary" onPress={onCompare} />
         <Button label="Pick Top 3" variant="ghost" onPress={onOpenLab} />
       </View>

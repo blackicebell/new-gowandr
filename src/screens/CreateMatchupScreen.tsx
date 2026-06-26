@@ -1,8 +1,9 @@
 import React, { useMemo, useState } from 'react';
-import { ImageBackground, Share, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ImageBackground, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Button } from '../components/Button';
 import { colors } from '../theme/colors';
 import { TripDraft } from '../types';
+import { shareMatchupInvite } from '../utils/shareCards';
 
 export function CreateMatchupScreen({ trips, onBack, onStart }: { trips: TripDraft[]; onBack: () => void; onStart: (tripIds: string[], matchupName: string) => void }) {
   const [selected, setSelected] = useState<string[]>(['miami', 'new-orleans']);
@@ -17,13 +18,6 @@ export function CreateMatchupScreen({ trips, onBack, onStart }: { trips: TripDra
       if (current.length >= 4) return current;
       return [...current, tripId];
     });
-  };
-
-  const shareInvite = () => {
-    const tripList = selectedTrips.map((trip, index) => `${index + 1}. ${trip.title}`).join('\n');
-    Share.share({
-      message: `Help pick the GoWandr trip for Weekend Escape.\n\n${tripList}\n\nReply in this chat with your pick, why it wins, and any concern. No login needed.`,
-    }).catch(() => undefined);
   };
 
   return (
@@ -55,7 +49,7 @@ export function CreateMatchupScreen({ trips, onBack, onStart }: { trips: TripDra
       </View>
       <View style={styles.actions}>
         <Button label="Start Voting" disabled={selected.length < 2} onPress={() => onStart(selected, 'Weekend Escape')} />
-        <Button label="Share to Group Chat" variant="secondary" disabled={selected.length < 2} onPress={shareInvite} />
+        <Button label="Share to Group Chat" variant="secondary" disabled={selected.length < 2} onPress={() => shareMatchupInvite('Weekend Escape', selectedTrips)} />
       </View>
     </View>
   );

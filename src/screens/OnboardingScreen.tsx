@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Image, ImageBackground, StyleSheet, Text, View } from 'react-native';
 import { Button } from '../components/Button';
-import { colors } from '../theme/colors';
+import { colors, font, useThemeColors } from '../theme/colors';
 
 const slides = [
   {
@@ -22,12 +22,13 @@ const slides = [
 ];
 
 export function OnboardingScreen({ onFinish, onTryDemo }: { onFinish: () => void; onTryDemo: () => void }) {
+  const theme = useThemeColors();
   const [index, setIndex] = useState(0);
   const slide = slides[index];
   const isLast = index === slides.length - 1;
 
   return (
-    <View style={styles.screen}>
+    <View style={[styles.screen, { backgroundColor: theme.canvas }]}>
       <View style={styles.brandRow}>
         <Image source={require('../../assets/brand/gowandr-logo-full-color.png')} style={styles.logo} resizeMode="contain" />
       </View>
@@ -36,11 +37,11 @@ export function OnboardingScreen({ onFinish, onTryDemo }: { onFinish: () => void
         <View style={styles.copy}>
           <View style={styles.dots}>
             {slides.map((item, dotIndex) => (
-              <View key={item.title} style={[styles.dot, dotIndex === index && styles.dotActive]} />
+              <View key={item.title} style={[styles.dot, dotIndex === index && { width: 42, backgroundColor: theme.accent }]} />
             ))}
           </View>
-          <Text style={styles.title}>{slide.title}</Text>
-          <Text style={styles.body}>{slide.body}</Text>
+          <Text style={[styles.title, { fontFamily: font.family }]}>{slide.title}</Text>
+          <Text style={[styles.body, { fontFamily: font.family }]}>{slide.body}</Text>
         </View>
       </ImageBackground>
       <View style={styles.actions}>

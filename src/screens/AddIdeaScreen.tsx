@@ -3,13 +3,14 @@ import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-nativ
 import * as Clipboard from 'expo-clipboard';
 import { Button } from '../components/Button';
 import { Chip } from '../components/Chip';
-import { colors } from '../theme/colors';
+import { colors, font, useThemeColors } from '../theme/colors';
 import { IdeaCategory, IdeaPriority, TripDraft, TripIdea } from '../types';
 
 const categories: IdeaCategory[] = ['Food', 'Stay', 'Beach', 'Nightlife', 'Culture', 'Adventure', 'Shopping', 'Photo Spot', 'Relax', 'Other'];
 const tags = ['Must-do', 'Maybe', 'Chill', 'Active', 'Romantic', 'Friends', 'Family', 'Solo', 'Food', 'Nightlife', 'Beach', 'Culture', 'Luxury', 'Low-key'];
 
 export function AddIdeaScreen({ trip, onBack, onSave }: { trip: TripDraft; onBack: () => void; onSave: (idea: TripIdea) => void }) {
+  const theme = useThemeColors();
   const [title, setTitle] = useState('');
   const [note, setNote] = useState('');
   const [link, setLink] = useState('');
@@ -49,18 +50,18 @@ export function AddIdeaScreen({ trip, onBack, onSave }: { trip: TripDraft; onBac
 
   return (
     <View>
-      <Text style={styles.back} onPress={onBack}>Back to {trip.title}</Text>
-      <Text style={styles.title}>Add inspiration</Text>
-      <Text style={styles.body}>Start with the thing you found. You can organize it after, but you should not have to do all the work upfront.</Text>
+      <Text style={[styles.back, { color: theme.teal, fontFamily: font.family }]} onPress={onBack}>Back to {trip.title}</Text>
+      <Text style={[styles.title, { color: theme.charcoal, fontFamily: font.family }]}>Add inspiration</Text>
+      <Text style={[styles.body, { color: theme.muted, fontFamily: font.family }]}>Start with the thing you found. You can organize it after, but you should not have to do all the work upfront.</Text>
 
       <StepHeader number={1} title="Paste or type the link" active={step === 1} done={!!link.trim()} onPress={() => setStep(1)} />
       {step === 1 && (
         <View style={styles.stepCard}>
           <Text style={styles.stepBody}>Copy a TikTok, Reel, YouTube, blog, restaurant, or destination link, then paste it here.</Text>
           <View style={styles.linkRow}>
-            <TextInput placeholder="Paste travel link here" placeholderTextColor={colors.muted} value={link} onChangeText={setLink} style={[styles.input, styles.linkInput]} autoCapitalize="none" />
-            <TouchableOpacity style={styles.pasteButton} onPress={pasteFromClipboard}>
-              <Text style={styles.pasteText}>Paste here</Text>
+            <TextInput placeholder="Paste travel link here" placeholderTextColor={theme.muted} value={link} onChangeText={setLink} style={[styles.input, styles.linkInput, { backgroundColor: theme.canvas, borderColor: theme.line, color: theme.charcoal, fontFamily: font.family }]} autoCapitalize="none" />
+            <TouchableOpacity style={[styles.pasteButton, { backgroundColor: theme.teal }]} onPress={pasteFromClipboard}>
+              <Text style={[styles.pasteText, { color: theme.canvasDeep, fontFamily: font.family }]}>Paste here</Text>
             </TouchableOpacity>
           </View>
           {!!pasteMessage && <Text style={styles.detected}>{pasteMessage}</Text>}
@@ -73,8 +74,8 @@ export function AddIdeaScreen({ trip, onBack, onSave }: { trip: TripDraft; onBac
       {step === 2 && (
         <View style={styles.stepCard}>
           <Text style={styles.stepBody}>Give it just enough context so future-you remembers why it mattered.</Text>
-          <TextInput placeholder="Title, like Rooftop dinner or Beach club" placeholderTextColor={colors.muted} value={title} onChangeText={setTitle} style={styles.input} />
-          <TextInput placeholder="Optional note" placeholderTextColor={colors.muted} value={note} onChangeText={setNote} style={[styles.input, styles.note]} multiline />
+          <TextInput placeholder="Title, like Rooftop dinner or Beach club" placeholderTextColor={theme.muted} value={title} onChangeText={setTitle} style={[styles.input, { backgroundColor: theme.canvas, borderColor: theme.line, color: theme.charcoal, fontFamily: font.family }]} />
+          <TextInput placeholder="Optional note" placeholderTextColor={theme.muted} value={note} onChangeText={setNote} style={[styles.input, styles.note, { backgroundColor: theme.canvas, borderColor: theme.line, color: theme.charcoal, fontFamily: font.family }]} multiline />
           <Button label="Next: Organize it" onPress={() => setStep(3)} />
         </View>
       )}
@@ -115,13 +116,14 @@ export function AddIdeaScreen({ trip, onBack, onSave }: { trip: TripDraft; onBac
 }
 
 function StepHeader({ number, title, active, done, onPress }: { number: number; title: string; active: boolean; done: boolean; onPress: () => void }) {
+  const theme = useThemeColors();
   return (
-    <TouchableOpacity style={[styles.stepHeader, active && styles.stepHeaderActive]} onPress={onPress}>
-      <View style={[styles.stepNumber, done && styles.stepNumberDone]}>
-        <Text style={styles.stepNumberText}>{done ? 'OK' : number}</Text>
+    <TouchableOpacity style={[styles.stepHeader, { backgroundColor: theme.paper, borderColor: active ? theme.teal : theme.line }]} onPress={onPress}>
+      <View style={[styles.stepNumber, { backgroundColor: done ? theme.teal : theme.cloud }]}>
+        <Text style={[styles.stepNumberText, { color: done ? theme.canvasDeep : theme.charcoal, fontFamily: font.family }]}>{done ? 'OK' : number}</Text>
       </View>
-      <Text style={styles.stepTitle}>{title}</Text>
-      <Text style={styles.stepAction}>{active ? 'Open' : 'Edit'}</Text>
+      <Text style={[styles.stepTitle, { color: theme.charcoal, fontFamily: font.family }]}>{title}</Text>
+      <Text style={[styles.stepAction, { color: theme.teal, fontFamily: font.family }]}>{active ? 'Open' : 'Edit'}</Text>
     </TouchableOpacity>
   );
 }

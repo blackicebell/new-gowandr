@@ -1,8 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Image, SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
-import { Button } from './src/components/Button';
-import { colors } from './src/theme/colors';
+import { font, ThemeName, ThemeProvider, themes, useThemeColors } from './src/theme/colors';
 import { TripDraft, TripIdea, VoteAnswer } from './src/types';
 import { demoTrips } from './src/data/demoTrips';
 import { HomeScreen } from './src/screens/HomeScreen';
@@ -17,6 +16,7 @@ import { OnboardingScreen } from './src/screens/OnboardingScreen';
 import { NewTripScreen } from './src/screens/NewTripScreen';
 import { loadTrips, saveTrips } from './src/storage/tripsStorage';
 import { loadHasSeenOnboarding, saveHasSeenOnboarding } from './src/storage/onboardingStorage';
+import { loadThemeName, saveThemeName } from './src/storage/themeStorage';
 
 type Tab = 'home' | 'ideas' | 'matchup' | 'lab';
 type Route =
@@ -35,13 +35,16 @@ export default function App() {
   const [trips, setTrips] = useState<TripDraft[]>(demoTrips);
   const [hasSeenOnboarding, setHasSeenOnboarding] = useState<boolean | undefined>();
   const [hasLoadedTrips, setHasLoadedTrips] = useState(false);
+  const [themeName, setThemeName] = useState<ThemeName>('green');
+  const theme = themes[themeName];
 
   useEffect(() => {
     let isMounted = true;
     async function hydrate() {
-      const [savedTrips, seenOnboarding] = await Promise.all([loadTrips(), loadHasSeenOnboarding()]);
+      const [savedTrips, seenOnboarding, savedThemeName] = await Promise.all([loadTrips(), loadHasSeenOnboarding(), loadThemeName()]);
       if (!isMounted) return;
       if (savedTrips?.length) setTrips(savedTrips);
+      setThemeName(savedThemeName);
       setHasSeenOnboarding(seenOnboarding);
       setHasLoadedTrips(true);
     }
@@ -132,29 +135,39 @@ export default function App() {
     setRoute({ name: 'voting', tripIds: ['miami', 'new-orleans', 'jamaica'], matchupName: 'Weekend Escape' });
   };
 
+  const changeTheme = (nextTheme: ThemeName) => {
+    setThemeName(nextTheme);
+    saveThemeName(nextTheme).catch(() => undefined);
+  };
+
   if (hasSeenOnboarding === undefined) {
-    return <SafeAreaView style={styles.safeArea} />;
+    return <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.canvasDeep }]} />;
   }
 
   if (hasSeenOnboarding === false) {
-    return <OnboardingScreen onFinish={finishOnboarding} onTryDemo={tryDemoFromOnboarding} />;
+    return (
+      <ThemeProvider value={theme}>
+        <OnboardingScreen onFinish={finishOnboarding} onTryDemo={tryDemoFromOnboarding} />
+      </ThemeProvider>
+    );
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <ExpoStatusBar style="dark" />
-      <StatusBar barStyle="dark-content" />
-      <View style={styles.shell}>
+    <ThemeProvider value={theme}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.canvasDeep }]}>
+      <ExpoStatusBar style="light" />
+      <StatusBar barStyle="light-content" />
+      <View style={[styles.shell, { backgroundColor: theme.canvas }]}>
         <View style={styles.header}>
-          <Image source={require('./assets/brand/gowandr-logo-full-color.png')} style={styles.logo} resizeMode="contain" />
-          <TouchableOpacity style={styles.profilePill} onPress={() => setRoute({ name: 'home' })}>
-            <Text style={styles.profileText}>Demo</Text>
+          <TouchableOpacity onPress={() => setRoute({ name: 'home' })}>
+            <Image source={require('./assets/brand/gowandr-logo-full-white.png')} style={styles.logo} resizeMode="contain" />
           </TouchableOpacity>
+          <ThemePicker activeTheme={themeName} onChange={changeTheme} />
         </View>
         <ScrollView style={styles.content} contentContainerStyle={styles.contentInner} showsVerticalScrollIndicator={false}>
           {renderRoute()}
         </ScrollView>
-        <View style={styles.bottomNav}>
+        <View style={[styles.bottomNav, { backgroundColor: theme.paper, borderColor: theme.line }]}>
           <NavItem label="Home" active={route.name === 'home'} onPress={() => setRoute({ name: 'home' })} />
           <NavItem label="Ideas" active={route.name === 'echo' || route.name === 'detail' || route.name === 'addIdea' || route.name === 'newTrip'} onPress={() => setRoute({ name: 'echo' })} />
           <NavItem label="Matchup" active={route.name === 'createMatchup' || route.name === 'voting' || route.name === 'results'} onPress={() => setRoute({ name: 'createMatchup' })} />
@@ -162,29 +175,45 @@ export default function App() {
         </View>
       </View>
     </SafeAreaView>
+    </ThemeProvider>
   );
 }
 
 function NavItem({ label, active, onPress }: { label: Tab | string; active: boolean; onPress: () => void }) {
+  const theme = useThemeColors();
   return (
-    <TouchableOpacity onPress={onPress} style={[styles.navItem, active && styles.navItemActive]}>
-      <Text style={[styles.navText, active && styles.navTextActive]}>{label}</Text>
+    <TouchableOpacity onPress={onPress} style={[styles.navItem, active && { backgroundColor: theme.teal }]}>
+      <Text style={[styles.navText, { color: active ? theme.canvasDeep : theme.muted, fontFamily: font.family }]}>{label}</Text>
     </TouchableOpacity>
   );
 }
 
+function ThemePicker({ activeTheme, onChange }: { activeTheme: ThemeName; onChange: (themeName: ThemeName) => void }) {
+  return (
+    <View style={styles.themePicker}>
+      {(['green', 'pink', 'blue'] as ThemeName[]).map((name) => {
+        const theme = themes[name];
+        return (
+          <TouchableOpacity key={name} onPress={() => onChange(name)} style={[styles.themeDot, { backgroundColor: theme.teal, borderColor: activeTheme === name ? theme.white : 'transparent' }]}>
+            <Text style={[styles.themeDotText, { fontFamily: font.family }]}>{name.charAt(0).toUpperCase()}</Text>
+          </TouchableOpacity>
+        );
+      })}
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: colors.canvas },
-  shell: { flex: 1, width: '100%', maxWidth: 680, alignSelf: 'center', backgroundColor: colors.canvas },
+  safeArea: { flex: 1 },
+  shell: { flex: 1, width: '100%', maxWidth: 680, alignSelf: 'center' },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 12, paddingBottom: 10 },
   logo: { width: 142, height: 34 },
-  profilePill: { paddingHorizontal: 12, paddingVertical: 7, borderRadius: 999, backgroundColor: colors.cloud },
-  profileText: { color: colors.charcoal, fontWeight: '700', fontSize: 12 },
+  themePicker: { flexDirection: 'row', alignItems: 'center', gap: 8, padding: 5, borderRadius: 999, backgroundColor: 'rgba(255,255,255,0.08)' },
+  themeDot: { width: 30, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center', borderWidth: 2 },
+  themeDotText: { color: '#06110D', fontSize: 11, fontWeight: '900' },
   content: { flex: 1 },
   contentInner: { paddingHorizontal: 20, paddingBottom: 112 },
-  bottomNav: { position: 'absolute', left: 16, right: 16, bottom: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 8, borderRadius: 28, backgroundColor: colors.charcoal, shadowColor: '#000', shadowOpacity: 0.18, shadowRadius: 18, shadowOffset: { width: 0, height: 8 }, elevation: 8 },
+  bottomNav: { position: 'absolute', left: 16, right: 16, bottom: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 8, borderRadius: 28, borderWidth: 1, shadowColor: '#000', shadowOpacity: 0.28, shadowRadius: 18, shadowOffset: { width: 0, height: 8 }, elevation: 8 },
   navItem: { flex: 1, alignItems: 'center', paddingVertical: 11, borderRadius: 20 },
-  navItemActive: { backgroundColor: colors.teal },
-  navText: { color: colors.mist, fontWeight: '700', fontSize: 12 },
-  navTextActive: { color: colors.white },
+  navText: { fontWeight: '900', fontSize: 12, letterSpacing: 0 },
 });

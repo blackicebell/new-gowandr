@@ -38,7 +38,7 @@ export const themes: Record<ThemeName, AppColors> = {
     cloud: 'rgba(255,255,255,0.38)',
     mist: 'rgba(15,17,21,0.52)',
     teal: '#A8F0D4',
-    tealDark: '#2FAF8A',
+    tealDark: '#137D68',
     accent: '#6ED8B5',
     accentSoft: 'rgba(168,240,212,0.28)',
     sky: '#6ED8B5',

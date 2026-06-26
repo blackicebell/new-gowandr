@@ -13,7 +13,7 @@ export function Button({ label, onPress, variant = 'primary', disabled = false }
       {isPrimary ? (
         <LinearGradient colors={['#A8F0D4', '#6ED8B5', '#2FAF8A']} locations={[0, 0.4, 1]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.button}>
           <View style={styles.innerHighlight} />
-          <Text style={[styles.label, { color: colors.canvasDeep, fontFamily: font.family }]}>{label}</Text>
+          <Text style={[styles.label, { color: colors.charcoal, fontFamily: font.family }]}>{label}</Text>
         </LinearGradient>
       ) : (
         <View style={[styles.button, variantStyle(variant, colors)]}>

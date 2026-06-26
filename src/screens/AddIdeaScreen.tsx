@@ -52,7 +52,7 @@ export function AddIdeaScreen({ trip, onBack, onSave }: { trip: TripDraft; onBac
 
   return (
     <View>
-      <Text style={[styles.back, { color: theme.teal, fontFamily: font.family }]} onPress={onBack}>Back to {trip.title}</Text>
+      <Text style={[styles.back, { color: '#137D68', fontFamily: font.family }]} onPress={onBack}>Back to {trip.title}</Text>
       <Text style={[styles.title, { color: theme.charcoal, fontFamily: font.family }]}>Add inspiration</Text>
       <Text style={[styles.body, { color: theme.muted, fontFamily: font.family }]}>Start with the thing you found. You can organize it after, but you should not have to do all the work upfront.</Text>
 

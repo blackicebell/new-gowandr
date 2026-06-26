@@ -38,7 +38,7 @@ export function NewTripScreen({ onBack, onCreate }: { onBack: () => void; onCrea
 
   return (
     <View>
-      <Text style={[styles.back, { color: theme.teal, fontFamily: font.family }]} onPress={onBack}>Back to Trip Ideas</Text>
+      <Text style={[styles.back, { color: '#137D68', fontFamily: font.family }]} onPress={onBack}>Back to Trip Ideas</Text>
       <Text style={[styles.title, { color: theme.charcoal, fontFamily: font.family }]}>Start a trip idea</Text>
       <Text style={[styles.body, { color: theme.muted, fontFamily: font.family }]}>Name the trip, pick a mood, and GoWandr gives you a clean place to save everything you find later.</Text>
 
@@ -81,7 +81,7 @@ export function NewTripScreen({ onBack, onCreate }: { onBack: () => void; onCrea
       <View style={[styles.paceCard, { backgroundColor: theme.paper, borderColor: theme.line }]}>
         <Text style={[styles.paceTitle, { color: theme.charcoal, fontFamily: font.family }]}>{paceGuidance[pace].label}: {paceGuidance[pace].short}</Text>
         <Text style={[styles.paceBody, { color: theme.muted, fontFamily: font.family }]}>{paceGuidance[pace].detail}</Text>
-        <Text style={[styles.paceMeta, { color: theme.teal, fontFamily: font.family }]}>Best target: {paceGuidance[pace].dailyAnchors}</Text>
+        <Text style={[styles.paceMeta, { color: '#137D68', fontFamily: font.family }]}>Best target: {paceGuidance[pace].dailyAnchors}</Text>
       </View>
 
       <View style={styles.actions}>

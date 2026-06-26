@@ -24,7 +24,7 @@ export function EchoDetailScreen({ trip, onBack, onAddIdea, onCompare, onOpenLab
   return (
     <Animated.View style={[styles.screen, { opacity: fade, transform: [{ translateY: fade.interpolate({ inputRange: [0, 1], outputRange: [8, 0] }) }] }]}>
       <TouchableOpacity onPress={onBack} style={styles.back}>
-        <Text style={[styles.backText, { color: colors.teal, fontFamily: font.family }]}>Back to Trip Ideas</Text>
+        <Text style={[styles.backText, { color: '#137D68', fontFamily: font.family }]}>Back to Trip Ideas</Text>
       </TouchableOpacity>
       <ImageBackground source={{ uri: trip.heroImage }} style={[styles.hero, { borderColor: colors.line }]} imageStyle={styles.heroImage}>
         <LinearGradient colors={['rgba(0,0,0,0.25)', 'rgba(0,0,0,0.65)']} style={StyleSheet.absoluteFill} />

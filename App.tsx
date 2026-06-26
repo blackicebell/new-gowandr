@@ -174,7 +174,8 @@ export default function App() {
           {renderRoute()}
           </Animated.View>
         </ScrollView>
-        <View style={[styles.bottomNav, { backgroundColor: 'rgba(20,20,20,0.35)', borderColor: 'rgba(255,255,255,0.18)' }]}>
+        <View style={styles.navScrim} pointerEvents="none" />
+        <View style={[styles.bottomNav, { backgroundColor: 'rgba(5,7,11,0.94)', borderColor: 'rgba(255,255,255,0.16)' }]}>
           <NavItem label="Home" active={route.name === 'home'} onPress={() => setRoute({ name: 'home' })} />
           <NavItem label="Ideas" active={route.name === 'echo' || route.name === 'detail' || route.name === 'addIdea' || route.name === 'newTrip'} onPress={() => setRoute({ name: 'echo' })} />
           <NavItem label="Matchup" active={route.name === 'createMatchup' || route.name === 'voting' || route.name === 'results'} onPress={() => setRoute({ name: 'createMatchup' })} />
@@ -189,8 +190,8 @@ export default function App() {
 function NavItem({ label, active, onPress }: { label: Tab | string; active: boolean; onPress: () => void }) {
   const theme = useThemeColors();
   return (
-    <PressableScale onPress={onPress} style={styles.navItem}>
-      <Text style={[styles.navText, { color: active ? theme.charcoal : theme.muted, fontFamily: font.family }]}>{label}</Text>
+    <PressableScale onPress={onPress} style={[styles.navItem, active && styles.navItemActive]}>
+      <Text style={[styles.navText, { color: active ? '#F8F8F6' : 'rgba(255,255,255,0.68)', fontFamily: font.family }]}>{label}</Text>
       <View style={[styles.navIndicator, { backgroundColor: active ? theme.teal : 'transparent' }]} />
     </PressableScale>
   );
@@ -221,9 +222,11 @@ const styles = StyleSheet.create({
   logo: { width: 128, height: 31 },
   logoShimmer: { position: 'absolute', top: 0, bottom: 0, width: 42, left: 28, backgroundColor: '#FFFFFF', transform: [{ skewX: '-18deg' }] },
   content: { flex: 1 },
-  contentInner: { paddingHorizontal: 28, paddingBottom: 128 },
-  bottomNav: { position: 'absolute', left: 18, right: 18, bottom: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 8, paddingTop: 9, paddingBottom: 7, borderRadius: 30, borderWidth: 1, shadowColor: '#000', shadowOpacity: 0.28, shadowRadius: 22, shadowOffset: { width: 0, height: 8 }, elevation: 8 },
-  navItem: { flex: 1, alignItems: 'center', paddingVertical: 8, borderRadius: 20 },
-  navText: { fontWeight: '900', fontSize: 12, letterSpacing: 0 },
-  navIndicator: { width: 24, height: 4, borderRadius: 999, marginTop: 6 },
+  contentInner: { paddingHorizontal: 28, paddingBottom: 168 },
+  navScrim: { position: 'absolute', left: 0, right: 0, bottom: 0, height: 132, backgroundColor: 'rgba(5,7,11,0.58)' },
+  bottomNav: { position: 'absolute', left: 18, right: 18, bottom: 18, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 8, paddingTop: 11, paddingBottom: 9, borderRadius: 30, borderWidth: 1, shadowColor: '#000', shadowOpacity: 0.42, shadowRadius: 24, shadowOffset: { width: 0, height: 10 }, elevation: 10 },
+  navItem: { flex: 1, alignItems: 'center', justifyContent: 'center', minHeight: 46, paddingVertical: 8, borderRadius: 20 },
+  navItemActive: { backgroundColor: 'rgba(255,255,255,0.06)' },
+  navText: { fontWeight: '800', fontSize: 12, letterSpacing: 0 },
+  navIndicator: { width: 26, height: 4, borderRadius: 999, marginTop: 7 },
 });

@@ -128,7 +128,7 @@ const styles = StyleSheet.create({
   title: { color: '#F8F8F6', fontWeight: '700', fontSize: 41, lineHeight: 49, letterSpacing: -0.41, textShadowColor: 'rgba(0,0,0,0.35)', textShadowRadius: 4, textShadowOffset: { width: 0, height: 2 } },
   subtitle: { color: 'rgba(255,255,255,0.75)', fontSize: 16, lineHeight: 23, marginTop: 8, fontWeight: '500' },
   summaryCard: { flexDirection: 'row', gap: 18, alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.82)', borderRadius: 26, padding: 22, borderWidth: 1, borderColor: 'rgba(32,38,35,0.06)', shadowColor: '#000', shadowOpacity: 0.10, shadowRadius: 22, shadowOffset: { width: 0, height: 8 }, elevation: 5 },
-  clarityBadge: { minWidth: 88, minHeight: 88, alignItems: 'center', justifyContent: 'center', borderRadius: 18, backgroundColor: 'rgba(32,38,35,0.62)', borderWidth: 2, borderColor: '#6ED8B5', paddingHorizontal: 14, paddingVertical: 8 },
+  clarityBadge: { minWidth: 88, minHeight: 88, alignItems: 'center', justifyContent: 'center', borderRadius: 18, backgroundColor: '#2FAF8A', borderWidth: 2, borderColor: '#A8F0D4', paddingHorizontal: 14, paddingVertical: 8, shadowColor: '#2FAF8A', shadowOpacity: 0.28, shadowRadius: 16, shadowOffset: { width: 0, height: 6 }, elevation: 5 },
   clarityScore: { color: '#FFFFFF', fontSize: 26, fontWeight: '700', letterSpacing: -0.26 },
   clarityLabel: { color: 'rgba(255,255,255,0.82)', fontSize: 11, fontWeight: '600', marginTop: 2 },
   summaryCopy: { flex: 1 },

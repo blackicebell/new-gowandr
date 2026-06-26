@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, TextInput, View } from 'react-native';
+import { Image, StyleSheet, Text, TextInput, View } from 'react-native';
+import * as FileSystem from 'expo-file-system';
+import * as ImagePicker from 'expo-image-picker';
 import { Button } from '../components/Button';
 import { Chip } from '../components/Chip';
 import { colors } from '../theme/colors';
@@ -15,6 +17,23 @@ export function AddIdeaScreen({ trip, onBack, onSave }: { trip: TripDraft; onBac
   const [category, setCategory] = useState<IdeaCategory>('Food');
   const [priority, setPriority] = useState<IdeaPriority>('Maybe');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [imageUri, setImageUri] = useState<string | undefined>();
+
+  const pickImage = async () => {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) return;
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 0.85,
+      allowsEditing: true,
+      aspect: [4, 3],
+    });
+
+    if (!result.canceled) {
+      setImageUri(await persistPickedImage(result.assets[0].uri));
+    }
+  };
 
   const save = () => {
     const fallbackTitle = detectPlatform(link) ? `${detectPlatform(link)} save` : 'New travel idea';
@@ -26,7 +45,7 @@ export function AddIdeaScreen({ trip, onBack, onSave }: { trip: TripDraft; onBac
       category,
       priority,
       tags: selectedTags,
-      imageUrl: youtubeThumbnail(link),
+      imageUrl: imageUri ?? youtubeThumbnail(link),
     });
   };
 
@@ -40,6 +59,15 @@ export function AddIdeaScreen({ trip, onBack, onSave }: { trip: TripDraft; onBac
       <TextInput placeholder="Paste TikTok, Reel, YouTube, blog, or site link" placeholderTextColor={colors.muted} value={link} onChangeText={setLink} style={styles.input} autoCapitalize="none" />
       {!!link && <Text style={styles.detected}>{detectPlatform(link) ? `${detectPlatform(link)} detected` : 'Saved as a regular link with a polished fallback card'}</Text>}
       <TextInput placeholder="Quick note" placeholderTextColor={colors.muted} value={note} onChangeText={setNote} style={[styles.input, styles.note]} multiline />
+
+      <View style={styles.photoBox}>
+        {imageUri ? <Image source={{ uri: imageUri }} style={styles.preview} /> : <View style={styles.emptyPreview}><Text style={styles.emptyPreviewText}>Optional photo</Text></View>}
+        <View style={styles.photoCopy}>
+          <Text style={styles.photoTitle}>Add your own photo</Text>
+          <Text style={styles.photoBody}>Use a screenshot, saved inspo photo, or anything already on the device.</Text>
+          <Button label={imageUri ? 'Change Photo' : 'Choose Photo'} variant="secondary" onPress={pickImage} />
+        </View>
+      </View>
 
       <Text style={styles.label}>Category</Text>
       <View style={styles.wrap}>
@@ -83,6 +111,19 @@ function youtubeThumbnail(link: string) {
   return match ? `https://img.youtube.com/vi/${match[1]}/hqdefault.jpg` : undefined;
 }
 
+async function persistPickedImage(uri: string) {
+  if (!FileSystem.documentDirectory) return uri;
+
+  try {
+    const extension = uri.split('.').pop()?.split('?')[0] || 'jpg';
+    const destination = `${FileSystem.documentDirectory}gowandr-idea-${Date.now()}.${extension}`;
+    await FileSystem.copyAsync({ from: uri, to: destination });
+    return destination;
+  } catch {
+    return uri;
+  }
+}
+
 const styles = StyleSheet.create({
   back: { color: colors.tealDark, fontWeight: '900', paddingVertical: 10 },
   title: { color: colors.charcoal, fontWeight: '900', fontSize: 36 },
@@ -90,6 +131,13 @@ const styles = StyleSheet.create({
   input: { minHeight: 52, borderRadius: 18, borderWidth: 1, borderColor: colors.line, backgroundColor: colors.paper, paddingHorizontal: 16, color: colors.charcoal, fontSize: 15, marginBottom: 10 },
   note: { minHeight: 96, paddingTop: 14, textAlignVertical: 'top' },
   detected: { color: colors.tealDark, fontWeight: '800', marginBottom: 10 },
+  photoBox: { flexDirection: 'row', gap: 12, padding: 12, borderRadius: 22, backgroundColor: colors.paper, borderWidth: 1, borderColor: colors.line, marginBottom: 8 },
+  preview: { width: 104, height: 116, borderRadius: 16, backgroundColor: colors.cloud },
+  emptyPreview: { width: 104, height: 116, borderRadius: 16, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.cloud },
+  emptyPreviewText: { color: colors.tealDark, fontWeight: '900', fontSize: 12 },
+  photoCopy: { flex: 1, gap: 8 },
+  photoTitle: { color: colors.charcoal, fontWeight: '900', fontSize: 16 },
+  photoBody: { color: colors.muted, lineHeight: 19, fontSize: 13 },
   label: { color: colors.charcoal, fontWeight: '900', fontSize: 17, marginTop: 14, marginBottom: 10 },
   wrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   save: { marginTop: 22 },

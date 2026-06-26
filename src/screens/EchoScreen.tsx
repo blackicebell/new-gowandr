@@ -9,8 +9,8 @@ export function EchoScreen({ trips, onOpenTrip, onCreateMatchup }: { trips: Trip
   return (
     <View>
       <View style={styles.header}>
-        <Text style={styles.title}>Echo</Text>
-        <Text style={styles.body}>A lighter place to catch links, screenshots, notes, and loose trip ideas before they disappear in group chats.</Text>
+        <Text style={styles.title}>Trip Ideas</Text>
+        <Text style={styles.body}>A lighter place to catch links, screenshots, notes, and loose ideas before they disappear in group chats.</Text>
         <Button label="Compare Drafts" onPress={onCreateMatchup} />
       </View>
       {trips.map((trip) => (

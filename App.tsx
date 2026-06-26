@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Image, SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
 import { Button } from './src/components/Button';
@@ -13,8 +13,11 @@ import { CreateMatchupScreen } from './src/screens/CreateMatchupScreen';
 import { VotingScreen } from './src/screens/VotingScreen';
 import { ResultsScreen } from './src/screens/ResultsScreen';
 import { TripLabScreen } from './src/screens/TripLabScreen';
+import { OnboardingScreen } from './src/screens/OnboardingScreen';
+import { loadTrips, saveTrips } from './src/storage/tripsStorage';
+import { loadHasSeenOnboarding, saveHasSeenOnboarding } from './src/storage/onboardingStorage';
 
-type Tab = 'home' | 'echo' | 'matchup' | 'lab';
+type Tab = 'home' | 'ideas' | 'matchup' | 'lab';
 type Route =
   | { name: 'home' }
   | { name: 'echo' }
@@ -28,6 +31,29 @@ type Route =
 export default function App() {
   const [route, setRoute] = useState<Route>({ name: 'home' });
   const [trips, setTrips] = useState<TripDraft[]>(demoTrips);
+  const [hasSeenOnboarding, setHasSeenOnboarding] = useState<boolean | undefined>();
+  const [hasLoadedTrips, setHasLoadedTrips] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    async function hydrate() {
+      const [savedTrips, seenOnboarding] = await Promise.all([loadTrips(), loadHasSeenOnboarding()]);
+      if (!isMounted) return;
+      if (savedTrips?.length) setTrips(savedTrips);
+      setHasSeenOnboarding(seenOnboarding);
+      setHasLoadedTrips(true);
+    }
+    hydrate();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (hasLoadedTrips) {
+      saveTrips(trips).catch(() => undefined);
+    }
+  }, [hasLoadedTrips, trips]);
 
   const selectedTrip = useMemo(() => {
     if (route.name !== 'detail' && route.name !== 'addIdea') return undefined;
@@ -43,7 +69,7 @@ export default function App() {
 
   const renderRoute = () => {
     if (route.name === 'home') {
-      return <HomeScreen trips={trips} onOpenTrip={(tripId) => setRoute({ name: 'detail', tripId })} onStartDraft={() => setRoute({ name: 'echo' })} onStartMatchup={() => setRoute({ name: 'createMatchup' })} onTryDemo={() => setRoute({ name: 'voting', tripIds: ['miami', 'new-orleans', 'jamaica'], matchupName: 'Weekend Escape' })} />;
+      return <HomeScreen trips={trips} onOpenTrip={(tripId) => setRoute({ name: 'detail', tripId })} onStartDraft={() => setRoute({ name: 'echo' })} onStartMatchup={() => setRoute({ name: 'createMatchup' })} onAddIdea={() => setRoute({ name: 'addIdea', tripId: trips[0].id })} onTryDemo={() => setRoute({ name: 'voting', tripIds: ['miami', 'new-orleans', 'jamaica'], matchupName: 'Weekend Escape' })} />;
     }
 
     if (route.name === 'echo') {
@@ -78,6 +104,26 @@ export default function App() {
     return null;
   };
 
+  const finishOnboarding = async () => {
+    setHasSeenOnboarding(true);
+    await saveHasSeenOnboarding();
+    setRoute({ name: 'echo' });
+  };
+
+  const tryDemoFromOnboarding = async () => {
+    setHasSeenOnboarding(true);
+    await saveHasSeenOnboarding();
+    setRoute({ name: 'voting', tripIds: ['miami', 'new-orleans', 'jamaica'], matchupName: 'Weekend Escape' });
+  };
+
+  if (hasSeenOnboarding === undefined) {
+    return <SafeAreaView style={styles.safeArea} />;
+  }
+
+  if (hasSeenOnboarding === false) {
+    return <OnboardingScreen onFinish={finishOnboarding} onTryDemo={tryDemoFromOnboarding} />;
+  }
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <ExpoStatusBar style="dark" />
@@ -94,7 +140,7 @@ export default function App() {
         </ScrollView>
         <View style={styles.bottomNav}>
           <NavItem label="Home" active={route.name === 'home'} onPress={() => setRoute({ name: 'home' })} />
-          <NavItem label="Echo" active={route.name === 'echo' || route.name === 'detail' || route.name === 'addIdea'} onPress={() => setRoute({ name: 'echo' })} />
+          <NavItem label="Ideas" active={route.name === 'echo' || route.name === 'detail' || route.name === 'addIdea'} onPress={() => setRoute({ name: 'echo' })} />
           <NavItem label="Matchup" active={route.name === 'createMatchup' || route.name === 'voting' || route.name === 'results'} onPress={() => setRoute({ name: 'createMatchup' })} />
           <NavItem label="Lab" active={route.name === 'lab'} onPress={() => setRoute({ name: 'lab' })} />
         </View>

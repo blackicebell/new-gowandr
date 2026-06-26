@@ -32,4 +32,5 @@ export type VoteAnswer = {
   reaction?: string;
   dealbreaker?: string;
   commitment: number;
+  reason?: string;
 };

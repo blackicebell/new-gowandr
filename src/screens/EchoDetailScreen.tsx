@@ -17,7 +17,7 @@ export function EchoDetailScreen({ trip, onBack, onAddIdea, onCompare, onOpenLab
   return (
     <View>
       <TouchableOpacity onPress={onBack} style={styles.back}>
-        <Text style={styles.backText}>Back to Echo</Text>
+        <Text style={styles.backText}>Back to Trip Ideas</Text>
       </TouchableOpacity>
       <ImageBackground source={{ uri: trip.heroImage }} style={styles.hero} imageStyle={styles.heroImage}>
         <View style={styles.shade} />
@@ -30,7 +30,7 @@ export function EchoDetailScreen({ trip, onBack, onAddIdea, onCompare, onOpenLab
       <View style={styles.summaryCard}>
         <ScoreRing score={clarity.score} label="clarity" />
         <View style={styles.summaryCopy}>
-          <Text style={styles.summaryLabel}>Echo summary</Text>
+          <Text style={styles.summaryLabel}>Trip summary</Text>
           <Text style={styles.summary}>{getEchoSummary(trip)}</Text>
         </View>
       </View>

@@ -5,24 +5,25 @@ import { EchoCard } from '../components/EchoCard';
 import { colors } from '../theme/colors';
 import { TripDraft } from '../types';
 
-export function HomeScreen({ trips, onOpenTrip, onStartDraft, onStartMatchup, onTryDemo }: { trips: TripDraft[]; onOpenTrip: (tripId: string) => void; onStartDraft: () => void; onStartMatchup: () => void; onTryDemo: () => void }) {
+export function HomeScreen({ trips, onOpenTrip, onStartDraft, onStartMatchup, onAddIdea, onTryDemo }: { trips: TripDraft[]; onOpenTrip: (tripId: string) => void; onStartDraft: () => void; onStartMatchup: () => void; onAddIdea: () => void; onTryDemo: () => void }) {
   return (
     <View>
       <ImageBackground source={{ uri: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80' }} style={styles.hero} imageStyle={styles.heroImage}>
         <View style={styles.heroShade} />
         <View style={styles.heroCopy}>
-          <Text style={styles.kicker}>GoWandr Echo</Text>
+          <Text style={styles.kicker}>GoWandr Trip Ideas</Text>
           <Text style={styles.title}>Turn travel ideas into a decision.</Text>
           <Text style={styles.body}>Save the places you are dreaming about, compare trip ideas with your group, and choose the one that actually feels worth doing.</Text>
           <View style={styles.actions}>
             <Button label="Start a Trip Draft" onPress={onStartDraft} />
+            <Button label="Add Inspiration" variant="secondary" onPress={onAddIdea} />
             <Button label="Try Demo Matchup" variant="secondary" onPress={onTryDemo} />
           </View>
         </View>
       </ImageBackground>
 
       <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Active Trip Drafts</Text>
+        <Text style={styles.sectionTitle}>Saved Trip Ideas</Text>
         <Text style={styles.sectionMeta}>{trips.length} saved</Text>
       </View>
       {trips.slice(0, 3).map((trip) => (

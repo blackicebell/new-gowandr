@@ -75,8 +75,8 @@ export function AddIdeaScreen({ trip, onBack, onSave }: { trip: TripDraft; onBac
       {step === 2 && (
         <View style={styles.stepCard}>
           <Text style={styles.stepBody}>Give it just enough context so future-you remembers why it mattered.</Text>
-          <TextInput placeholder="Title, like Rooftop dinner or Beach club" placeholderTextColor="rgba(15,17,21,0.48)" value={title} onChangeText={setTitle} style={[styles.input, { color: theme.charcoal, fontFamily: font.family }]} />
-          <TextInput placeholder="Optional note" placeholderTextColor="rgba(15,17,21,0.48)" value={note} onChangeText={setNote} style={[styles.input, styles.note, { color: theme.charcoal, fontFamily: font.family }]} multiline />
+          <TextInput placeholder="Title, like Rooftop dinner or Beach club" placeholderTextColor="rgba(32,38,35,0.48)" value={title} onChangeText={setTitle} style={[styles.input, { color: theme.charcoal, fontFamily: font.family }]} />
+          <TextInput placeholder="Optional note" placeholderTextColor="rgba(32,38,35,0.48)" value={note} onChangeText={setNote} style={[styles.input, styles.note, { color: theme.charcoal, fontFamily: font.family }]} multiline />
           <SecondaryLocalButton label="Next: Organize it" onPress={() => setStep(3)} />
         </View>
       )}
@@ -111,14 +111,22 @@ export function AddIdeaScreen({ trip, onBack, onSave }: { trip: TripDraft; onBac
 
       {canSave && (
         <View style={styles.save}>
-          <PrimaryLocalButton label="Save Inspiration" onPress={save} muted={step === 1 && !title.trim() && !note.trim()} />
+          <PrimaryLocalButton label="Save Inspiration" onPress={save} muted={step === 1 && !title.trim() && !note.trim()} quiet />
         </View>
       )}
     </View>
   );
 }
 
-function PrimaryLocalButton({ label, onPress, muted = false }: { label: string; onPress: () => void; muted?: boolean }) {
+function PrimaryLocalButton({ label, onPress, muted = false, quiet = false }: { label: string; onPress: () => void; muted?: boolean; quiet?: boolean }) {
+  if (quiet) {
+    return (
+      <PressableScale onPress={onPress} style={[styles.localButtonShell, styles.quietSaveButton, muted && styles.mutedAction]}>
+        <Text style={[styles.quietSaveText, { fontFamily: font.family }]}>{label}</Text>
+      </PressableScale>
+    );
+  }
+
   return (
     <PressableScale onPress={onPress} style={[styles.localButtonShell, muted && styles.mutedAction]}>
       <LinearGradient colors={['#A8F0D4', '#6ED8B5', '#2FAF8A']} locations={[0, 0.4, 1]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.localPrimary}>
@@ -173,10 +181,10 @@ const styles = StyleSheet.create({
   stepNumber: { width: 30, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(168,240,212,0.28)', borderWidth: 1, borderColor: 'rgba(47,175,138,0.10)' },
   stepNumberActive: { backgroundColor: 'rgba(168,240,212,0.58)', borderColor: 'rgba(47,175,138,0.14)' },
   stepNumberDone: { backgroundColor: '#6ED8B5' },
-  stepNumberText: { color: '#0F1115', fontWeight: '700', fontSize: 12 },
-  stepTitle: { flex: 1, color: '#0F1115', fontWeight: '700', fontSize: 15.5, lineHeight: 20 },
+  stepNumberText: { color: '#202623', fontWeight: '700', fontSize: 12 },
+  stepTitle: { flex: 1, color: '#202623', fontWeight: '700', fontSize: 15.5, lineHeight: 20 },
   stepAction: { color: 'rgba(0,0,0,0.55)', fontWeight: '700', fontSize: 12 },
-  activePill: { color: '#0F1115', fontWeight: '700', fontSize: 11, paddingHorizontal: 9, paddingVertical: 5, borderRadius: 999, backgroundColor: 'rgba(168,240,212,0.46)', overflow: 'hidden' },
+  activePill: { color: '#202623', fontWeight: '700', fontSize: 11, paddingHorizontal: 9, paddingVertical: 5, borderRadius: 999, backgroundColor: 'rgba(168,240,212,0.46)', overflow: 'hidden' },
   stepCard: { backgroundColor: 'rgba(255,255,255,0.78)', borderWidth: 1, borderColor: 'rgba(15,17,21,0.06)', borderRadius: 24, padding: 16, marginTop: -2, marginBottom: 13, shadowColor: '#000', shadowOpacity: 0.13, shadowRadius: 22, shadowOffset: { width: 0, height: 8 }, elevation: 5 },
   stepBody: { color: 'rgba(0,0,0,0.65)', fontSize: 14.5, lineHeight: 21, marginBottom: 14, fontWeight: '500' },
   linkRow: { gap: 10 },
@@ -185,15 +193,17 @@ const styles = StyleSheet.create({
   linkInput: { marginBottom: 0 },
   note: { minHeight: 96, paddingTop: 14, textAlignVertical: 'top' },
   detected: { color: '#2FAF8A', fontWeight: '700', marginBottom: 10, fontSize: 13, lineHeight: 18 },
-  label: { color: '#0F1115', fontWeight: '700', fontSize: 15.5, marginTop: 14, marginBottom: 10 },
+  label: { color: '#202623', fontWeight: '700', fontSize: 15.5, marginTop: 14, marginBottom: 10 },
   wrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   save: { marginTop: 18 },
   localButtonShell: { borderRadius: 18 },
   localPrimary: { minHeight: 50, borderRadius: 18, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 22, overflow: 'hidden' },
   innerHighlight: { position: 'absolute', top: 1, left: 1, right: 1, height: 1, backgroundColor: 'rgba(255,255,255,0.35)' },
-  localPrimaryText: { color: '#0F1115', fontWeight: '800', fontSize: 15 },
+  localPrimaryText: { color: '#202623', fontWeight: '800', fontSize: 15 },
+  quietSaveButton: { minHeight: 50, borderRadius: 18, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 22, backgroundColor: 'rgba(255,255,255,0.86)', borderWidth: 1, borderColor: 'rgba(32,38,35,0.08)', shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 16, shadowOffset: { width: 0, height: 6 }, elevation: 3 },
+  quietSaveText: { color: '#137D68', fontWeight: '800', fontSize: 15, letterSpacing: -0.05 },
   localSecondary: { minHeight: 48, borderRadius: 18, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 22, marginTop: 12, backgroundColor: 'rgba(255,255,255,0.34)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.28)' },
-  localSecondaryText: { color: '#0F1115', fontWeight: '700', fontSize: 14.5 },
+  localSecondaryText: { color: '#202623', fontWeight: '700', fontSize: 14.5 },
   disabledButton: { opacity: 0.42 },
   mutedAction: { opacity: 0.78 },
 });

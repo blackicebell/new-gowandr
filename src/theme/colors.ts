@@ -44,7 +44,7 @@ export const themes: Record<ThemeName, AppColors> = {
     sky: '#6ED8B5',
     coral: '#2FAF8A',
     sun: '#A8F0D4',
-    charcoal: '#0F1115',
+    charcoal: '#202623',
     muted: 'rgba(0,0,0,0.65)',
     line: 'rgba(255,255,255,0.22)',
     white: '#FFFFFF',

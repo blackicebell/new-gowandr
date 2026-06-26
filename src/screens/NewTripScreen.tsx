@@ -3,6 +3,7 @@ import { ImageBackground, StyleSheet, Text, TextInput, TouchableOpacity, View } 
 import { Button } from '../components/Button';
 import { Chip } from '../components/Chip';
 import { starterPhotos } from '../data/starterPhotos';
+import { paceGuidance } from '../logic/tripPace';
 import { colors } from '../theme/colors';
 import { TripDraft } from '../types';
 
@@ -69,11 +70,17 @@ export function NewTripScreen({ onBack, onCreate }: { onBack: () => void; onCrea
         ))}
       </View>
 
-      <Text style={styles.label}>Pace</Text>
+      <Text style={styles.label}>Trip pace</Text>
+      <Text style={styles.helper}>How full should this trip feel? This helps GoWandr flag when a plan is getting too empty or too packed.</Text>
       <View style={styles.wrap}>
         {paces.map((item) => (
           <Chip key={item} label={item} active={pace === item} onPress={() => setPace(item)} />
         ))}
+      </View>
+      <View style={styles.paceCard}>
+        <Text style={styles.paceTitle}>{paceGuidance[pace].label}: {paceGuidance[pace].short}</Text>
+        <Text style={styles.paceBody}>{paceGuidance[pace].detail}</Text>
+        <Text style={styles.paceMeta}>Best target: {paceGuidance[pace].dailyAnchors}</Text>
       </View>
 
       <View style={styles.actions}>
@@ -99,6 +106,7 @@ const styles = StyleSheet.create({
   body: { color: colors.muted, fontSize: 16, lineHeight: 23, marginTop: 8, marginBottom: 18 },
   input: { minHeight: 52, borderRadius: 18, borderWidth: 1, borderColor: colors.line, backgroundColor: colors.paper, paddingHorizontal: 16, color: colors.charcoal, fontSize: 15, marginBottom: 10 },
   label: { color: colors.charcoal, fontWeight: '900', fontSize: 17, marginTop: 16, marginBottom: 10 },
+  helper: { color: colors.muted, fontSize: 14, lineHeight: 20, marginTop: -4, marginBottom: 10 },
   photoGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: 10 },
   photoChoice: { width: '48%', borderRadius: 20, borderWidth: 2, borderColor: 'transparent', overflow: 'hidden' },
   photoChoiceActive: { borderColor: colors.teal },
@@ -107,5 +115,9 @@ const styles = StyleSheet.create({
   photoShade: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.22)' },
   photoLabel: { color: colors.white, fontWeight: '900', fontSize: 15, padding: 12 },
   wrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  paceCard: { backgroundColor: colors.paper, borderRadius: 20, borderWidth: 1, borderColor: colors.line, padding: 14, marginTop: 10 },
+  paceTitle: { color: colors.charcoal, fontWeight: '900', fontSize: 16 },
+  paceBody: { color: colors.muted, fontSize: 14, lineHeight: 20, marginTop: 5 },
+  paceMeta: { color: colors.tealDark, fontWeight: '900', fontSize: 12, marginTop: 9 },
   actions: { marginTop: 22 },
 });

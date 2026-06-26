@@ -6,11 +6,13 @@ import { IdeaCard } from '../components/IdeaCard';
 import { ScoreRing } from '../components/ScoreRing';
 import { calculateClarityScore } from '../logic/clarityScore';
 import { getEchoSummary } from '../logic/summaries';
+import { getPaceHealth, paceGuidance } from '../logic/tripPace';
 import { colors } from '../theme/colors';
 import { TripDraft } from '../types';
 
 export function EchoDetailScreen({ trip, onBack, onAddIdea, onCompare, onOpenLab }: { trip: TripDraft; onBack: () => void; onAddIdea: () => void; onCompare: () => void; onOpenLab: () => void }) {
   const clarity = calculateClarityScore(trip);
+  const paceHealth = getPaceHealth(trip);
   const mustDos = trip.ideas.filter((idea) => idea.priority === 'Must-do');
   const maybes = trip.ideas.filter((idea) => idea.priority !== 'Must-do');
 
@@ -39,6 +41,12 @@ export function EchoDetailScreen({ trip, onBack, onAddIdea, onCompare, onOpenLab
         {trip.tags.map((tag) => (
           <Chip key={tag} label={tag} active />
         ))}
+      </View>
+
+      <View style={[styles.paceCard, paceHealth.tone === 'warning' && styles.paceWarning]}>
+        <Text style={styles.paceLabel}>Trip Pace</Text>
+        <Text style={styles.paceTitle}>{trip.pace}: {paceGuidance[trip.pace].short}</Text>
+        <Text style={styles.paceBody}>{paceHealth.message}</Text>
       </View>
 
       <View style={styles.actions}>
@@ -78,6 +86,11 @@ const styles = StyleSheet.create({
   summaryLabel: { color: colors.coral, fontWeight: '900', fontSize: 11, textTransform: 'uppercase' },
   summary: { color: colors.charcoal, fontSize: 16, lineHeight: 23, marginTop: 5, fontWeight: '700' },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 14 },
+  paceCard: { backgroundColor: colors.cloud, borderRadius: 22, padding: 15, marginTop: 14, borderWidth: 1, borderColor: colors.mist },
+  paceWarning: { backgroundColor: '#FFF3E7', borderColor: '#F1C7A2' },
+  paceLabel: { color: colors.coral, fontWeight: '900', fontSize: 11, textTransform: 'uppercase' },
+  paceTitle: { color: colors.charcoal, fontWeight: '900', fontSize: 17, marginTop: 5 },
+  paceBody: { color: colors.muted, fontSize: 14, lineHeight: 20, marginTop: 5 },
   actions: { gap: 10, marginVertical: 20 },
   sectionTitle: { color: colors.charcoal, fontWeight: '900', fontSize: 22, marginBottom: 12 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', marginBottom: 12 },

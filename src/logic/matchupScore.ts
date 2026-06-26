@@ -1,5 +1,6 @@
 import { TripDraft, VoteAnswer } from '../types';
 import { calculateClarityScore } from './clarityScore';
+import { getPaceHealth } from './tripPace';
 
 export type MatchupResult = {
   trip: TripDraft;
@@ -22,7 +23,9 @@ export function scoreMatchup(trips: TripDraft[], votes: VoteAnswer[]): MatchupRe
       const easyYes = tripVotes.filter((vote) => vote.reaction === 'Easy yes' || vote.reaction === "I'm in").length;
       const mustDos = trip.ideas.filter((idea) => idea.priority === 'Must-do').length;
       const clarity = calculateClarityScore(trip).score / 10;
-      const score = excitement * 12 + ease * 14 + commitment * 6 + easyYes * 8 + mustDos * 2 + clarity - dealbreakers * 10 - tooPricey * 8;
+      const paceRisk = getPaceHealth(trip).tone === 'warning' ? 8 : 0;
+      const lowCommitPackedRisk = trip.pace === 'Packed' && commitment < 8 ? 6 : 0;
+      const score = excitement * 12 + ease * 14 + commitment * 6 + easyYes * 8 + mustDos * 2 + clarity - dealbreakers * 10 - tooPricey * 8 - paceRisk - lowCommitPackedRisk;
 
       return { trip, score: Math.round(score), commitment, dealbreakers, easyYes, excitement };
     })

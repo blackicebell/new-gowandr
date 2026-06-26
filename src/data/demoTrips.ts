@@ -1,11 +1,12 @@
 import { TripDraft } from '../types';
+import { starterImageUris } from './imageAssets';
 
 export const demoTrips: TripDraft[] = [
   {
     id: 'miami',
     title: 'Miami Birthday',
     subtitle: 'Beach days, rooftops, and a group-ready celebration.',
-    heroImage: 'https://images.unsplash.com/photo-1506966953602-c20cc11f75e3?auto=format&fit=crop&w=1200&q=80',
+    heroImage: starterImageUris.coast,
     tags: ['beach', 'nightlife', 'friends', 'celebration', 'active'],
     pace: 'Packed',
     companionType: 'Friends',
@@ -21,7 +22,7 @@ export const demoTrips: TripDraft[] = [
     id: 'new-orleans',
     title: 'New Orleans Weekend',
     subtitle: 'Food, music, and an easier yes for the whole group.',
-    heroImage: 'https://images.unsplash.com/photo-1571893544028-06b07af6dade?auto=format&fit=crop&w=1200&q=80',
+    heroImage: starterImageUris.nightOut,
     tags: ['food', 'music', 'culture', 'friends', 'low-key'],
     pace: 'Balanced',
     companionType: 'Friends',
@@ -37,7 +38,7 @@ export const demoTrips: TripDraft[] = [
     id: 'jamaica',
     title: 'Jamaica Reset',
     subtitle: 'Warm, slow, romantic, and clearly a real reset.',
-    heroImage: 'https://images.unsplash.com/photo-1589308078059-be1415eab4c3?auto=format&fit=crop&w=1200&q=80',
+    heroImage: starterImageUris.island,
     tags: ['beach', 'romantic', 'relax', 'warm', 'dream trip'],
     pace: 'Relaxed',
     companionType: 'Couple',
@@ -53,7 +54,7 @@ export const demoTrips: TripDraft[] = [
     id: 'mexico-city',
     title: 'Mexico City Food Trip',
     subtitle: 'Culture, walking, markets, and a trip built around taste.',
-    heroImage: 'https://images.unsplash.com/photo-1585464231875-d9ef1f5ad396?auto=format&fit=crop&w=1200&q=80',
+    heroImage: starterImageUris.food,
     tags: ['food', 'culture', 'city', 'walking', 'adventure'],
     pace: 'Balanced',
     companionType: 'Group',

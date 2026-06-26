@@ -45,13 +45,17 @@ export function NewTripScreen({ onBack, onCreate }: { onBack: () => void; onCrea
       <TextInput value={title} onChangeText={setTitle} placeholder="Example: Paris Girls Trip" placeholderTextColor={theme.muted} style={[styles.input, { backgroundColor: theme.paper, borderColor: theme.line, color: theme.charcoal, fontFamily: font.family }]} />
       <TextInput value={subtitle} onChangeText={setSubtitle} placeholder="Optional short note" placeholderTextColor={theme.muted} style={[styles.input, { backgroundColor: theme.paper, borderColor: theme.line, color: theme.charcoal, fontFamily: font.family }]} />
 
-      <Text style={[styles.label, { color: theme.charcoal, fontFamily: font.family }]}>Starter photo</Text>
+      <Text style={[styles.label, { color: theme.charcoal, fontFamily: font.family }]}>Choose a starter photo</Text>
+      <Text style={[styles.helper, { color: theme.muted, fontFamily: font.family }]}>Pick one image to set the mood. You can change it later.</Text>
       <View style={styles.photoGrid}>
         {starterPhotos.map((photo) => (
           <TouchableOpacity key={photo.id} onPress={() => setSelectedPhoto(photo)} style={[styles.photoChoice, { borderColor: selectedPhoto.id === photo.id ? theme.teal : 'transparent' }]}>
             <ImageBackground source={{ uri: photo.uri }} style={styles.photo} imageStyle={styles.photoImage}>
-              <View style={styles.photoShade} />
-              <Text style={[styles.photoLabel, { fontFamily: font.family }]}>{photo.label}</Text>
+              {selectedPhoto.id === photo.id && (
+                <View style={styles.photoSelected}>
+                  <Text style={[styles.photoSelectedText, { fontFamily: font.family }]}>Selected</Text>
+                </View>
+              )}
             </ImageBackground>
           </TouchableOpacity>
         ))}
@@ -112,8 +116,8 @@ const styles = StyleSheet.create({
   photoChoice: { width: '48%', borderRadius: 20, borderWidth: 2, borderColor: 'transparent', overflow: 'hidden' },
   photo: { height: 112, justifyContent: 'flex-end' },
   photoImage: { borderRadius: 18 },
-  photoShade: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.22)' },
-  photoLabel: { color: colors.white, fontWeight: '900', fontSize: 15, padding: 12 },
+  photoSelected: { alignSelf: 'flex-start', margin: 10, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 999, backgroundColor: 'rgba(255,255,255,0.88)' },
+  photoSelectedText: { color: colors.tealDark, fontWeight: '800', fontSize: 11 },
   wrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   paceCard: { borderRadius: 20, borderWidth: 1, padding: 14, marginTop: 10 },
   paceTitle: { fontWeight: '900', fontSize: 16 },

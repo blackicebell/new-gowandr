@@ -2,6 +2,7 @@ import React from 'react';
 import { ImageBackground, StyleSheet, Text, View } from 'react-native';
 import { Button } from '../components/Button';
 import { EchoCard } from '../components/EchoCard';
+import { starterImageUris } from '../data/imageAssets';
 import { colors, font, useThemeColors } from '../theme/colors';
 import { TripDraft } from '../types';
 
@@ -9,7 +10,7 @@ export function HomeScreen({ trips, onOpenTrip, onStartDraft, onStartMatchup, on
   const theme = useThemeColors();
   return (
     <View>
-      <ImageBackground source={{ uri: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80' }} style={styles.hero} imageStyle={styles.heroImage}>
+      <ImageBackground source={{ uri: starterImageUris.coast }} style={styles.hero} imageStyle={styles.heroImage}>
         <View style={styles.heroShade} />
         <View style={styles.heroCopy}>
           <Text style={[styles.kicker, { color: theme.accent, fontFamily: font.family }]}>GoWandr Trip Ideas</Text>

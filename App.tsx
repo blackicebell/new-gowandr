@@ -224,9 +224,9 @@ const styles = StyleSheet.create({
   content: { flex: 1 },
   contentInner: { paddingHorizontal: 28, paddingBottom: 168 },
   navScrim: { position: 'absolute', left: 0, right: 0, bottom: 0, height: 132, backgroundColor: 'rgba(5,7,11,0.58)' },
-  bottomNav: { position: 'absolute', left: 18, right: 18, bottom: 18, height: 64, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 8, paddingVertical: 8, borderRadius: 30, borderWidth: 1, shadowColor: '#000', shadowOpacity: 0.42, shadowRadius: 24, shadowOffset: { width: 0, height: 10 }, elevation: 10 },
-  navItem: { flex: 1, height: 48, alignItems: 'center', justifyContent: 'center', borderRadius: 22 },
+  bottomNav: { position: 'absolute', left: 24, right: 24, bottom: 18, height: 64, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 30, borderWidth: 1, shadowColor: '#000', shadowOpacity: 0.42, shadowRadius: 24, shadowOffset: { width: 0, height: 10 }, elevation: 10 },
+  navItem: { flex: 1, maxWidth: 92, height: 48, alignItems: 'center', justifyContent: 'center', borderRadius: 22 },
   navItemActive: { backgroundColor: 'rgba(255,255,255,0.06)' },
-  navText: { fontWeight: '800', fontSize: 12, lineHeight: 14, letterSpacing: 0, textAlign: 'center' },
-  navIndicator: { width: 26, height: 4, borderRadius: 999, marginTop: 6 },
+  navText: { fontWeight: '700', fontSize: 12, lineHeight: 14, letterSpacing: -0.1, textAlign: 'center' },
+  navIndicator: { width: 24, height: 4, borderRadius: 999, marginTop: 6 },
 });

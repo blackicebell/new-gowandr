@@ -75,8 +75,8 @@ export function AddIdeaScreen({ trip, onBack, onSave }: { trip: TripDraft; onBac
       {step === 2 && (
         <View style={styles.stepCard}>
           <Text style={styles.stepBody}>Give it just enough context so future-you remembers why it mattered.</Text>
-          <TextInput placeholder="Title, like Rooftop dinner or Beach club" placeholderTextColor={theme.muted} value={title} onChangeText={setTitle} style={[styles.input, { color: theme.charcoal, fontFamily: font.family }]} />
-          <TextInput placeholder="Optional note" placeholderTextColor={theme.muted} value={note} onChangeText={setNote} style={[styles.input, styles.note, { color: theme.charcoal, fontFamily: font.family }]} multiline />
+          <TextInput placeholder="Title, like Rooftop dinner or Beach club" placeholderTextColor="rgba(15,17,21,0.48)" value={title} onChangeText={setTitle} style={[styles.input, { color: theme.charcoal, fontFamily: font.family }]} />
+          <TextInput placeholder="Optional note" placeholderTextColor="rgba(15,17,21,0.48)" value={note} onChangeText={setNote} style={[styles.input, styles.note, { color: theme.charcoal, fontFamily: font.family }]} multiline />
           <SecondaryLocalButton label="Next: Organize it" onPress={() => setStep(3)} />
         </View>
       )}
@@ -181,7 +181,7 @@ const styles = StyleSheet.create({
   stepBody: { color: 'rgba(0,0,0,0.65)', fontSize: 14.5, lineHeight: 21, marginBottom: 14, fontWeight: '500' },
   linkRow: { gap: 10 },
   inputLabel: { color: 'rgba(0,0,0,0.62)', fontSize: 12, fontWeight: '700', marginBottom: -2 },
-  input: { minHeight: 54, borderRadius: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.28)', backgroundColor: 'rgba(255,255,255,0.18)', paddingHorizontal: 16, color: colors.charcoal, fontSize: 15, marginBottom: 10 },
+  input: { minHeight: 54, borderRadius: 16, borderWidth: 1, borderColor: 'rgba(15,17,21,0.10)', backgroundColor: 'rgba(255,255,255,0.86)', paddingHorizontal: 16, color: colors.charcoal, fontSize: 15, marginBottom: 12, shadowColor: '#000', shadowOpacity: 0.035, shadowRadius: 8, shadowOffset: { width: 0, height: 3 }, elevation: 1 },
   linkInput: { marginBottom: 0 },
   note: { minHeight: 96, paddingTop: 14, textAlignVertical: 'top' },
   detected: { color: '#2FAF8A', fontWeight: '700', marginBottom: 10, fontSize: 13, lineHeight: 18 },

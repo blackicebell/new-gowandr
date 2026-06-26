@@ -41,18 +41,18 @@ export function HomeScreen({ trips, onOpenTrip, onStartDraft, onStartMatchup, on
 }
 
 const styles = StyleSheet.create({
-  hero: { minHeight: 520, justifyContent: 'flex-end', borderRadius: 34, overflow: 'hidden', marginTop: 8, marginBottom: 26 },
+  hero: { minHeight: 540, justifyContent: 'flex-end', borderRadius: 34, overflow: 'hidden', marginTop: 10, marginBottom: 32, shadowColor: '#000', shadowOpacity: 0.18, shadowRadius: 28, shadowOffset: { width: 0, height: 10 }, elevation: 8 },
   heroImage: { borderRadius: 34 },
-  heroShade: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(3,8,6,0.42)' },
-  heroCopy: { padding: 22 },
+  heroShade: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(3,8,6,0.30)' },
+  heroCopy: { padding: 26 },
   kicker: { color: colors.sun, fontWeight: '900', fontSize: 12, textTransform: 'uppercase', marginBottom: 8 },
-  title: { color: colors.white, fontWeight: '900', fontSize: 42, lineHeight: 45, letterSpacing: 0 },
-  body: { color: colors.white, fontSize: 16, lineHeight: 23, marginTop: 12, opacity: 0.94 },
-  actions: { gap: 10, marginTop: 18 },
+  title: { color: '#F8F8F6', fontWeight: '700', fontSize: 44, lineHeight: 53, letterSpacing: -0.44, textShadowColor: 'rgba(0,0,0,0.35)', textShadowRadius: 4, textShadowOffset: { width: 0, height: 2 } },
+  body: { color: '#F8F8F6', fontSize: 16, lineHeight: 24, marginTop: 14, opacity: 0.94 },
+  actions: { gap: 12, marginTop: 22 },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 },
   sectionTitle: { color: colors.charcoal, fontWeight: '900', fontSize: 22 },
   sectionMeta: { color: colors.muted, fontWeight: '800', fontSize: 12 },
-  matchupBox: { borderRadius: 28, padding: 20, marginTop: 8, borderWidth: 1 },
+  matchupBox: { borderRadius: 28, padding: 24, marginTop: 12, borderWidth: 1, shadowColor: '#000', shadowOpacity: 0.12, shadowRadius: 22, shadowOffset: { width: 0, height: 6 }, elevation: 5 },
   boxTitle: { color: colors.white, fontWeight: '900', fontSize: 24 },
   boxBody: { color: colors.mist, fontSize: 15, lineHeight: 22, marginVertical: 12 },
 });

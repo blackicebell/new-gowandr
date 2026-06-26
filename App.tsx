@@ -1,5 +1,6 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { Image, SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Animated, Image, SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
 import { font, ThemeName, ThemeProvider, themes, useThemeColors } from './src/theme/colors';
 import { TripDraft, TripIdea, VoteAnswer } from './src/types';
@@ -17,6 +18,7 @@ import { NewTripScreen } from './src/screens/NewTripScreen';
 import { loadTrips, saveTrips } from './src/storage/tripsStorage';
 import { loadHasSeenOnboarding, saveHasSeenOnboarding } from './src/storage/onboardingStorage';
 import { loadThemeName, saveThemeName } from './src/storage/themeStorage';
+import { PremiumBackground } from './src/components/PremiumBackground';
 
 type Tab = 'home' | 'ideas' | 'matchup' | 'lab';
 type Route =
@@ -158,16 +160,18 @@ export default function App() {
       <ExpoStatusBar style="light" />
       <StatusBar barStyle="light-content" />
       <View style={[styles.shell, { backgroundColor: theme.canvas }]}>
+        <PremiumBackground />
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => setRoute({ name: 'home' })}>
+          <TouchableOpacity onPress={() => setRoute({ name: 'home' })} style={[styles.logoShell, { borderColor: 'rgba(255,255,255,0.18)' }]}>
             <Image source={require('./assets/brand/gowandr-logo-full-white.png')} style={styles.logo} resizeMode="contain" />
+            <LogoShimmer />
           </TouchableOpacity>
           <ThemePicker activeTheme={themeName} onChange={changeTheme} />
         </View>
         <ScrollView style={styles.content} contentContainerStyle={styles.contentInner} showsVerticalScrollIndicator={false}>
           {renderRoute()}
         </ScrollView>
-        <View style={[styles.bottomNav, { backgroundColor: theme.paper, borderColor: theme.line }]}>
+        <View style={[styles.bottomNav, { backgroundColor: 'rgba(20,20,20,0.35)', borderColor: 'rgba(255,255,255,0.18)' }]}>
           <NavItem label="Home" active={route.name === 'home'} onPress={() => setRoute({ name: 'home' })} />
           <NavItem label="Ideas" active={route.name === 'echo' || route.name === 'detail' || route.name === 'addIdea' || route.name === 'newTrip'} onPress={() => setRoute({ name: 'echo' })} />
           <NavItem label="Matchup" active={route.name === 'createMatchup' || route.name === 'voting' || route.name === 'results'} onPress={() => setRoute({ name: 'createMatchup' })} />
@@ -182,8 +186,9 @@ export default function App() {
 function NavItem({ label, active, onPress }: { label: Tab | string; active: boolean; onPress: () => void }) {
   const theme = useThemeColors();
   return (
-    <TouchableOpacity onPress={onPress} style={[styles.navItem, active && { backgroundColor: theme.teal }]}>
-      <Text style={[styles.navText, { color: active ? theme.canvasDeep : theme.muted, fontFamily: font.family }]}>{label}</Text>
+    <TouchableOpacity onPress={onPress} style={styles.navItem}>
+      <Text style={[styles.navText, { color: active ? theme.charcoal : theme.muted, fontFamily: font.family }]}>{label}</Text>
+      <View style={[styles.navIndicator, { backgroundColor: active ? theme.teal : 'transparent' }]} />
     </TouchableOpacity>
   );
 }
@@ -194,8 +199,12 @@ function ThemePicker({ activeTheme, onChange }: { activeTheme: ThemeName; onChan
       {(['green', 'pink', 'blue'] as ThemeName[]).map((name) => {
         const theme = themes[name];
         return (
-          <TouchableOpacity key={name} onPress={() => onChange(name)} style={[styles.themeDot, { backgroundColor: theme.teal, borderColor: activeTheme === name ? theme.white : 'transparent' }]}>
-            <Text style={[styles.themeDotText, { fontFamily: font.family }]}>{name.charAt(0).toUpperCase()}</Text>
+          <TouchableOpacity key={name} onPress={() => onChange(name)} style={styles.themeDotOuter}>
+            <LinearGradient colors={[theme.teal, theme.accent]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[styles.themeDotRing, activeTheme === name && styles.themeDotRingActive]}>
+              <View style={[styles.themeDot, { backgroundColor: theme.canvasDeep }]}>
+                <Text style={[styles.themeDotText, { color: theme.charcoal, fontFamily: font.family }]}>{name.charAt(0).toUpperCase()}</Text>
+              </View>
+            </LinearGradient>
           </TouchableOpacity>
         );
       })}
@@ -203,17 +212,40 @@ function ThemePicker({ activeTheme, onChange }: { activeTheme: ThemeName; onChan
   );
 }
 
+function LogoShimmer() {
+  const shimmer = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(shimmer, { toValue: 1, duration: 2200, useNativeDriver: true }),
+        Animated.timing(shimmer, { toValue: 0, duration: 2200, useNativeDriver: true }),
+      ]),
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [shimmer]);
+
+  return <Animated.View pointerEvents="none" style={[styles.logoShimmer, { opacity: shimmer.interpolate({ inputRange: [0, 1], outputRange: [0.03, 0.14] }) }]} />;
+}
+
 const styles = StyleSheet.create({
   safeArea: { flex: 1 },
   shell: { flex: 1, width: '100%', maxWidth: 680, alignSelf: 'center' },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 12, paddingBottom: 10 },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 24, paddingTop: 14, paddingBottom: 14 },
+  logoShell: { borderRadius: 22, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: 'rgba(255,255,255,0.12)', borderWidth: 1, overflow: 'hidden' },
   logo: { width: 142, height: 34 },
-  themePicker: { flexDirection: 'row', alignItems: 'center', gap: 8, padding: 5, borderRadius: 999, backgroundColor: 'rgba(255,255,255,0.08)' },
-  themeDot: { width: 30, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center', borderWidth: 2 },
-  themeDotText: { color: '#06110D', fontSize: 11, fontWeight: '900' },
+  logoShimmer: { position: 'absolute', top: 0, bottom: 0, width: 42, left: 28, backgroundColor: '#FFFFFF', transform: [{ skewX: '-18deg' }] },
+  themePicker: { flexDirection: 'row', alignItems: 'center', gap: 8, padding: 6, borderRadius: 999, backgroundColor: 'rgba(255,255,255,0.12)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.18)' },
+  themeDotOuter: { shadowColor: '#000', shadowOpacity: 0.22, shadowRadius: 8, shadowOffset: { width: 0, height: 3 } },
+  themeDotRing: { width: 32, height: 32, borderRadius: 16, padding: 2 },
+  themeDotRingActive: { padding: 3 },
+  themeDot: { flex: 1, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },
+  themeDotText: { fontSize: 11, fontWeight: '900' },
   content: { flex: 1 },
-  contentInner: { paddingHorizontal: 20, paddingBottom: 112 },
-  bottomNav: { position: 'absolute', left: 16, right: 16, bottom: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 8, borderRadius: 28, borderWidth: 1, shadowColor: '#000', shadowOpacity: 0.28, shadowRadius: 18, shadowOffset: { width: 0, height: 8 }, elevation: 8 },
-  navItem: { flex: 1, alignItems: 'center', paddingVertical: 11, borderRadius: 20 },
+  contentInner: { paddingHorizontal: 24, paddingBottom: 124 },
+  bottomNav: { position: 'absolute', left: 18, right: 18, bottom: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 8, paddingTop: 9, paddingBottom: 7, borderRadius: 30, borderWidth: 1, shadowColor: '#000', shadowOpacity: 0.28, shadowRadius: 22, shadowOffset: { width: 0, height: 8 }, elevation: 8 },
+  navItem: { flex: 1, alignItems: 'center', paddingVertical: 8, borderRadius: 20 },
   navText: { fontWeight: '900', fontSize: 12, letterSpacing: 0 },
+  navIndicator: { width: 24, height: 4, borderRadius: 999, marginTop: 6 },
 });

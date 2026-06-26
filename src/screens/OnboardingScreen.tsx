@@ -53,17 +53,17 @@ export function OnboardingScreen({ onFinish, onTryDemo }: { onFinish: () => void
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, paddingHorizontal: 20, paddingTop: 14, paddingBottom: 24, backgroundColor: colors.canvas },
+  screen: { flex: 1, paddingHorizontal: 24, paddingTop: 16, paddingBottom: 26 },
   brandRow: { alignItems: 'flex-start', marginBottom: 14 },
   logo: { width: 154, height: 38 },
-  hero: { flex: 1, minHeight: 520, borderRadius: 32, overflow: 'hidden', justifyContent: 'flex-end' },
+  hero: { flex: 1, minHeight: 540, borderRadius: 34, overflow: 'hidden', justifyContent: 'flex-end', shadowColor: '#000', shadowOpacity: 0.18, shadowRadius: 28, shadowOffset: { width: 0, height: 10 }, elevation: 8 },
   heroImage: { borderRadius: 32 },
-  shade: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(13,24,22,0.35)' },
-  copy: { padding: 22 },
+  shade: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.34)' },
+  copy: { padding: 26 },
   dots: { flexDirection: 'row', gap: 7, marginBottom: 14 },
   dot: { width: 24, height: 6, borderRadius: 999, backgroundColor: 'rgba(255,255,255,0.45)' },
   dotActive: { width: 42, backgroundColor: colors.sun },
-  title: { color: colors.white, fontSize: 36, lineHeight: 40, fontWeight: '900' },
-  body: { color: colors.white, fontSize: 16, lineHeight: 23, marginTop: 12, opacity: 0.95 },
-  actions: { gap: 10, paddingTop: 16 },
+  title: { color: '#F8F8F6', fontSize: 40, lineHeight: 48, fontWeight: '700', letterSpacing: -0.4 },
+  body: { color: '#F8F8F6', fontSize: 16, lineHeight: 24, marginTop: 14, opacity: 0.95 },
+  actions: { gap: 12, paddingTop: 18 },
 });

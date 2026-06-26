@@ -25,8 +25,8 @@ export function EchoScreen({ trips, onOpenTrip, onCreateTrip, onCreateMatchup }:
 }
 
 const styles = StyleSheet.create({
-  header: { paddingVertical: 18 },
-  title: { color: colors.charcoal, fontWeight: '900', fontSize: 38 },
-  body: { color: colors.muted, fontSize: 16, lineHeight: 23, marginTop: 8, marginBottom: 16 },
-  actions: { gap: 10 },
+  header: { paddingVertical: 24 },
+  title: { color: colors.charcoal, fontWeight: '700', fontSize: 42, lineHeight: 50, letterSpacing: -0.42 },
+  body: { color: colors.muted, fontSize: 16, lineHeight: 24, marginTop: 10, marginBottom: 20 },
+  actions: { gap: 12 },
 });

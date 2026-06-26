@@ -159,12 +159,12 @@ export default function App() {
   return (
     <ThemeProvider value={theme}>
     <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.canvasDeep }]}>
-      <ExpoStatusBar style="light" />
-      <StatusBar barStyle="light-content" />
+      <ExpoStatusBar style="dark" />
+      <StatusBar barStyle="dark-content" />
       <View style={[styles.shell, { backgroundColor: theme.canvas }]}>
         <PremiumBackground />
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => setRoute({ name: 'home' })} style={[styles.logoShell, { borderColor: 'rgba(255,255,255,0.18)' }]}>
+          <TouchableOpacity onPress={() => setRoute({ name: 'home' })} style={[styles.logoShell, { borderColor: 'rgba(255,255,255,0.22)' }]}>
             <Image source={require('./assets/brand/gowandr-logo-full-white.png')} style={styles.logo} resizeMode="contain" />
             <LogoShimmer />
           </TouchableOpacity>
@@ -175,7 +175,7 @@ export default function App() {
           </Animated.View>
         </ScrollView>
         <View style={styles.navScrim} pointerEvents="none" />
-        <View style={[styles.bottomNav, { backgroundColor: 'rgba(5,7,11,0.94)', borderColor: 'rgba(255,255,255,0.16)' }]}>
+        <View style={[styles.bottomNav, { backgroundColor: 'rgba(255,255,255,0.74)', borderColor: 'rgba(255,255,255,0.42)' }]}>
           <NavItem label="Home" active={route.name === 'home'} onPress={() => setRoute({ name: 'home' })} />
           <NavItem label="Ideas" active={route.name === 'echo' || route.name === 'detail' || route.name === 'addIdea' || route.name === 'newTrip'} onPress={() => setRoute({ name: 'echo' })} />
           <NavItem label="Matchup" active={route.name === 'createMatchup' || route.name === 'voting' || route.name === 'results'} onPress={() => setRoute({ name: 'createMatchup' })} />
@@ -191,7 +191,7 @@ function NavItem({ label, active, onPress }: { label: Tab | string; active: bool
   const theme = useThemeColors();
   return (
     <PressableScale onPress={onPress} style={[styles.navItem, active && styles.navItemActive]}>
-      <Text style={[styles.navText, { color: active ? '#F8F8F6' : 'rgba(255,255,255,0.68)', fontFamily: font.family }]}>{label}</Text>
+      <Text style={[styles.navText, { color: active ? '#0F1115' : 'rgba(15,17,21,0.58)', fontFamily: font.family }]}>{label}</Text>
       <View style={[styles.navIndicator, { backgroundColor: active ? theme.teal : 'transparent' }]} />
     </PressableScale>
   );
@@ -218,15 +218,15 @@ const styles = StyleSheet.create({
   safeArea: { flex: 1 },
   shell: { flex: 1, width: '100%', maxWidth: 680, alignSelf: 'center' },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 28, paddingTop: 16, paddingBottom: 16 },
-  logoShell: { borderRadius: 22, paddingHorizontal: 14, paddingVertical: 9, backgroundColor: 'rgba(20,20,20,0.35)', borderWidth: 1, overflow: 'hidden', shadowColor: '#38BDF8', shadowOpacity: 0.25, shadowRadius: 12, shadowOffset: { width: 0, height: 0 } },
+  logoShell: { borderRadius: 22, paddingHorizontal: 14, paddingVertical: 9, backgroundColor: 'rgba(255,255,255,0.34)', borderWidth: 1, overflow: 'hidden', shadowColor: '#6ED8B5', shadowOpacity: 0.35, shadowRadius: 14, shadowOffset: { width: 0, height: 0 } },
   logo: { width: 128, height: 31 },
-  logoShimmer: { position: 'absolute', top: 0, bottom: 0, width: 42, left: 28, backgroundColor: '#FFFFFF', transform: [{ skewX: '-18deg' }] },
+  logoShimmer: { position: 'absolute', top: 0, bottom: 0, width: 42, left: 28, backgroundColor: '#A8F0D4', transform: [{ skewX: '-18deg' }] },
   content: { flex: 1 },
   contentInner: { paddingHorizontal: 28, paddingBottom: 178 },
-  navScrim: { position: 'absolute', left: 0, right: 0, bottom: 0, height: 146, backgroundColor: 'rgba(5,7,11,0.58)' },
-  bottomNav: { position: 'absolute', left: 16, right: 16, bottom: 18, minHeight: 72, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 6, paddingHorizontal: 10, paddingVertical: 10, borderRadius: 34, borderWidth: 1, shadowColor: '#000', shadowOpacity: 0.42, shadowRadius: 24, shadowOffset: { width: 0, height: 10 }, elevation: 10 },
+  navScrim: { position: 'absolute', left: 0, right: 0, bottom: 0, height: 146, backgroundColor: 'rgba(238,248,244,0.58)' },
+  bottomNav: { position: 'absolute', left: 16, right: 16, bottom: 18, minHeight: 72, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 6, paddingHorizontal: 10, paddingVertical: 10, borderRadius: 34, borderWidth: 1, shadowColor: '#000', shadowOpacity: 0.18, shadowRadius: 24, shadowOffset: { width: 0, height: 10 }, elevation: 10 },
   navItem: { flex: 1, minHeight: 52, alignItems: 'center', justifyContent: 'center', borderRadius: 24, paddingHorizontal: 4 },
-  navItemActive: { backgroundColor: 'rgba(255,255,255,0.06)' },
+  navItemActive: { backgroundColor: 'rgba(168,240,212,0.42)' },
   navText: { fontWeight: '700', fontSize: 12, lineHeight: 14, letterSpacing: -0.1, textAlign: 'center' },
   navIndicator: { width: 24, height: 4, borderRadius: 999, marginTop: 6 },
 });

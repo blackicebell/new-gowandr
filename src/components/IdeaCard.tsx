@@ -27,7 +27,7 @@ export function IdeaCard({ idea }: { idea: TripIdea }) {
   };
 
   return (
-    <PressableScale disabled={!hasLink} onPress={openLink} style={[styles.card, { borderColor: hasLink ? '#0A84FF' : 'rgba(255,255,255,0.15)' }]}>
+    <PressableScale disabled={!hasLink} onPress={openLink} style={[styles.card, { borderColor: hasLink ? '#6ED8B5' : 'rgba(255,255,255,0.22)' }]}>
       <Animated.View style={{ opacity: imageOpacity }}>
       <ImageBackground source={{ uri: idea.imageUrl ?? fallbackForCategory(idea.category) }} onLoad={fadeInImage} style={styles.image} imageStyle={styles.imageRadius}>
         <LinearGradient colors={['rgba(0,0,0,0.15)', 'rgba(0,0,0,0.55)']} style={StyleSheet.absoluteFill} />
@@ -84,8 +84,8 @@ const styles = StyleSheet.create({
   metaRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 6 },
   category: { color: '#F4D06F', fontWeight: '900', fontSize: 10, textTransform: 'uppercase', letterSpacing: 0 },
   openPill: { backgroundColor: 'rgba(0,0,0,0.45)', paddingHorizontal: 9, paddingVertical: 5, borderRadius: 12 },
-  openCue: { color: '#38BDF8', fontWeight: '700', fontSize: 10, letterSpacing: 0 },
+  openCue: { color: '#A8F0D4', fontWeight: '700', fontSize: 10, letterSpacing: 0 },
   title: { color: '#F8F8F6', fontWeight: '700', fontSize: 16, marginTop: 7, letterSpacing: -0.16 },
   note: { color: 'rgba(255,255,255,0.75)', fontSize: 12, marginTop: 5, lineHeight: 17 },
-  linkText: { color: '#0A84FF', fontWeight: '800', fontSize: 11, marginTop: 8, letterSpacing: 0 },
+  linkText: { color: '#6ED8B5', fontWeight: '800', fontSize: 11, marginTop: 8, letterSpacing: 0 },
 });

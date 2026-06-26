@@ -8,7 +8,7 @@ export function PremiumBackground() {
 
   return (
     <View pointerEvents="none" style={StyleSheet.absoluteFill}>
-      <LinearGradient colors={[colors.canvasDeep, colors.canvas]} style={StyleSheet.absoluteFill} />
+      <LinearGradient colors={['rgba(255,255,255,0.72)', colors.canvasDeep, colors.canvas]} style={StyleSheet.absoluteFill} />
       <View style={[styles.arc, styles.arcOne, { borderColor: colors.teal }]} />
       <View style={[styles.arc, styles.arcTwo, { borderColor: colors.accent }]} />
       <View style={styles.noiseLayer}>
@@ -21,9 +21,9 @@ export function PremiumBackground() {
 }
 
 const styles = StyleSheet.create({
-  arc: { position: 'absolute', borderWidth: 1, opacity: 0.05, borderRadius: 999 },
+  arc: { position: 'absolute', borderWidth: 1, opacity: 0.045, borderRadius: 999 },
   arcOne: { width: 420, height: 420, right: -210, top: 70 },
   arcTwo: { width: 320, height: 320, left: -170, bottom: 80 },
-  noiseLayer: { ...StyleSheet.absoluteFillObject, opacity: 0.18 },
-  noiseDot: { position: 'absolute', width: 1, height: 1, borderRadius: 1, backgroundColor: 'rgba(255,255,255,0.16)' },
+  noiseLayer: { ...StyleSheet.absoluteFillObject, opacity: 0.12 },
+  noiseDot: { position: 'absolute', width: 1, height: 1, borderRadius: 1, backgroundColor: 'rgba(15,17,21,0.12)' },
 });

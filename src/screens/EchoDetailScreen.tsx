@@ -50,7 +50,7 @@ export function EchoDetailScreen({ trip, onBack, onAddIdea, onEditTrip, onDelete
             <Text style={[styles.momentumTitle, { fontFamily: font.heading }]}>{getNextStepTitle(trip, mustDos.length)}</Text>
           </View>
           <View style={styles.momentumBadge}>
-            <Text style={[styles.momentumBadgeText, { fontFamily: font.heading }]}>{getStatusIcon(momentumStatus)}</Text>
+            <Text style={[styles.momentumBadgeText, { fontFamily: font.heading }]}>{getMomentumBadge(momentumStatus, mustDos.length)}</Text>
           </View>
         </View>
         <Text style={[styles.momentumBody, { fontFamily: font.body }]}>{getNextStepBody(trip, mustDos.length)}</Text>
@@ -308,11 +308,10 @@ function getNextStepBody(trip: TripDraft, highlightCount: number) {
   return 'You have enough inspiration to compare it against other trip drafts or move it into the plan.';
 }
 
-function getStatusIcon(status: string) {
-  if (status.includes('Committed') || status.includes('Preparing')) return 'Go';
-  if (status.includes('Ready') || status.includes('Strong')) return 'Ready';
-  if (status.includes('Taking')) return 'Shape';
-  return 'Start';
+function getMomentumBadge(status: string, highlightCount: number) {
+  if (status.includes('Committed') || status.includes('Preparing')) return 'Plan';
+  if (highlightCount >= 3 || status.includes('Ready') || status.includes('Strong')) return 'Ready';
+  return `${Math.min(2, highlightCount)}/3`;
 }
 
 function getShortStatus(status: string) {

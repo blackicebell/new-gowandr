@@ -6,17 +6,17 @@ type FirebaseRuntime = {
   db: Firestore;
 };
 
-function getEnvValue(key: string) {
-  return process.env[key];
-}
+const firebaseConfig = {
+  apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID,
+};
 
 export function hasFirebaseConfig() {
-  return Boolean(
-    getEnvValue('EXPO_PUBLIC_FIREBASE_API_KEY') &&
-      getEnvValue('EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN') &&
-      getEnvValue('EXPO_PUBLIC_FIREBASE_PROJECT_ID') &&
-      getEnvValue('EXPO_PUBLIC_FIREBASE_APP_ID'),
-  );
+  return Boolean(firebaseConfig.apiKey && firebaseConfig.authDomain && firebaseConfig.projectId && firebaseConfig.appId);
 }
 
 export function getFirebaseRuntime(): FirebaseRuntime | undefined {
@@ -25,12 +25,12 @@ export function getFirebaseRuntime(): FirebaseRuntime | undefined {
   const app = getApps().length
     ? getApp()
     : initializeApp({
-        apiKey: getEnvValue('EXPO_PUBLIC_FIREBASE_API_KEY'),
-        authDomain: getEnvValue('EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN'),
-        projectId: getEnvValue('EXPO_PUBLIC_FIREBASE_PROJECT_ID'),
-        storageBucket: getEnvValue('EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET'),
-        messagingSenderId: getEnvValue('EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID'),
-        appId: getEnvValue('EXPO_PUBLIC_FIREBASE_APP_ID'),
+        apiKey: firebaseConfig.apiKey,
+        authDomain: firebaseConfig.authDomain,
+        projectId: firebaseConfig.projectId,
+        storageBucket: firebaseConfig.storageBucket,
+        messagingSenderId: firebaseConfig.messagingSenderId,
+        appId: firebaseConfig.appId,
       });
 
   return { app, db: getFirestore(app) };

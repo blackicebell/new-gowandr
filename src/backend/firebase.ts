@@ -6,17 +6,8 @@ type FirebaseRuntime = {
   db: Firestore;
 };
 
-const firebaseConfigFallbacks: Record<string, string> = {
-  EXPO_PUBLIC_FIREBASE_API_KEY: 'AIzaSyDPTCoBTz8MhB-0bVeM7pRWkhMY1XI3UJ0',
-  EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN: 'gowandr2.firebaseapp.com',
-  EXPO_PUBLIC_FIREBASE_PROJECT_ID: 'gowandr2',
-  EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET: 'gowandr2.firebasestorage.app',
-  EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: '26451125080',
-  EXPO_PUBLIC_FIREBASE_APP_ID: '1:26451125080:web:8e9f5bb78f4fba17497b2d',
-};
-
 function getEnvValue(key: string) {
-  return process.env[key] || firebaseConfigFallbacks[key];
+  return process.env[key];
 }
 
 export function hasFirebaseConfig() {

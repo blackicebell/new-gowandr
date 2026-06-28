@@ -8,10 +8,10 @@ import { font, useThemeColors } from '../theme/colors';
 const slides = [
   {
     eyebrow: 'Collect. Shape. Decide.',
-    title: 'Stop collecting ideas. Start taking trips.',
-    body: 'Save what inspires you, turn it into real options, and move toward the trip that feels worth doing.',
+    title: 'Collect ideas for the trip you actually want.',
+    body: 'Save the links, notes, restaurants, and sparks that help you shape an upcoming trip into a real decision.',
     image: onboardingImageUris.flightWindow,
-    proof: 'Built for real travel decisions',
+    proof: 'Built for deciding where to go',
   },
   {
     eyebrow: 'Collect',

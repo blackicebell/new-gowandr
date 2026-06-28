@@ -198,7 +198,7 @@ function EmptyHighlights({ onAddIdea }: { onAddIdea: () => void }) {
 }
 
 function ShareTripComposer({ trip, photoUri, onSelectPhoto, onShare, onClose }: { trip: TripDraft; photoUri: string; onSelectPhoto: (uri: string) => void; onShare: () => void; onClose: () => void }) {
-  const photoOptions = [{ id: 'current', uri: trip.heroImage }, ...starterPhotos.map((photo) => ({ id: photo.id, uri: photo.uri }))];
+  const photoOptions = uniquePhotoOptions([{ id: 'current', uri: trip.heroImage }, ...starterPhotos.map((photo) => ({ id: photo.id, uri: photo.uri }))]);
   const topIdeas = trip.ideas.filter((idea) => idea.priority === 'Must-do').slice(0, 3);
 
   return (
@@ -247,6 +247,15 @@ function ShareTripComposer({ trip, photoUri, onSelectPhoto, onShare, onClose }: 
       </View>
     </View>
   );
+}
+
+function uniquePhotoOptions(options: { id: string; uri: string }[]) {
+  const seen = new Set<string>();
+  return options.filter((option) => {
+    if (seen.has(option.uri)) return false;
+    seen.add(option.uri);
+    return true;
+  });
 }
 
 function PaceMeter({ pace }: { pace: TripDraft['pace'] }) {

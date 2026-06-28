@@ -78,7 +78,7 @@ export function NewTripScreen({ onBack, onCreate, initialTrip, onUpdate, onDelet
 
       {(isEditing || step === 2) && (
         <>
-          <TextInput value={subtitle} onChangeText={setSubtitle} placeholder="Optional short note" placeholderTextColor={theme.muted} style={[styles.input, { backgroundColor: theme.paper, borderColor: theme.line, color: theme.charcoal, fontFamily: font.body }]} />
+          <TextInput value={subtitle} onChangeText={setSubtitle} placeholder="Optional short note" placeholderTextColor={theme.muted} style={[styles.input, styles.noteInput, { backgroundColor: theme.paper, borderColor: theme.line, color: theme.charcoal, fontFamily: font.body }]} />
 
           <Text style={[styles.label, { color: theme.charcoal, fontFamily: font.heading }]}>Trip mood</Text>
           <Text style={[styles.helper, { color: theme.muted, fontFamily: font.body }]}>Pick the feeling behind the trip. Keep it simple.</Text>
@@ -145,6 +145,7 @@ const styles = StyleSheet.create({
   title: { fontWeight: '700', fontSize: 38, lineHeight: 46, letterSpacing: -0.38 },
   body: { fontSize: 16, lineHeight: 23, marginTop: 8, marginBottom: 18 },
   input: { minHeight: 54, borderRadius: 18, borderWidth: 1, paddingHorizontal: 16, fontSize: 15, marginBottom: 10 },
+  noteInput: { marginTop: 18, marginBottom: 18 },
   stepper: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', gap: 8, marginBottom: 16 },
   stepDot: { width: 11, height: 11, borderRadius: 999, backgroundColor: 'rgba(32,38,35,0.12)' },
   stepDotActive: { width: 32, backgroundColor: '#6ED8B5' },

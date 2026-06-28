@@ -38,8 +38,8 @@ function variantStyle(variant: 'primary' | 'secondary' | 'ghost', colors: Return
 
 const styles = StyleSheet.create({
   pressShell: { borderRadius: 18 },
-  button: { minHeight: 54, alignItems: 'center', justifyContent: 'center', borderRadius: 18, paddingHorizontal: 22, overflow: 'hidden', shadowColor: '#000', shadowOpacity: 0.12, shadowRadius: 22, shadowOffset: { width: 0, height: 6 }, elevation: 5 },
+  button: { minHeight: 54, alignItems: 'center', justifyContent: 'center', borderRadius: 18, paddingHorizontal: 22, overflow: 'hidden', shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 16, shadowOffset: { width: 0, height: 5 }, elevation: 3 },
   disabled: { opacity: 0.45 },
-  label: { color: '#202623', fontWeight: '600', fontSize: 15, letterSpacing: 0 },
-  secondaryLabel: { fontWeight: '600' },
+  label: { color: '#202623', fontSize: 15, letterSpacing: 0, textAlign: 'center', backgroundColor: 'transparent', includeFontPadding: false },
+  secondaryLabel: {},
 });

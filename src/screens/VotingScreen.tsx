@@ -100,7 +100,7 @@ export function VotingScreen({ trips, matchupName, onCancel, onComplete }: { tri
             ))}
           </View>
           <View style={styles.bottomActions}>
-            <Button label="Start Deciding" onPress={() => setPhase('choose')} />
+            <Button label="Start comparison" onPress={() => setPhase('choose')} />
             <TextAction label="Cancel" onPress={onCancel} />
           </View>
         </>
@@ -126,7 +126,7 @@ export function VotingScreen({ trips, matchupName, onCancel, onComplete }: { tri
             ))}
           </View>
           <View style={styles.bottomActions}>
-            <TextAction label="Cancel compare" onPress={onCancel} />
+            <TextAction label="Cancel" onPress={onCancel} />
           </View>
         </View>
       ) : (
@@ -163,7 +163,7 @@ export function VotingScreen({ trips, matchupName, onCancel, onComplete }: { tri
               <Text style={styles.changePickText}>Change trip choice</Text>
             </TouchableOpacity>
             <Button label={step >= prompts.length - 1 ? 'See Results' : 'Next Question'} disabled={!reason.trim() && !reaction} onPress={submitWhy} />
-            <TextAction label="Cancel compare" onPress={onCancel} />
+            <TextAction label="Cancel" onPress={onCancel} />
           </View>
         </View>
       )}

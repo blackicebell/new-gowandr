@@ -1,9 +1,6 @@
-import React, { useMemo, useRef, useState } from 'react';
-import { Alert, Image, ImageBackground, Modal, Platform, Share, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import { Alert, ImageBackground, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
-import * as Sharing from 'expo-sharing';
-import { LinearGradient } from 'expo-linear-gradient';
-import { captureRef } from 'react-native-view-shot';
 import { Button } from '../components/Button';
 import { buildMatchupShareUrl, createMatchupSession, isSharedVotingConfigured } from '../backend/matchupSessions';
 import { explainResult, scoreMatchup } from '../logic/matchupScore';
@@ -38,7 +35,6 @@ export function CreateMatchupScreen({
   const availableTrips = useMemo(() => trips.filter((trip) => !selected.includes(trip.id)), [selected, trips]);
   const [shareState, setShareState] = useState<'idle' | 'creating' | 'missingConfig'>('idle');
   const [sharePreview, setSharePreview] = useState<SharePreviewState | undefined>();
-  const shareCardRef = useRef<View>(null);
 
   const toggleTrip = (tripId: string) => {
     setSelected((current) => {
@@ -46,6 +42,11 @@ export function CreateMatchupScreen({
       if (current.length >= 4) return current;
       return [...current, tripId];
     });
+  };
+
+  const startOwnComparison = () => {
+    if (selectedTrips.length < 2) return;
+    onStart(selected, 'Weekend Escape');
   };
 
   const inviteFriends = async () => {
@@ -91,8 +92,8 @@ export function CreateMatchupScreen({
   return (
     <View>
       <Text style={styles.back} onPress={onBack}>Back home</Text>
-      <Text style={styles.title}>Choose Your Trip</Text>
-      <Text style={styles.body}>Pick 2 to 4 trip drafts, then create a lightweight link so friends can share what pulls them.</Text>
+      <Text style={styles.title}>Compare Trips</Text>
+      <Text style={styles.body}>Pick 2 to 4 trip ideas. Then choose whether you want to decide privately or get another opinion.</Text>
 
       <VotingInbox sessions={ownedSessions} loading={ownedSessionsLoading} onRefresh={onRefreshSessions} onOpenResults={onOpenSessionResults} onDeleteSession={onDeleteSession} />
 
@@ -120,24 +121,34 @@ export function CreateMatchupScreen({
         </>
       )}
 
-      <View style={styles.sharePreview}>
-        <Text style={styles.previewLabel}>Get a read</Text>
-        <Text style={styles.previewTitle}>Want another perspective?</Text>
-        <Text style={styles.previewBody}>Send a highlight-first link. Friends choose the trip that pulls them most, leave a quick reason, and skip the login.</Text>
+      <View style={styles.decidePanel}>
+        <Text style={styles.decideLabel}>Ready to decide?</Text>
+        <Text style={styles.decideTitle}>You have {selectedTrips.length} trip ideas in the mix.</Text>
+        <Text style={styles.decideBody}>How do you want to choose?</Text>
+        <View style={styles.decideCards}>
+          <DecisionChoiceCard
+            icon="01"
+            title="Decide on my own"
+            body="Answer four quick questions and see which trip pulls you most."
+            action="Start comparison"
+            disabled={selected.length < 2}
+            onPress={startOwnComparison}
+          />
+          <DecisionChoiceCard
+            icon="02"
+            title="Get another opinion"
+            body="Share a live link so friends can review the highlights and leave quick input."
+            action={shareState === 'creating' ? 'Creating link...' : 'Create share link'}
+            disabled={selected.length < 2 || shareState === 'creating'}
+            onPress={inviteFriends}
+          />
+        </View>
       </View>
       <Text style={styles.compareHint}>{selected.length < 2 ? 'Choose at least 2 trips to compare.' : `Comparing ${selected.length} of 4 possible trips.`}</Text>
       {shareState === 'missingConfig' && (
-        <Text style={styles.shareConfigHint}>Shared links need Firebase running. You can still preview and share the graphic.</Text>
+        <Text style={styles.shareConfigHint}>Shared links need Firebase running before friends can open the comparison.</Text>
       )}
-      <View style={styles.actions}>
-        <Button label={shareState === 'creating' ? 'Creating Link...' : 'Create Share Link'} disabled={selected.length < 2 || shareState === 'creating'} onPress={inviteFriends} />
-        <Button label="Preview Yourself" variant="secondary" disabled={selected.length < 2} onPress={() => onStart(selected, 'Weekend Escape')} />
-      </View>
-      <ShareLinkCardModal
-        preview={sharePreview}
-        cardRef={shareCardRef}
-        onClose={() => setSharePreview(undefined)}
-      />
+      <ShareLinkModal preview={sharePreview} onClose={() => setSharePreview(undefined)} />
     </View>
   );
 }
@@ -149,18 +160,24 @@ type SharePreviewState = {
   previewOnly?: boolean;
 };
 
-function ShareLinkCardModal({
-  preview,
-  cardRef,
-  onClose,
-}: {
-  preview?: SharePreviewState;
-  cardRef: React.RefObject<View | null>;
-  onClose: () => void;
-}) {
+function DecisionChoiceCard({ icon, title, body, action, disabled, onPress }: { icon: string; title: string; body: string; action: string; disabled?: boolean; onPress: () => void }) {
+  return (
+    <TouchableOpacity disabled={disabled} onPress={onPress} style={[styles.decisionCard, disabled && styles.decisionCardDisabled]}>
+      <View style={styles.decisionIcon}>
+        <Text style={styles.decisionIconText}>{icon}</Text>
+      </View>
+      <View style={styles.decisionCopy}>
+        <Text style={styles.decisionTitle}>{title}</Text>
+        <Text style={styles.decisionBody}>{body}</Text>
+        <Text style={styles.decisionAction}>{action}</Text>
+      </View>
+    </TouchableOpacity>
+  );
+}
+
+function ShareLinkModal({ preview, onClose }: { preview?: SharePreviewState; onClose: () => void }) {
   const [shareStatus, setShareStatus] = useState<string | undefined>();
   if (!preview) return null;
-  const leadTrip = preview.trips[0];
 
   const copyLink = async () => {
     if (preview.previewOnly) return;
@@ -173,69 +190,27 @@ function ShareLinkCardModal({
     await shareMatchupInvite(preview.matchupName, preview.trips, preview.url);
   };
 
-  const shareGraphic = async () => {
-    try {
-      const uri = await captureRef(cardRef, {
-        format: 'png',
-        quality: 1,
-        result: Platform.OS === 'web' ? 'data-uri' : 'tmpfile',
-      });
-
-      if (Platform.OS === 'web') {
-        downloadDataUri(uri, `${preview.matchupName.replace(/\s+/g, '-').toLowerCase()}-gowandr-read.png`);
-        setShareStatus('Graphic downloaded.');
-        return;
-      }
-
-      const available = await Sharing.isAvailableAsync();
-      if (!available) {
-        await Share.share({ message: preview.url });
-        return;
-      }
-      await Sharing.shareAsync(uri, {
-        mimeType: 'image/png',
-        dialogTitle: 'Share GoWandr card',
-      });
-    } catch (error) {
-      setShareStatus('Could not share the graphic yet. The link still works.');
-      await Share.share({ message: preview.url }).catch(() => undefined);
-    }
-  };
-
   return (
     <Modal visible transparent animationType="fade" onRequestClose={onClose}>
       <View style={styles.modalOverlay}>
         <View style={styles.modalSheet}>
-          <View ref={cardRef} collapsable={false} style={styles.shareCardCanvas}>
-            <ImageBackground source={{ uri: leadTrip.heroImage }} style={styles.shareGraphic} imageStyle={styles.shareGraphicImage}>
-              <View style={styles.shareGraphicShade} />
-              <View style={styles.shareLogoPill}>
-                <Image source={require('../../assets/brand/gowandr-logo-full-color.png')} style={styles.shareLogo} resizeMode="contain" />
-              </View>
-              <View style={styles.shareGraphicTop}>
-                <Text style={styles.shareGraphicKicker}>GOWANDR GET A READ</Text>
-                <Text style={styles.shareGraphicCount}>{preview.trips.length} trip ideas</Text>
-              </View>
-              <View style={styles.shareGraphicCopy}>
-                <Text style={styles.shareGraphicTitle}>Which trip pulls you most?</Text>
-                <Text style={styles.shareGraphicBody}>{preview.trips.map((trip) => trip.title).join(' / ')}</Text>
-              </View>
-              <LinearGradient colors={['#A8F0D4', '#6ED8B5', '#2FAF8A']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.shareGraphicButton}>
-                <Text style={styles.shareGraphicButtonText}>Share input with GoWandr</Text>
-              </LinearGradient>
-            </ImageBackground>
+          <View style={styles.liveLinkCard}>
+            <View style={styles.liveIcon}>
+              <Text style={styles.liveIconText}>GO</Text>
+            </View>
+            <Text style={styles.modalKicker}>Live comparison</Text>
+            <Text style={styles.modalTitle}>Share this link for input.</Text>
+            <Text style={styles.modalBody}>
+              {preview.previewOnly
+                ? 'Firebase is not available in this build yet, so this link is only a preview.'
+                : 'Friends can open it, review the highlights, choose the trip that pulls them most, and leave a quick reason. No login needed.'}
+            </Text>
+            <Text style={styles.linkPreview} numberOfLines={1}>{preview.url}</Text>
           </View>
-          <Text style={styles.modalTitle}>Share card ready</Text>
-          <Text style={styles.modalBody}>
-            {preview.previewOnly
-              ? 'This is a visual preview. Restart the local web server with Firebase env loaded to create working links.'
-              : 'Send the link for the working comparison, or share the graphic when you want something more social.'}
-          </Text>
           {!!shareStatus && <Text style={styles.modalStatus}>{shareStatus}</Text>}
           <View style={styles.modalActions}>
-            <Button label="Share Graphic" onPress={shareGraphic} />
-            <Button label={preview.previewOnly ? 'Share Link Needs Firebase' : 'Share Link'} variant="secondary" disabled={preview.previewOnly} onPress={shareLink} />
-            <Button label={preview.previewOnly ? 'Copy Link Needs Firebase' : 'Copy Link'} variant="secondary" disabled={preview.previewOnly} onPress={copyLink} />
+            <Button label={preview.previewOnly ? 'Link needs Firebase' : 'Open share sheet'} disabled={preview.previewOnly} onPress={shareLink} />
+            <Button label={preview.previewOnly ? 'Copy unavailable' : 'Copy link'} variant="secondary" disabled={preview.previewOnly} onPress={copyLink} />
             <TouchableOpacity onPress={onClose} style={styles.closeModalButton}>
               <Text style={styles.closeModalText}>Close</Text>
             </TouchableOpacity>
@@ -244,16 +219,6 @@ function ShareLinkCardModal({
       </View>
     </Modal>
   );
-}
-
-function downloadDataUri(dataUri: string, filename: string) {
-  if (typeof document === 'undefined') return;
-  const link = document.createElement('a');
-  link.href = dataUri;
-  link.download = filename;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
 }
 
 function VotingInbox({
@@ -461,6 +426,19 @@ const styles = StyleSheet.create({
   metaChipText: { color: '#173A33', fontFamily: font.semibold, fontWeight: '700', fontSize: 10.5 },
   check: { color: 'rgba(32,38,35,0.62)', fontFamily: font.semibold, fontWeight: '700', fontSize: 12 },
   checkActive: { color: '#137D68' },
+  decidePanel: { borderRadius: 28, padding: 18, backgroundColor: 'rgba(255,255,255,0.86)', borderWidth: 1, borderColor: 'rgba(32,38,35,0.07)', shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 18, shadowOffset: { width: 0, height: 7 }, elevation: 4, marginBottom: 14 },
+  decideLabel: { color: colors.tealDark, fontFamily: font.semibold, fontWeight: '700', fontSize: 11, textTransform: 'uppercase', backgroundColor: 'transparent', includeFontPadding: false },
+  decideTitle: { color: colors.charcoal, fontFamily: font.heading, fontWeight: '700', fontSize: 24, lineHeight: 29, letterSpacing: -0.24, marginTop: 5, backgroundColor: 'transparent', includeFontPadding: false },
+  decideBody: { color: colors.muted, fontFamily: font.body, fontSize: 14.5, lineHeight: 21, marginTop: 5, marginBottom: 14, backgroundColor: 'transparent', includeFontPadding: false },
+  decideCards: { gap: 12 },
+  decisionCard: { minHeight: 118, borderRadius: 22, padding: 15, flexDirection: 'row', gap: 13, backgroundColor: 'rgba(248,250,249,0.88)', borderWidth: 1, borderColor: 'rgba(32,38,35,0.07)' },
+  decisionCardDisabled: { opacity: 0.48 },
+  decisionIcon: { width: 42, height: 42, borderRadius: 16, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(168,240,212,0.52)', borderWidth: 1, borderColor: 'rgba(47,175,138,0.14)' },
+  decisionIconText: { color: colors.tealDark, fontFamily: font.semibold, fontWeight: '800', fontSize: 12, backgroundColor: 'transparent', includeFontPadding: false },
+  decisionCopy: { flex: 1 },
+  decisionTitle: { color: colors.charcoal, fontFamily: font.heading, fontWeight: '700', fontSize: 19, lineHeight: 23, letterSpacing: -0.16, backgroundColor: 'transparent', includeFontPadding: false },
+  decisionBody: { color: colors.muted, fontFamily: font.body, fontSize: 14, lineHeight: 20, marginTop: 5, backgroundColor: 'transparent', includeFontPadding: false },
+  decisionAction: { color: colors.tealDark, fontFamily: font.semibold, fontWeight: '700', fontSize: 13.5, marginTop: 11, backgroundColor: 'transparent', includeFontPadding: false },
   sharePreview: { backgroundColor: colors.charcoal, borderRadius: 26, padding: 20, marginBottom: 14 },
   previewLabel: { color: '#A8F0D4', fontFamily: font.semibold, fontWeight: '700', fontSize: 11, textTransform: 'uppercase' },
   previewTitle: { color: colors.white, fontFamily: font.heading, fontWeight: '700', fontSize: 24, marginTop: 5 },
@@ -473,6 +451,10 @@ const styles = StyleSheet.create({
   emptyBody: { color: colors.muted, fontFamily: font.body, fontSize: 15, lineHeight: 22, marginTop: 8 },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(15,17,21,0.34)', justifyContent: 'center', paddingHorizontal: 18, paddingTop: 72, paddingBottom: 28 },
   modalSheet: { maxWidth: 520, width: '100%', alignSelf: 'center', borderRadius: 30, padding: 16, backgroundColor: 'rgba(248,250,249,0.96)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.82)', shadowColor: '#000', shadowOpacity: 0.18, shadowRadius: 30, shadowOffset: { width: 0, height: 14 }, elevation: 10 },
+  liveLinkCard: { borderRadius: 26, padding: 18, backgroundColor: 'rgba(255,255,255,0.84)', borderWidth: 1, borderColor: 'rgba(32,38,35,0.07)' },
+  liveIcon: { width: 48, height: 48, borderRadius: 18, alignItems: 'center', justifyContent: 'center', backgroundColor: '#A8F0D4', marginBottom: 13 },
+  liveIconText: { color: '#173A33', fontFamily: font.semibold, fontWeight: '800', fontSize: 12, backgroundColor: 'transparent', includeFontPadding: false },
+  modalKicker: { color: colors.tealDark, fontFamily: font.semibold, fontWeight: '700', fontSize: 11, textTransform: 'uppercase', backgroundColor: 'transparent', includeFontPadding: false },
   shareCardCanvas: { backgroundColor: '#E4F8F0', borderRadius: 28, overflow: 'hidden' },
   shareGraphic: { minHeight: 520, justifyContent: 'space-between', borderRadius: 28, overflow: 'hidden', padding: 18 },
   shareGraphicImage: { borderRadius: 28 },
@@ -487,10 +469,11 @@ const styles = StyleSheet.create({
   shareGraphicBody: { color: 'rgba(255,255,255,0.88)', fontFamily: font.body, fontWeight: '500', fontSize: 16, lineHeight: 22, marginTop: 12 },
   shareGraphicButton: { minHeight: 52, borderRadius: 18, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 18 },
   shareGraphicButtonText: { color: '#173A33', fontFamily: font.semibold, fontWeight: '800', fontSize: 15 },
-  modalTitle: { color: colors.charcoal, fontFamily: font.heading, fontWeight: '700', fontSize: 23, letterSpacing: -0.2, marginTop: 16 },
-  modalBody: { color: colors.muted, fontFamily: font.body, fontSize: 14.5, lineHeight: 21, marginTop: 5 },
-  modalStatus: { color: colors.tealDark, fontFamily: font.semibold, fontWeight: '700', fontSize: 13, textAlign: 'center', marginTop: 10 },
-  modalActions: { gap: 9, marginTop: 14 },
+  modalTitle: { color: colors.charcoal, fontFamily: font.heading, fontWeight: '700', fontSize: 23, lineHeight: 28, letterSpacing: -0.2, marginTop: 5, backgroundColor: 'transparent', includeFontPadding: false },
+  modalBody: { color: colors.muted, fontFamily: font.body, fontSize: 14.5, lineHeight: 21, marginTop: 7, backgroundColor: 'transparent', includeFontPadding: false },
+  linkPreview: { color: colors.tealDark, fontFamily: font.semibold, fontWeight: '700', fontSize: 12, lineHeight: 17, marginTop: 14, paddingHorizontal: 12, paddingVertical: 10, borderRadius: 14, backgroundColor: 'rgba(168,240,212,0.24)', overflow: 'hidden', includeFontPadding: false },
+  modalStatus: { color: colors.tealDark, fontFamily: font.semibold, fontWeight: '700', fontSize: 13, textAlign: 'center', marginTop: 12, backgroundColor: 'transparent', includeFontPadding: false },
+  modalActions: { gap: 10, marginTop: 14 },
   closeModalButton: { minHeight: 44, alignItems: 'center', justifyContent: 'center' },
-  closeModalText: { color: colors.tealDark, fontFamily: font.semibold, fontWeight: '700', fontSize: 14 },
+  closeModalText: { color: colors.tealDark, fontFamily: font.semibold, fontWeight: '700', fontSize: 14, backgroundColor: 'transparent', includeFontPadding: false },
 });

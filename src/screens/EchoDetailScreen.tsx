@@ -305,7 +305,7 @@ function getNextStepBody(trip: TripDraft, highlightCount: number) {
   if (highlightCount <= 0) return 'This trip becomes easier to compare once you choose the moments that actually define it.';
   if (highlightCount < 3) return 'Pick the places, saves, or notes that make this trip feel different from the others.';
   if (trip.ideas.length < 4) return 'You have enough anchors to remember why this trip matters. A few more supporting ideas can make the decision easier.';
-  return 'You have enough inspiration to compare it against other trip notebooks or move it into the plan.';
+  return 'You have enough inspiration to compare it against other trip drafts or move it into the plan.';
 }
 
 function getStatusIcon(status: string) {

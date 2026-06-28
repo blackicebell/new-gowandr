@@ -47,7 +47,7 @@ export function NewTripScreen({ onBack, onCreate, initialTrip, onUpdate, onDelet
   return (
     <View>
       <Text style={[styles.back, { color: '#137D68', fontFamily: font.semibold }]} onPress={onBack}>Back to Trip Ideas</Text>
-      <Text style={[styles.title, { color: theme.charcoal, fontFamily: font.heading }]}>{isEditing ? 'Edit trip notebook' : 'New trip notebook'}</Text>
+      <Text style={[styles.title, { color: theme.charcoal, fontFamily: font.heading }]}>{isEditing ? 'Edit trip draft' : 'New trip draft'}</Text>
       <Text style={[styles.body, { color: theme.muted, fontFamily: font.body }]}>{isEditing ? 'Update the brief so this trip is easier to compare later.' : 'Start with a name and a cover photo. You can add the details after it has a home.'}</Text>
 
       {!isEditing && (
@@ -115,7 +115,7 @@ export function NewTripScreen({ onBack, onCreate, initialTrip, onUpdate, onDelet
         {!isEditing && step === 1 ? (
           <Button label="Next: Add the trip feel" disabled={!canContinue} onPress={() => setStep(2)} />
         ) : (
-          <Button label={isEditing ? 'Save Trip Changes' : 'Save Trip Notebook'} disabled={!title.trim()} onPress={createTrip} />
+          <Button label={isEditing ? 'Save Trip Changes' : 'Save Trip Draft'} disabled={!title.trim()} onPress={createTrip} />
         )}
       </View>
       {isEditing && onDelete && (

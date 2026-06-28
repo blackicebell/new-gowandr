@@ -84,7 +84,7 @@ export function CreateMatchupScreen({
     <View>
       <Text style={styles.back} onPress={onBack}>Back home</Text>
       <Text style={styles.title}>Choose Your Trip</Text>
-      <Text style={styles.body}>Pick 2 to 4 trip notebooks. You will see the highlights first, then answer four quick questions.</Text>
+      <Text style={styles.body}>Pick 2 to 4 trip drafts. You will see the highlights first, then answer four quick questions.</Text>
 
       <VotingInbox sessions={ownedSessions} loading={ownedSessionsLoading} onRefresh={onRefreshSessions} onOpenResults={onOpenSessionResults} />
 

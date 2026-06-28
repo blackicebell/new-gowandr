@@ -59,7 +59,7 @@ export function HomeScreen({
         </View>
       </ImageBackground>
       <View style={styles.heroActions}>
-        <HeroButton label="New Trip Notebook" tone="primary" onPress={onStartDraft} />
+        <HeroButton label="New Trip Draft" tone="primary" onPress={onStartDraft} />
         <HeroButton label="Add Inspiration" onPress={onAddIdea} />
       </View>
 

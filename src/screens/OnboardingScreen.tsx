@@ -1,52 +1,58 @@
-import React, { useState } from 'react';
-import { Image, ImageBackground, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { Animated, Image, ImageBackground, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Button } from '../components/Button';
 import { starterImageUris } from '../data/imageAssets';
 import { font, useThemeColors } from '../theme/colors';
 
 const slides = [
   {
-    eyebrow: 'Save inspiration',
-    title: 'Catch the trip ideas before they disappear.',
-    body: 'Drop in TikToks, Reels, YouTube videos, restaurant links, notes, and random “we should go here” moments.',
+    eyebrow: 'Collect. Shape. Decide.',
+    title: 'Stop collecting ideas. Start taking trips.',
+    body: 'Save what inspires you, turn it into real options, and move toward the trip that feels worth doing.',
     image: starterImageUris.coast,
-    chips: ['Links', 'Notes', 'Videos'],
+    proof: 'Built for real travel decisions',
   },
   {
-    eyebrow: 'Build notebooks',
-    title: 'Turn loose saves into trip notebooks.',
-    body: 'Give each possible trip a name, cover photo, mood, pace, and the highlights that make it worth considering.',
+    eyebrow: 'Collect',
+    title: 'Save anything that makes you want to travel.',
+    body: 'TikToks. Restaurants. Videos. Photos. Random ideas. Keep the spark before it disappears.',
     image: starterImageUris.city,
-    chips: ['Trip mood', 'Pace', 'Highlights'],
+    proof: 'TikTok + Instagram + YouTube',
   },
   {
-    eyebrow: 'Decide together',
-    title: 'Compare the feeling, not just the place.',
-    body: 'Preview the saved highlights first, then answer a few quick questions to see which trip actually pulls you.',
+    eyebrow: 'Shape',
+    title: 'Every great trip starts as a rough idea.',
+    body: 'Shape scattered saves into trip drafts with a mood, pace, cover photo, and the highlights that make each one worth considering.',
     image: starterImageUris.food,
-    chips: ['Highlights first', '4 questions', 'Clear winner'],
+    proof: 'No heavy itinerary required',
   },
   {
-    eyebrow: 'Invite friends',
-    title: 'Share a voting link when the group needs input.',
-    body: 'Friends can open the comparison, add their name, vote, and send feedback back to you. No login needed.',
+    eyebrow: 'Decide',
+    title: 'Stop guessing. See which trip actually pulls you.',
+    body: 'Preview the highlights first. Answer four quick questions. Choose with confidence, solo or with people.',
     image: starterImageUris.nightOut,
-    chips: ['No login', 'Friend votes', 'Reasons'],
+    proof: 'Works solo or together',
   },
   {
-    eyebrow: 'Share the trip',
-    title: 'Make the decision feel real.',
-    body: 'Share a polished trip card, commit to one plan, and keep the next steps simple so the trip keeps moving.',
+    eyebrow: 'Commit',
+    title: 'Where do you want to go first?',
+    body: 'Commit to one trip. Keep the next steps simple. Take one small step at a time until you are ready to go.',
     image: starterImageUris.island,
-    chips: ['Share cards', 'Final plan', 'Checklist'],
+    proof: 'Share cards when it feels real',
   },
 ];
 
 export function OnboardingScreen({ onFinish }: { onFinish: () => void }) {
   const theme = useThemeColors();
   const [index, setIndex] = useState(0);
+  const slideMotion = useRef(new Animated.Value(1)).current;
   const slide = slides[index];
   const isLast = index === slides.length - 1;
+
+  useEffect(() => {
+    slideMotion.setValue(0);
+    Animated.timing(slideMotion, { toValue: 1, duration: 180, useNativeDriver: true }).start();
+  }, [index, slideMotion]);
 
   return (
     <View style={[styles.screen, { backgroundColor: theme.canvas }]}>
@@ -58,7 +64,7 @@ export function OnboardingScreen({ onFinish }: { onFinish: () => void }) {
       </View>
       <ImageBackground source={{ uri: slide.image }} style={styles.hero} imageStyle={styles.heroImage}>
         <View style={styles.shade} />
-        <View style={styles.copy}>
+        <Animated.View style={[styles.copy, { opacity: slideMotion, transform: [{ translateY: slideMotion.interpolate({ inputRange: [0, 1], outputRange: [10, 0] }) }] }]}>
           <View style={styles.dots}>
             {slides.map((item, dotIndex) => (
               <View key={item.title} style={[styles.dot, dotIndex === index && { width: 42, backgroundColor: theme.accent }]} />
@@ -67,17 +73,13 @@ export function OnboardingScreen({ onFinish }: { onFinish: () => void }) {
           <Text style={[styles.eyebrow, { color: theme.accent, fontFamily: font.semibold }]}>{slide.eyebrow}</Text>
           <Text style={[styles.title, { fontFamily: font.heading }]}>{slide.title}</Text>
           <Text style={[styles.body, { fontFamily: font.body }]}>{slide.body}</Text>
-          <View style={styles.chips}>
-            {slide.chips.map((chip) => (
-              <View key={chip} style={styles.chip}>
-                <Text style={[styles.chipText, { fontFamily: font.semibold }]}>{chip}</Text>
-              </View>
-            ))}
+          <View style={styles.proofPill}>
+            <Text style={[styles.proofText, { fontFamily: font.semibold }]}>{slide.proof}</Text>
           </View>
-        </View>
+        </Animated.View>
       </ImageBackground>
       <View style={styles.actions}>
-        <Button label={isLast ? 'Create Your First Trip Notebook' : 'Next'} onPress={() => (isLast ? onFinish() : setIndex((current) => current + 1))} />
+        <Button label={isLast ? 'Create My First Trip' : 'Next'} onPress={() => (isLast ? onFinish() : setIndex((current) => current + 1))} />
         {!isLast && <Button label="Start now" variant="secondary" onPress={onFinish} />}
       </View>
     </View>
@@ -99,8 +101,7 @@ const styles = StyleSheet.create({
   eyebrow: { fontWeight: '800', fontSize: 12, lineHeight: 16, textTransform: 'uppercase', letterSpacing: 0.7, marginBottom: 9 },
   title: { color: '#F8F8F6', fontSize: 34, lineHeight: 40, fontWeight: '700', letterSpacing: -0.34 },
   body: { color: '#F8F8F6', fontSize: 15.5, lineHeight: 23, marginTop: 12, opacity: 0.95, fontWeight: '400' },
-  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 18 },
-  chip: { borderRadius: 999, paddingHorizontal: 12, paddingVertical: 7, backgroundColor: 'rgba(255,255,255,0.18)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.26)' },
-  chipText: { color: '#F8F8F6', fontSize: 11.5, fontWeight: '700' },
+  proofPill: { alignSelf: 'flex-start', borderRadius: 999, paddingHorizontal: 13, paddingVertical: 8, marginTop: 18, backgroundColor: 'rgba(255,255,255,0.18)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.28)' },
+  proofText: { color: '#F8F8F6', fontSize: 11.5, fontWeight: '700' },
   actions: { gap: 10, paddingTop: 16 },
 });

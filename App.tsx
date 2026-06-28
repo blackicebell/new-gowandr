@@ -293,7 +293,7 @@ export default function App() {
       return;
     }
     if (trips.length > 1) {
-      setMomentumMessage('Choose the trip notebook where this inspiration belongs.');
+      setMomentumMessage('Choose the trip draft where this inspiration belongs.');
       setRoute({ name: 'echo' });
       return;
     }

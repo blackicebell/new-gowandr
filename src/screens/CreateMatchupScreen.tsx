@@ -132,7 +132,7 @@ export function CreateMatchupScreen({
       <View style={styles.preparingScreen}>
         <View style={styles.preparingCard}>
           <Text style={styles.preparingLabel}>Preparing comparison</Text>
-          <DecisionMatchupPreview trips={selectedTrips} compact />
+          <DecisionShortlistPreview trips={selectedTrips} compact />
           <Text style={styles.preparingBody}>Pulling your trip ideas into decision mode.</Text>
         </View>
       </View>
@@ -144,7 +144,7 @@ export function CreateMatchupScreen({
       <View style={styles.preparingScreen}>
         <View style={styles.preparingCard}>
           <Text style={styles.preparingLabel}>Finding your strongest pull</Text>
-          <DecisionMatchupPreview trips={selectedTrips} compact />
+          <DecisionShortlistPreview trips={selectedTrips} compact />
           <Text style={styles.preparingBody}>One quick feel-check at a time.</Text>
         </View>
       </View>
@@ -167,7 +167,7 @@ export function CreateMatchupScreen({
           <VotingInbox sessions={ownedSessions} loading={ownedSessionsLoading} onRefresh={onRefreshSessions} onOpenResults={onOpenSessionResults} onDeleteSession={onDeleteSession} />
         )}
 
-        <DecisionMatchupPreview trips={selectedTrips} />
+        <DecisionShortlistPreview trips={selectedTrips} />
 
         <View style={styles.decidePanel}>
           <Text style={styles.decideLabel}>Choose your path</Text>
@@ -205,9 +205,9 @@ export function CreateMatchupScreen({
     return (
       <View>
         <Text style={styles.back} onPress={() => setFlowStep('decide')}>Back to decision</Text>
-        <Text style={styles.heroDecisionTitle}>We'll compare these one decision at a time.</Text>
+        <Text style={styles.heroDecisionTitle}>We'll compare your shortlist one decision at a time.</Text>
         <Text style={styles.body}>About 45 seconds. Private by default. No sharing unless you choose it.</Text>
-        <DecisionMatchupPreview trips={selectedTrips} />
+        <DecisionShortlistPreview trips={selectedTrips} />
         <View style={styles.introCard}>
           <Text style={styles.introKicker}>What happens next</Text>
           <Text style={styles.introTitle}>You will answer a few quick feel-checks.</Text>
@@ -322,7 +322,7 @@ export function CreateMatchupScreen({
       <View style={styles.selectionBar}>
         <View style={styles.selectionCopy}>
           <Text style={styles.selectionCount}>{selectedTrips.length} {selectedTrips.length === 1 ? 'Trip' : 'Trips'} Selected</Text>
-          <Text style={styles.selectionNames} numberOfLines={1}>{selectedTrips.length === 2 ? selectedTrips.map((trip) => trip.title).join(' vs ') : selectedTripNames || 'Choose at least two trip ideas.'}</Text>
+          <Text style={styles.selectionNames} numberOfLines={1}>{selectedTrips.length >= 2 ? `${selectedTrips.length} trips in your shortlist` : selectedTripNames || 'Choose at least two trip ideas.'}</Text>
         </View>
         <TouchableOpacity disabled={selectedTrips.length < 2} onPress={continueToDecision} style={[styles.continueButton, selectedTrips.length < 2 && styles.continueButtonDisabled]}>
           <Text style={styles.continueButtonText}>Continue &gt;</Text>
@@ -376,41 +376,35 @@ function DecisionChoiceCard({
   );
 }
 
-function DecisionMatchupPreview({ trips, compact }: { trips: TripDraft[]; compact?: boolean }) {
-  if (trips.length === 2) {
-    return (
-      <View style={[styles.matchupPreview, compact && styles.matchupPreviewCompact]}>
-        {!compact && <View style={styles.matchupRule} />}
-        <MatchupTripLine trip={trips[0]} />
-        <View style={styles.vsPill}>
-          <Text style={styles.vsText}>VS</Text>
-        </View>
-        <MatchupTripLine trip={trips[1]} alignRight />
-        {!compact && <View style={styles.matchupRule} />}
-      </View>
-    );
-  }
-
+function DecisionShortlistPreview({ trips, compact }: { trips: TripDraft[]; compact?: boolean }) {
   return (
-    <View style={[styles.matchupPreview, compact && styles.matchupPreviewCompact]}>
+    <View style={[styles.shortlistPreview, compact && styles.shortlistPreviewCompact]}>
+      <View style={styles.shortlistHeader}>
+        <Text style={styles.shortlistLabel}>Your shortlist</Text>
+        <Text style={styles.shortlistCount}>{trips.length} contenders</Text>
+      </View>
       {trips.map((trip) => (
-        <MatchupTripLine key={trip.id} trip={trip} />
+        <ShortlistTripRow key={trip.id} trip={trip} compact={compact} />
       ))}
     </View>
   );
 }
 
-function MatchupTripLine({ trip, alignRight }: { trip: TripDraft; alignRight?: boolean }) {
+function ShortlistTripRow({ trip, compact }: { trip: TripDraft; compact?: boolean }) {
   const highlights = getTopHighlights(trip);
   return (
-    <View style={[styles.matchupTripLine, alignRight && styles.matchupTripLineRight]}>
-      <ImageBackground source={{ uri: trip.heroImage }} style={styles.matchupThumb} imageStyle={styles.matchupThumbImage} />
-      <View style={[styles.matchupTripCopy, alignRight && styles.matchupTripCopyRight]}>
-        <Text style={styles.matchupTripTheme} numberOfLines={1}>{getTripThemeLabel(trip)}</Text>
-        <Text style={styles.matchupTripTitle} numberOfLines={1}>{trip.title}</Text>
-        <Text style={styles.matchupTripMeta} numberOfLines={1}>{getMetaChips(trip).join(' / ')}</Text>
-        {!!highlights.length && (
-          <Text style={styles.matchupHighlights} numberOfLines={1}>{highlights.join(' / ')}</Text>
+    <View style={[styles.shortlistTripRow, compact && styles.shortlistTripRowCompact]}>
+      <ImageBackground source={{ uri: trip.heroImage }} style={[styles.shortlistThumb, compact && styles.shortlistThumbCompact]} imageStyle={styles.shortlistThumbImage} />
+      <View style={styles.shortlistTripCopy}>
+        <View style={styles.shortlistTripTop}>
+          <Text style={styles.shortlistTripTitle} numberOfLines={1}>{trip.title}</Text>
+          <Text style={styles.shortlistTripTheme} numberOfLines={1}>{getTripThemeLabel(trip)}</Text>
+        </View>
+        {!compact && !!highlights.length && (
+          <Text style={styles.shortlistHighlights} numberOfLines={2}>{highlights.join(' / ')}</Text>
+        )}
+        {compact && (
+          <Text style={styles.shortlistHighlightsCompact} numberOfLines={1}>{getMetaChips(trip).join(' / ')}</Text>
         )}
       </View>
     </View>
@@ -680,28 +674,22 @@ const styles = StyleSheet.create({
   filterRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 24 },
   filterChip: { minHeight: 36, borderRadius: 18, paddingHorizontal: 14, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.62)', borderWidth: 1, borderColor: 'rgba(32,38,35,0.06)' },
   filterChipText: { color: colors.muted, fontFamily: font.semibold, fontWeight: '700', fontSize: 12, backgroundColor: 'transparent', includeFontPadding: false },
-  selectedSummary: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 22 },
-  summaryCard: { width: '48%', borderRadius: 22, padding: 8, backgroundColor: 'rgba(255,255,255,0.80)', borderWidth: 1, borderColor: 'rgba(32,38,35,0.07)', shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 2 },
-  summaryImage: { height: 96, borderRadius: 17, overflow: 'hidden', justifyContent: 'flex-end', padding: 11 },
-  summaryImageStyle: { borderRadius: 17 },
-  summaryShade: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.24)' },
-  summaryTitle: { color: colors.white, fontFamily: font.heading, fontWeight: '700', fontSize: 17, lineHeight: 21, letterSpacing: -0.14, textShadowColor: 'rgba(0,0,0,0.25)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 5, backgroundColor: 'transparent', includeFontPadding: false },
-  summaryMeta: { color: colors.muted, fontFamily: font.semibold, fontWeight: '700', fontSize: 11.5, marginTop: 8, paddingHorizontal: 2, backgroundColor: 'transparent', includeFontPadding: false },
-  matchupPreview: { borderRadius: 30, padding: 18, gap: 11, backgroundColor: 'rgba(255,255,255,0.90)', borderWidth: 1, borderColor: 'rgba(32,38,35,0.07)', shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 18, shadowOffset: { width: 0, height: 8 }, elevation: 4, marginBottom: 22 },
-  matchupPreviewCompact: { marginBottom: 0, shadowOpacity: 0, backgroundColor: 'rgba(168,240,212,0.20)' },
-  matchupRule: { height: 1, backgroundColor: 'rgba(32,38,35,0.08)', marginHorizontal: 2 },
-  matchupTripLine: { minHeight: 92, flexDirection: 'row', alignItems: 'center', gap: 12 },
-  matchupTripLineRight: { flexDirection: 'row-reverse' },
-  matchupThumb: { width: 92, height: 66, borderRadius: 18, overflow: 'hidden', backgroundColor: 'rgba(32,38,35,0.08)' },
-  matchupThumbImage: { borderRadius: 17 },
-  matchupTripCopy: { flex: 1 },
-  matchupTripCopyRight: { alignItems: 'flex-end' },
-  matchupTripTheme: { color: colors.tealDark, fontFamily: font.semibold, fontWeight: '800', fontSize: 10.5, textTransform: 'uppercase', marginBottom: 4, backgroundColor: 'transparent', includeFontPadding: false },
-  matchupTripTitle: { color: colors.charcoal, fontFamily: font.heading, fontWeight: '700', fontSize: 19, lineHeight: 23, letterSpacing: -0.18, backgroundColor: 'transparent', includeFontPadding: false },
-  matchupTripMeta: { color: colors.muted, fontFamily: font.semibold, fontWeight: '600', fontSize: 13, marginTop: 4, backgroundColor: 'transparent', includeFontPadding: false },
-  matchupHighlights: { color: 'rgba(32,38,35,0.58)', fontFamily: font.body, fontSize: 12.5, lineHeight: 18, marginTop: 6, backgroundColor: 'transparent', includeFontPadding: false },
-  vsPill: { alignSelf: 'center', minWidth: 54, minHeight: 36, borderRadius: 18, paddingHorizontal: 15, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.charcoal, shadowColor: '#000', shadowOpacity: 0.14, shadowRadius: 12, shadowOffset: { width: 0, height: 5 }, elevation: 4 },
-  vsText: { color: colors.white, fontFamily: font.semibold, fontWeight: '800', fontSize: 12, letterSpacing: 0.6, backgroundColor: 'transparent', includeFontPadding: false },
+  shortlistPreview: { borderRadius: 30, padding: 18, gap: 10, backgroundColor: 'rgba(255,255,255,0.90)', borderWidth: 1, borderColor: 'rgba(32,38,35,0.07)', shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 18, shadowOffset: { width: 0, height: 8 }, elevation: 4, marginBottom: 22 },
+  shortlistPreviewCompact: { marginBottom: 0, shadowOpacity: 0, backgroundColor: 'rgba(168,240,212,0.20)' },
+  shortlistHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 10, borderBottomWidth: 1, borderBottomColor: 'rgba(32,38,35,0.08)' },
+  shortlistLabel: { color: colors.tealDark, fontFamily: font.semibold, fontWeight: '800', fontSize: 11, textTransform: 'uppercase', backgroundColor: 'transparent', includeFontPadding: false },
+  shortlistCount: { color: colors.muted, fontFamily: font.semibold, fontWeight: '700', fontSize: 12, backgroundColor: 'transparent', includeFontPadding: false },
+  shortlistTripRow: { minHeight: 112, flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: 'rgba(32,38,35,0.06)' },
+  shortlistTripRowCompact: { minHeight: 72, paddingVertical: 6 },
+  shortlistThumb: { width: 104, height: 78, borderRadius: 20, overflow: 'hidden', backgroundColor: 'rgba(32,38,35,0.08)' },
+  shortlistThumbCompact: { width: 76, height: 54, borderRadius: 17 },
+  shortlistThumbImage: { borderRadius: 20 },
+  shortlistTripCopy: { flex: 1 },
+  shortlistTripTop: { gap: 4 },
+  shortlistTripTitle: { color: colors.charcoal, fontFamily: font.heading, fontWeight: '700', fontSize: 20, lineHeight: 24, letterSpacing: -0.2, backgroundColor: 'transparent', includeFontPadding: false },
+  shortlistTripTheme: { color: colors.tealDark, fontFamily: font.semibold, fontWeight: '800', fontSize: 11, textTransform: 'uppercase', backgroundColor: 'transparent', includeFontPadding: false },
+  shortlistHighlights: { color: 'rgba(32,38,35,0.62)', fontFamily: font.body, fontSize: 13, lineHeight: 19, marginTop: 8, backgroundColor: 'transparent', includeFontPadding: false },
+  shortlistHighlightsCompact: { color: colors.muted, fontFamily: font.semibold, fontWeight: '600', fontSize: 12.5, marginTop: 4, backgroundColor: 'transparent', includeFontPadding: false },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, marginTop: 4 },
   sectionTitle: { color: colors.charcoal, fontFamily: font.heading, fontWeight: '700', fontSize: 20, letterSpacing: -0.2 },
   sectionCount: { color: colors.tealDark, fontFamily: font.semibold, fontWeight: '700', fontSize: 12 },

@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Alert, ImageBackground, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 import { Button } from '../components/Button';
-import { buildMatchupShareUrl, createMatchupSession, isSharedVotingConfigured } from '../backend/matchupSessions';
+import { buildMatchupShareUrl, createMatchupSession } from '../backend/matchupSessions';
 import { explainResult, scoreMatchup } from '../logic/matchupScore';
 import { colors, font } from '../theme/colors';
 import { MatchupSession, TripDraft } from '../types';
@@ -89,18 +89,13 @@ export function CreateMatchupScreen({
       ideas: trip.ideas.filter((idea) => idea.priority !== 'Skip' && (includedHighlightIds.length === 0 || includedHighlightIds.includes(idea.id))),
     }));
 
-    if (!isSharedVotingConfigured()) {
-      setShareState('missingConfig');
-      setSharePreview({ url: buildMatchupShareUrl('preview-only'), trips: curatedTrips, matchupName: 'Weekend Escape', previewOnly: true });
-      return;
-    }
-
     setShareState('creating');
     try {
       const sessionId = await createMatchupSession('Weekend Escape', curatedTrips);
       setShareState('idle');
       if (!sessionId) {
-        await shareMatchupInvite('Weekend Escape', curatedTrips);
+        setShareState('missingConfig');
+        setSharePreview({ url: buildMatchupShareUrl('preview-only'), trips: curatedTrips, matchupName: 'Weekend Escape', previewOnly: true });
         return;
       }
       onSessionCreated(sessionId);

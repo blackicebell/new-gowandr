@@ -396,10 +396,10 @@ export default function App() {
     return null;
   };
 
-  const finishOnboarding = async () => {
+  const finishOnboarding = () => {
     setHasSeenOnboarding(true);
-    await saveHasSeenOnboarding();
     setRoute({ name: 'newTrip' });
+    saveHasSeenOnboarding().catch(() => undefined);
   };
 
   if (!fontsLoaded) {

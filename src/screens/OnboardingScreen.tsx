@@ -78,11 +78,7 @@ export function OnboardingScreen({ onFinish }: { onFinish: () => void }) {
       </ImageBackground>
       <View style={styles.actions}>
         <Button label={isLast ? 'Create Your First Trip Notebook' : 'Next'} onPress={() => (isLast ? onFinish() : setIndex((current) => current + 1))} />
-        {!isLast && (
-          <TouchableOpacity onPress={onFinish} style={styles.secondaryAction}>
-            <Text style={[styles.secondaryActionText, { fontFamily: font.semibold }]}>Start now</Text>
-          </TouchableOpacity>
-        )}
+        {!isLast && <Button label="Start now" variant="secondary" onPress={onFinish} />}
       </View>
     </View>
   );
@@ -107,6 +103,4 @@ const styles = StyleSheet.create({
   chip: { borderRadius: 999, paddingHorizontal: 12, paddingVertical: 7, backgroundColor: 'rgba(255,255,255,0.18)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.26)' },
   chipText: { color: '#F8F8F6', fontSize: 11.5, fontWeight: '700' },
   actions: { gap: 10, paddingTop: 16 },
-  secondaryAction: { minHeight: 44, alignItems: 'center', justifyContent: 'center' },
-  secondaryActionText: { color: '#137D68', fontWeight: '700', fontSize: 14 },
 });

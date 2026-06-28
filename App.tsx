@@ -17,7 +17,7 @@ import { OnboardingScreen } from './src/screens/OnboardingScreen';
 import { NewTripScreen } from './src/screens/NewTripScreen';
 import { loadTrips, saveTrips } from './src/storage/tripsStorage';
 import { loadHasSeenOnboarding, saveHasSeenOnboarding } from './src/storage/onboardingStorage';
-import { loadMatchupSession, submitMatchupVotes } from './src/backend/matchupSessions';
+import { deleteMatchupSession, loadMatchupSession, submitMatchupVotes } from './src/backend/matchupSessions';
 import { loadOwnedMatchupSessionIds, saveOwnedMatchupSessionIds } from './src/storage/matchupSessionStorage';
 import { PremiumBackground } from './src/components/PremiumBackground';
 import { PressableScale } from './src/components/PressableScale';
@@ -314,6 +314,12 @@ export default function App() {
     setOwnedSessionsLoading(false);
   };
 
+  const deleteOwnedSession = async (sessionId: string) => {
+    setOwnedSessionIds((current) => current.filter((item) => item !== sessionId));
+    setOwnedSessions((current) => current.filter((item) => item.id !== sessionId));
+    deleteMatchupSession(sessionId).catch(() => undefined);
+  };
+
   const renderRoute = () => {
     if (route.name === 'home') {
       return <HomeScreen trips={trips} onOpenTrip={(tripId) => setRoute({ name: 'detail', tripId })} onStartDraft={() => setRoute({ name: 'newTrip' })} onStartMatchup={() => setRoute({ name: 'createMatchup' })} onAddIdea={openFastAdd} onOpenPlan={() => setRoute({ name: 'lab' })} />;
@@ -354,6 +360,7 @@ export default function App() {
           onSessionCreated={rememberMatchupSession}
           onRefreshSessions={refreshOwnedSessions}
           onOpenSessionResults={(sessionId) => setRoute({ name: 'sessionResults', sessionId })}
+          onDeleteSession={deleteOwnedSession}
         />
       );
     }

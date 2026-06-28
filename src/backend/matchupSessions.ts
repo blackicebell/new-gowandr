@@ -1,4 +1,4 @@
-import { addDoc, arrayUnion, collection, doc, getDoc, serverTimestamp, updateDoc } from '@firebase/firestore';
+import { addDoc, arrayUnion, collection, deleteDoc, doc, getDoc, serverTimestamp, updateDoc } from '@firebase/firestore';
 import { getFirebaseRuntime, hasFirebaseConfig } from './firebase';
 import { MatchupSession, TripDraft, VoteAnswer } from '../types';
 
@@ -56,6 +56,14 @@ export async function submitMatchupVotes(sessionId: string, votes: VoteAnswer[])
     votes: arrayUnion(votes),
     updatedAt: new Date().toISOString(),
   });
+  return true;
+}
+
+export async function deleteMatchupSession(sessionId: string) {
+  const runtime = getFirebaseRuntime();
+  if (!runtime) return false;
+
+  await deleteDoc(doc(runtime.db, MATCHUP_SESSIONS_COLLECTION, sessionId));
   return true;
 }
 

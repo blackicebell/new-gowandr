@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ImageBackground, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ImageBackground, Linking, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { Button } from '../components/Button';
 import { Chip } from '../components/Chip';
 import { SourceThumbnail, getSourceLabel } from '../components/SourceThumbnail';
@@ -195,15 +195,26 @@ function TripHighlightPreview({ trip }: { trip: TripDraft }) {
       </ImageBackground>
       <View style={styles.highlightRow}>
         {(highlights.length ? highlights : [{ id: 'empty', title: 'Add saved links to make this trip easier to feel.', priority: 'Maybe' as const, tags: [], category: 'Other' as const }]).map((idea) => (
-          <View key={idea.id} style={styles.highlightCard}>
+          <TouchableOpacity key={idea.id} disabled={!idea.link} onPress={() => openInspirationLink(idea.link)} style={[styles.highlightCard, idea.link && styles.highlightCardLinked]}>
             <SourceThumbnail link={idea.link} priority={idea.priority} />
             <Text numberOfLines={1} style={styles.highlightTitle}>{idea.title}</Text>
-            <Text numberOfLines={1} style={styles.highlightSource}>{getSourceLabel(idea.link)}</Text>
-          </View>
+            <Text numberOfLines={1} style={styles.highlightSource}>{formatHighlightSource(idea.link)}</Text>
+          </TouchableOpacity>
         ))}
       </View>
     </View>
   );
+}
+
+function openInspirationLink(link?: string) {
+  if (!link) return;
+  const normalized = /^https?:\/\//i.test(link) ? link : `https://${link}`;
+  Linking.openURL(normalized).catch(() => undefined);
+}
+
+function formatHighlightSource(link?: string) {
+  const label = getSourceLabel(link);
+  return link ? `Open ${label}` : label;
 }
 
 const styles = StyleSheet.create({
@@ -223,6 +234,7 @@ const styles = StyleSheet.create({
   playlistMeta: { color: 'rgba(255,255,255,0.86)', fontFamily: font.body, fontSize: 13, lineHeight: 18, marginTop: 4, textTransform: 'capitalize' },
   highlightRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginTop: 12 },
   highlightCard: { flex: 1, minWidth: '30%', borderRadius: 18, overflow: 'hidden', backgroundColor: 'rgba(255,255,255,0.86)', borderWidth: 1, borderColor: 'rgba(32,38,35,0.06)' },
+  highlightCardLinked: { borderColor: 'rgba(47,175,138,0.18)' },
   highlightTitle: { color: colors.charcoal, fontFamily: font.semibold, fontWeight: '700', fontSize: 12, marginHorizontal: 9, marginTop: 8 },
   highlightSource: { color: colors.tealDark, fontFamily: font.body, fontWeight: '500', fontSize: 11, marginHorizontal: 9, marginTop: 2, marginBottom: 9 },
   cards: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },

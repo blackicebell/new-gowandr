@@ -1,11 +1,11 @@
 import React, { useMemo, useState } from 'react';
-import { ImageBackground, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, ImageBackground, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Button } from '../components/Button';
 import { buildMatchupShareUrl, createMatchupSession, isSharedVotingConfigured } from '../backend/matchupSessions';
-import { scoreMatchup } from '../logic/matchupScore';
+import { explainResult, scoreMatchup } from '../logic/matchupScore';
 import { colors, font } from '../theme/colors';
 import { MatchupSession, TripDraft } from '../types';
-import { shareMatchupInvite } from '../utils/shareCards';
+import { shareMatchupInvite, shareMatchupResult } from '../utils/shareCards';
 
 export function CreateMatchupScreen({
   trips,
@@ -16,6 +16,7 @@ export function CreateMatchupScreen({
   onSessionCreated,
   onRefreshSessions,
   onOpenSessionResults,
+  onDeleteSession,
 }: {
   trips: TripDraft[];
   ownedSessions: MatchupSession[];
@@ -25,6 +26,7 @@ export function CreateMatchupScreen({
   onSessionCreated: (sessionId: string) => void;
   onRefreshSessions: () => void;
   onOpenSessionResults: (sessionId: string) => void;
+  onDeleteSession: (sessionId: string) => void;
 }) {
   const initialSelected = trips.slice(0, Math.min(2, trips.length)).map((trip) => trip.id);
   const [selected, setSelected] = useState<string[]>(initialSelected);
@@ -86,7 +88,7 @@ export function CreateMatchupScreen({
       <Text style={styles.title}>Choose Your Trip</Text>
       <Text style={styles.body}>Pick 2 to 4 trip drafts. You will see the highlights first, then answer four quick questions.</Text>
 
-      <VotingInbox sessions={ownedSessions} loading={ownedSessionsLoading} onRefresh={onRefreshSessions} onOpenResults={onOpenSessionResults} />
+      <VotingInbox sessions={ownedSessions} loading={ownedSessionsLoading} onRefresh={onRefreshSessions} onOpenResults={onOpenSessionResults} onDeleteSession={onDeleteSession} />
 
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>Selected Trips</Text>
@@ -134,11 +136,13 @@ function VotingInbox({
   loading,
   onRefresh,
   onOpenResults,
+  onDeleteSession,
 }: {
   sessions: MatchupSession[];
   loading: boolean;
   onRefresh: () => void;
   onOpenResults: (sessionId: string) => void;
+  onDeleteSession: (sessionId: string) => void;
 }) {
   if (!sessions.length && !loading) {
     return (
@@ -167,19 +171,31 @@ function VotingInbox({
       </View>
       <View style={styles.inboxList}>
         {sessions.slice(0, 3).map((session) => (
-          <VotingInboxCard key={session.id} session={session} onOpenResults={() => onOpenResults(session.id)} />
+          <VotingInboxCard key={session.id} session={session} onOpenResults={() => onOpenResults(session.id)} onDelete={() => onDeleteSession(session.id)} />
         ))}
       </View>
     </View>
   );
 }
 
-function VotingInboxCard({ session, onOpenResults }: { session: MatchupSession; onOpenResults: () => void }) {
+function VotingInboxCard({ session, onOpenResults, onDelete }: { session: MatchupSession; onOpenResults: () => void; onDelete: () => void }) {
   const voteBatches = session.votes ?? [];
   const votes = voteBatches.flat();
   const hasVotes = votes.length > 0;
-  const leader = hasVotes ? scoreMatchup(session.trips, votes)[0] : undefined;
+  const results = hasVotes ? scoreMatchup(session.trips, votes) : [];
+  const leader = results[0];
   const updated = formatSessionDate(session.updatedAt);
+  const confidence = leader ? Math.max(62, Math.min(94, Math.round(72 + leader.score / 8))) : 0;
+  const shareResults = () => {
+    if (!leader) return;
+    shareMatchupResult(session.matchupName, leader, confidence, explainResult(results));
+  };
+  const confirmDelete = () => {
+    Alert.alert('Delete comparison?', 'This removes the saved comparison and its responses from your inbox.', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Delete', style: 'destructive', onPress: onDelete },
+    ]);
+  };
 
   return (
     <View style={styles.inboxCard}>
@@ -193,9 +209,19 @@ function VotingInboxCard({ session, onOpenResults }: { session: MatchupSession; 
         </View>
       </View>
       <Text style={styles.inboxCardBody}>{leader ? `${leader.trip.title} is leading right now.` : 'Waiting for the first response.'}</Text>
-      <TouchableOpacity disabled={!hasVotes} onPress={onOpenResults} style={[styles.resultsButton, !hasVotes && styles.resultsButtonDisabled]}>
-        <Text style={[styles.resultsButtonText, !hasVotes && styles.resultsButtonTextDisabled]}>{hasVotes ? 'View results' : 'No votes yet'}</Text>
-      </TouchableOpacity>
+      <View style={styles.inboxActions}>
+        <TouchableOpacity onPress={onOpenResults} style={styles.resultsButton}>
+          <Text style={styles.resultsButtonText}>{hasVotes ? 'Review results' : 'Open details'}</Text>
+        </TouchableOpacity>
+        {hasVotes && (
+          <TouchableOpacity onPress={shareResults} style={styles.secondaryInboxButton}>
+            <Text style={styles.secondaryInboxButtonText}>Share</Text>
+          </TouchableOpacity>
+        )}
+        <TouchableOpacity onPress={confirmDelete} style={styles.deleteSessionButton}>
+          <Text style={styles.deleteSessionText}>Delete</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -270,10 +296,13 @@ const styles = StyleSheet.create({
   responseBadgeActive: { backgroundColor: '#A8F0D4', borderColor: 'rgba(47,175,138,0.22)' },
   responseBadgeText: { color: '#173A33', fontFamily: font.semibold, fontWeight: '700', fontSize: 14 },
   inboxCardBody: { color: colors.muted, fontFamily: font.body, fontSize: 14, lineHeight: 20, marginTop: 10 },
-  resultsButton: { marginTop: 12, minHeight: 42, borderRadius: 15, alignItems: 'center', justifyContent: 'center', backgroundColor: '#A8F0D4' },
-  resultsButtonDisabled: { backgroundColor: 'rgba(32,38,35,0.06)' },
+  inboxActions: { gap: 8, marginTop: 12 },
+  resultsButton: { minHeight: 42, borderRadius: 15, alignItems: 'center', justifyContent: 'center', backgroundColor: '#A8F0D4' },
   resultsButtonText: { color: '#173A33', fontFamily: font.semibold, fontWeight: '700', fontSize: 13 },
-  resultsButtonTextDisabled: { color: 'rgba(32,38,35,0.42)' },
+  secondaryInboxButton: { minHeight: 40, borderRadius: 15, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.74)', borderWidth: 1, borderColor: 'rgba(32,38,35,0.07)' },
+  secondaryInboxButtonText: { color: colors.tealDark, fontFamily: font.semibold, fontWeight: '700', fontSize: 13 },
+  deleteSessionButton: { minHeight: 36, alignItems: 'center', justifyContent: 'center' },
+  deleteSessionText: { color: '#B84A3F', fontFamily: font.semibold, fontWeight: '600', fontSize: 13 },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, marginTop: 4 },
   sectionTitle: { color: colors.charcoal, fontFamily: font.heading, fontWeight: '700', fontSize: 20, letterSpacing: -0.2 },
   sectionCount: { color: colors.tealDark, fontFamily: font.semibold, fontWeight: '700', fontSize: 12 },

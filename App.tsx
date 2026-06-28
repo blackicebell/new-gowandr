@@ -47,7 +47,7 @@ export default function App() {
   });
   const [route, setRoute] = useState<Route>({ name: 'home' });
   const [trips, setTrips] = useState<TripDraft[]>(demoTrips);
-  const [hasSeenOnboarding, setHasSeenOnboarding] = useState<boolean | undefined>();
+  const [hasSeenOnboarding, setHasSeenOnboarding] = useState(false);
   const [hasLoadedTrips, setHasLoadedTrips] = useState(false);
   const [momentumMessage, setMomentumMessage] = useState<string | undefined>();
   const [sharedSession, setSharedSession] = useState<MatchupSession | undefined>();
@@ -402,8 +402,15 @@ export default function App() {
     setRoute({ name: 'newTrip' });
   };
 
-  if (!fontsLoaded || hasSeenOnboarding === undefined) {
-    return <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.canvasDeep }]} />;
+  if (!fontsLoaded) {
+    return (
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.canvas }]}>
+        <View style={styles.loadingState}>
+          <Image source={require('./assets/brand/gowandr-logo-full-color.png')} style={styles.loadingLogo} resizeMode="contain" />
+          <Text style={styles.loadingText}>Opening GoWandr...</Text>
+        </View>
+      </SafeAreaView>
+    );
   }
 
   if (hasSeenOnboarding === false && route.name !== 'sharedVoting') {
@@ -554,4 +561,7 @@ const styles = StyleSheet.create({
   navItemActive: { backgroundColor: 'rgba(168,240,212,0.54)' },
   navText: { fontWeight: '600', fontSize: 12, lineHeight: 14, letterSpacing: 0, textAlign: 'center' },
   navIndicator: { width: 22, height: 4, borderRadius: 999, marginTop: 4 },
+  loadingState: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 28 },
+  loadingLogo: { width: 150, height: 38 },
+  loadingText: { marginTop: 14, color: '#137D68', fontSize: 14, fontWeight: '600' },
 });

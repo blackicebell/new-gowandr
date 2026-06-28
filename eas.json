@@ -5,7 +5,10 @@
   },
   "build": {
     "base": {
-      "node": "20.19.4"
+      "node": "20.19.4",
+      "ios": {
+        "image": "macos-sequoia-15.6-xcode-26.0"
+      }
     },
     "development": {
       "extends": "base",

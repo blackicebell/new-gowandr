@@ -45,7 +45,7 @@ export function EchoDetailScreen({ trip, onBack, onAddIdea, onEditTrip, onDelete
 
       <View style={styles.momentumCard}>
         <View style={styles.momentumTop}>
-          <View>
+          <View style={styles.momentumCopy}>
             <Text style={[styles.cardKicker, { fontFamily: font.semibold }]}>Next step</Text>
             <Text style={[styles.momentumTitle, { fontFamily: font.heading }]}>{getNextStepTitle(trip, mustDos.length)}</Text>
           </View>
@@ -358,6 +358,7 @@ const styles = StyleSheet.create({
   subtitle: { color: 'rgba(255,255,255,0.75)', fontSize: 16, lineHeight: 23, marginTop: 8, fontWeight: '500' },
   momentumCard: { gap: 13, backgroundColor: 'rgba(255,255,255,0.86)', borderRadius: 26, padding: 22, borderWidth: 1, borderColor: 'rgba(32,38,35,0.06)', shadowColor: '#000', shadowOpacity: 0.10, shadowRadius: 22, shadowOffset: { width: 0, height: 8 }, elevation: 5 },
   momentumTop: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 14 },
+  momentumCopy: { flex: 1 },
   cardKicker: { color: '#137D68', fontWeight: '800', fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.2 },
   momentumTitle: { color: '#202623', fontWeight: '800', fontSize: 22, lineHeight: 27, marginTop: 6, letterSpacing: -0.22 },
   momentumBadge: { minWidth: 74, minHeight: 44, borderRadius: 16, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 12, backgroundColor: '#2FAF8A', shadowColor: '#2FAF8A', shadowOpacity: 0.24, shadowRadius: 14, shadowOffset: { width: 0, height: 6 }, elevation: 4 },
@@ -418,7 +419,7 @@ const styles = StyleSheet.create({
   voteSummaryLabel: { color: '#137D68', fontSize: 11, fontWeight: '600', textTransform: 'uppercase' },
   voteSummaryTitle: { color: '#202623', fontSize: 20, fontWeight: '700', marginTop: 5, letterSpacing: -0.2 },
   voteSummaryBody: { color: 'rgba(32,38,35,0.66)', fontSize: 14, lineHeight: 20, marginTop: 6 },
-  modalBackdrop: { flex: 1, backgroundColor: 'rgba(10,18,16,0.36)', padding: 20, justifyContent: 'center' },
+  modalBackdrop: { flex: 1, backgroundColor: 'rgba(10,18,16,0.36)', paddingHorizontal: 20, paddingTop: 72, paddingBottom: 28, justifyContent: 'center' },
   modalSheet: { maxWidth: 520, width: '100%', alignSelf: 'center' },
   shareComposer: { backgroundColor: 'rgba(255,255,255,0.96)', borderRadius: 26, padding: 18, borderWidth: 1, borderColor: 'rgba(32,38,35,0.06)', shadowColor: '#000', shadowOpacity: 0.14, shadowRadius: 24, shadowOffset: { width: 0, height: 10 }, elevation: 8 },
   shareComposerKicker: { color: '#137D68', fontWeight: '800', fontSize: 11, textTransform: 'uppercase' },

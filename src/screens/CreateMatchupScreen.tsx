@@ -274,11 +274,11 @@ function VotingInbox({
       <View style={styles.inboxEmpty}>
         <View style={styles.inboxHeader}>
           <View>
-            <Text style={styles.inboxLabel}>Input inbox</Text>
-            <Text style={styles.inboxTitle}>No shared input yet</Text>
+            <Text style={styles.inboxLabel}>Previous comparisons</Text>
+            <Text style={styles.inboxTitle}>No saved reads yet</Text>
           </View>
         </View>
-        <Text style={styles.inboxBody}>When friends answer a shared link, their input will show here so you can see what has momentum.</Text>
+        <Text style={styles.inboxBody}>Create a working share link to save a comparison here. Previewing it yourself does not create a saved read.</Text>
       </View>
     );
   }
@@ -287,7 +287,7 @@ function VotingInbox({
     <View style={styles.inbox}>
       <View style={styles.inboxHeader}>
         <View>
-          <Text style={styles.inboxLabel}>Input inbox</Text>
+          <Text style={styles.inboxLabel}>Previous comparisons</Text>
           <Text style={styles.inboxTitle}>{loading ? 'Checking for input...' : `${sessions.length} shared ${sessions.length === 1 ? 'read' : 'reads'}`}</Text>
         </View>
         <TouchableOpacity onPress={onRefresh} style={styles.refreshPill}>
@@ -471,7 +471,7 @@ const styles = StyleSheet.create({
   emptyState: { borderRadius: 26, padding: 20, backgroundColor: 'rgba(255,255,255,0.82)', borderWidth: 1, borderColor: 'rgba(32,38,35,0.07)', marginTop: 16 },
   emptyTitle: { color: colors.charcoal, fontFamily: font.heading, fontWeight: '700', fontSize: 22 },
   emptyBody: { color: colors.muted, fontFamily: font.body, fontSize: 15, lineHeight: 22, marginTop: 8 },
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(15,17,21,0.34)', justifyContent: 'center', padding: 18 },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(15,17,21,0.34)', justifyContent: 'center', paddingHorizontal: 18, paddingTop: 72, paddingBottom: 28 },
   modalSheet: { maxWidth: 520, width: '100%', alignSelf: 'center', borderRadius: 30, padding: 16, backgroundColor: 'rgba(248,250,249,0.96)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.82)', shadowColor: '#000', shadowOpacity: 0.18, shadowRadius: 30, shadowOffset: { width: 0, height: 14 }, elevation: 10 },
   shareCardCanvas: { backgroundColor: '#E4F8F0', borderRadius: 28, overflow: 'hidden' },
   shareGraphic: { minHeight: 520, justifyContent: 'space-between', borderRadius: 28, overflow: 'hidden', padding: 18 },

@@ -12,7 +12,7 @@ export function isSharedVotingConfigured() {
 export function buildMatchupShareUrl(sessionId: string) {
   const baseUrl =
     process.env.EXPO_PUBLIC_PUBLIC_APP_URL ||
-    (typeof window !== 'undefined' && window.location?.origin ? window.location.origin : 'http://localhost:8099');
+    (typeof window !== 'undefined' && window.location?.origin ? window.location.origin : 'https://gowandr2.web.app');
   return `${baseUrl.replace(/\/$/, '')}/c/${encodeURIComponent(sessionId)}`;
 }
 

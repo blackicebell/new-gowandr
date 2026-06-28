@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Animated, Image, ImageBackground, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Animated, Image, ImageBackground, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Button } from '../components/Button';
 import { onboardingImageUris } from '../data/imageAssets';
@@ -56,7 +56,7 @@ export function OnboardingScreen({ onFinish }: { onFinish: () => void }) {
   }, [index, slideMotion]);
 
   return (
-    <View style={[styles.screen, { backgroundColor: theme.canvas }]}>
+    <SafeAreaView style={[styles.screen, { backgroundColor: theme.canvas }]}>
       <View style={styles.brandRow}>
         <Image source={require('../../assets/brand/gowandr-logo-full-color.png')} style={styles.logo} resizeMode="contain" />
         <TouchableOpacity onPress={onFinish} style={styles.skipButton}>
@@ -84,12 +84,12 @@ export function OnboardingScreen({ onFinish }: { onFinish: () => void }) {
         <Button label={isLast ? 'Create My First Trip' : 'Next'} onPress={() => (isLast ? onFinish() : setIndex((current) => current + 1))} />
         {!isLast && <Button label="Start now" variant="secondary" onPress={onFinish} />}
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, paddingHorizontal: 24, paddingTop: 14, paddingBottom: 24 },
+  screen: { flex: 1, paddingHorizontal: 24, paddingTop: 10, paddingBottom: 24 },
   brandRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 },
   logo: { width: 142, height: 36 },
   skipButton: { minHeight: 40, minWidth: 58, borderRadius: 999, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.64)', borderWidth: 1, borderColor: 'rgba(32,38,35,0.06)' },

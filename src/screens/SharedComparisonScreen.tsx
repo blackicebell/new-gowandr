@@ -130,7 +130,8 @@ export function SharedComparisonScreen({
                 <TouchableOpacity key={highlight.id} onPress={() => toggleHighlight(highlight.id)} style={[styles.highlightCard, likedHighlightIds.includes(highlight.id) && styles.highlightCardLiked]}>
                   <SourceThumbnail link={highlight.link} priority={highlight.priority} />
                   <Text numberOfLines={2} style={styles.highlightTitle}>{highlight.title}</Text>
-                  <Text numberOfLines={1} style={styles.highlightSource} onPress={() => openLink(highlight.link)}>
+                  {!!highlight.note && <Text numberOfLines={2} style={styles.highlightNote}>{highlight.note}</Text>}
+                  <Text numberOfLines={1} style={[styles.highlightSource, !highlight.link && styles.highlightSourceMuted]} onPress={() => openLink(highlight.link)}>
                     {highlight.link ? `Open ${getSourceLabel(highlight.link)}` : highlight.category}
                   </Text>
                 </TouchableOpacity>
@@ -189,10 +190,12 @@ const styles = StyleSheet.create({
   tripTitle: { color: colors.white, fontFamily: font.heading, fontWeight: '700', fontSize: 26, lineHeight: 31, marginTop: 4 },
   tripSubtitle: { color: 'rgba(255,255,255,0.88)', fontFamily: font.body, fontSize: 13.5, lineHeight: 19, marginTop: 4 },
   highlightGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 9, marginTop: 12, marginBottom: 12 },
-  highlightCard: { width: '31%', minHeight: 132, borderRadius: 18, overflow: 'hidden', backgroundColor: 'rgba(255,255,255,0.88)', borderWidth: 1, borderColor: 'rgba(32,38,35,0.06)' },
+  highlightCard: { width: '31%', minHeight: 154, borderRadius: 18, overflow: 'hidden', backgroundColor: 'rgba(255,255,255,0.88)', borderWidth: 1, borderColor: 'rgba(32,38,35,0.06)' },
   highlightCardLiked: { backgroundColor: 'rgba(168,240,212,0.35)', borderColor: 'rgba(47,175,138,0.28)' },
   highlightTitle: { color: colors.charcoal, fontFamily: font.semibold, fontWeight: '700', fontSize: 12, lineHeight: 16, marginHorizontal: 9, marginTop: 8 },
+  highlightNote: { color: 'rgba(32,38,35,0.62)', fontFamily: font.body, fontWeight: '500', fontSize: 10.5, lineHeight: 14, marginHorizontal: 9, marginTop: 4 },
   highlightSource: { color: colors.tealDark, fontFamily: font.body, fontWeight: '500', fontSize: 10.5, marginHorizontal: 9, marginTop: 3, marginBottom: 9 },
+  highlightSourceMuted: { color: 'rgba(32,38,35,0.50)' },
   formCard: { borderRadius: 26, padding: 18, backgroundColor: 'rgba(255,255,255,0.84)', borderWidth: 1, borderColor: 'rgba(32,38,35,0.07)', marginTop: 18 },
   formTitle: { color: colors.charcoal, fontFamily: font.heading, fontWeight: '700', fontSize: 19, letterSpacing: -0.15, marginTop: 4 },
   formHint: { color: colors.muted, fontFamily: font.body, fontSize: 13.5, lineHeight: 19, marginTop: 4, marginBottom: 12 },

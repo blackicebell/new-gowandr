@@ -38,10 +38,10 @@ export function explainResult(results: MatchupResult[]) {
 
   if (!runnerUp) return `${winner.trip.title} is the clearest choice so far.`;
   if (winner.dealbreakers < runnerUp.dealbreakers && winner.commitment >= runnerUp.commitment) {
-    return `${winner.trip.title} is the easiest yes. It has stronger commitment and fewer dealbreakers.`;
+    return `${winner.trip.title} is the easiest yes. It has stronger commitment and fewer concerns.`;
   }
   if (winner.excitement > runnerUp.excitement && winner.dealbreakers > runnerUp.dealbreakers) {
-    return `${winner.trip.title} is the most exciting, but watch the dealbreakers before calling it final.`;
+    return `${winner.trip.title} is the most exciting, but check the concerns before committing.`;
   }
   return `${winner.trip.title} has the best balance of excitement, realism, and actual commitment.`;
 }

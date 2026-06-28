@@ -1,5 +1,5 @@
 {
-  "name": "new-gowandr",
+  "name": "gowandr",
   "version": "1.0.0",
   "private": true,
   "main": "expo/AppEntry.js",
@@ -11,13 +11,17 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@expo-google-fonts/inter-tight": "^0.4.2",
     "@expo/metro-runtime": "~5.0.5",
     "@react-native-async-storage/async-storage": "2.1.2",
     "expo": "^53.0.0",
+    "expo-asset": "~11.1.7",
     "expo-clipboard": "~7.1.5",
+    "expo-font": "~13.3.2",
     "expo-haptics": "~14.1.4",
     "expo-linear-gradient": "~14.1.5",
     "expo-status-bar": "~2.2.3",
+    "firebase": "^11.10.0",
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "react-native": "0.79.6",

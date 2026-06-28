@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "GoWandr",
-    "slug": "new-gowandr",
+    "slug": "gowandr",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/brand/gowandr-logo-icon-color.png",
@@ -27,6 +27,15 @@
     },
     "web": {
       "favicon": "./assets/brand/gowandr-logo-icon-color.png"
+    },
+    "plugins": [
+      "expo-asset",
+      "expo-font"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "352df7b8-f856-459b-b554-2af5f3a84f35"
+      }
     }
   }
 }

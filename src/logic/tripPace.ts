@@ -12,7 +12,7 @@ export const paceGuidance: Record<TripDraft['pace'], { label: string; short: str
   Balanced: {
     label: 'Balanced',
     short: 'A few anchors with room to breathe.',
-    detail: 'Best for most group trips. Choose clear must-dos, but leave space for slow mornings and changes.',
+    detail: 'Best when the trip needs structure without feeling overplanned. Choose clear anchors, but leave space for slow mornings and changes.',
     idealMustDos: 3,
     dailyAnchors: '2 main plans per day',
     warningAt: 6,
@@ -20,7 +20,7 @@ export const paceGuidance: Record<TripDraft['pace'], { label: string; short: str
   Packed: {
     label: 'Packed',
     short: 'High-energy, more planned moments.',
-    detail: 'Best when the group wants a full schedule. It can be fun, but only if people are actually committed.',
+    detail: 'Best when the trip should feel full and high-energy. It can be fun, but only if the commitment is real.',
     idealMustDos: 5,
     dailyAnchors: '3 main plans per day',
     warningAt: 8,
@@ -35,14 +35,14 @@ export function getPaceHealth(trip: TripDraft, pace: TripDraft['pace'] = trip.pa
   if (mustDos === 0) {
     return {
       tone: 'empty' as const,
-      message: `For a ${pace.toLowerCase()} trip, start by choosing ${guidance.idealMustDos} must-do ${guidance.idealMustDos === 1 ? 'idea' : 'ideas'}.`,
+      message: `For a ${pace.toLowerCase()} trip, start by choosing ${guidance.idealMustDos} top ${guidance.idealMustDos === 1 ? 'highlight' : 'highlights'}.`,
     };
   }
 
   if (mustDos > guidance.warningAt) {
     return {
       tone: 'warning' as const,
-      message: `${pace} pace works best with about ${guidance.idealMustDos} must-dos. You have ${mustDos}, so this may start feeling like homework.`,
+      message: `${pace} pace works best with about ${guidance.idealMustDos} top highlights. You have ${mustDos}, so this may start feeling like homework.`,
     };
   }
 
@@ -56,7 +56,7 @@ export function getPaceHealth(trip: TripDraft, pace: TripDraft['pace'] = trip.pa
   if (pace === 'Packed' && mustDos < 3) {
     return {
       tone: 'nudge' as const,
-      message: 'Packed trips need more clear anchors. Add a few must-dos so this does not become vague energy.',
+      message: 'Packed trips need more clear anchors. Add a few highlights so this does not become vague energy.',
     };
   }
 

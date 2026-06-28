@@ -3,12 +3,13 @@ import { Animated, ImageBackground, StyleSheet, Text, View } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient';
 import { font, useThemeColors } from '../theme/colors';
 import { TripDraft } from '../types';
-import { calculateClarityScore } from '../logic/clarityScore';
+import { getMomentumStatus } from '../logic/momentum';
 import { PressableScale } from './PressableScale';
 
 export function EchoCard({ trip, onPress }: { trip: TripDraft; onPress: () => void }) {
   const colors = useThemeColors();
-  const score = calculateClarityScore(trip).score;
+  const decisionLabel = getMomentumStatus(trip);
+  const chips = getCardChips(trip);
   const imageOpacity = useRef(new Animated.Value(0)).current;
 
   const fadeInImage = () => {
@@ -23,13 +24,20 @@ export function EchoCard({ trip, onPress }: { trip: TripDraft; onPress: () => vo
     <PressableScale onPress={onPress} style={[styles.card, { backgroundColor: colors.paper, borderColor: 'rgba(255,255,255,0.15)' }]}>
       <Animated.View style={{ opacity: imageOpacity }}>
       <ImageBackground source={{ uri: trip.heroImage }} onLoad={fadeInImage} style={styles.image} imageStyle={styles.imageRadius}>
-        <LinearGradient colors={['rgba(0,0,0,0.25)', 'rgba(0,0,0,0.45)']} style={StyleSheet.absoluteFill} />
+        <LinearGradient colors={['rgba(0,0,0,0.04)', 'rgba(0,0,0,0.18)', 'rgba(0,0,0,0.78)']} locations={[0, 0.42, 1]} style={StyleSheet.absoluteFill} />
         <View style={styles.scorePill}>
-          <Text style={[styles.scoreText, { color: '#F8F8F6', fontFamily: font.family }]}>{score}% clear</Text>
+          <Text style={[styles.scoreText, { color: '#F8F8F6', fontFamily: font.semibold }]}>{decisionLabel}</Text>
         </View>
         <View style={styles.copy}>
-          <Text style={[styles.title, { fontFamily: font.family }]}>{trip.title}</Text>
-          <Text style={[styles.subtitle, { fontFamily: font.family }]}>{trip.subtitle}</Text>
+          <View style={styles.chipRow}>
+            {chips.map((chip) => (
+              <View key={chip} style={styles.metaChip}>
+                <Text style={[styles.metaChipText, { fontFamily: font.semibold }]}>{chip}</Text>
+              </View>
+            ))}
+          </View>
+          <Text style={[styles.title, { fontFamily: font.heading }]}>{trip.title}</Text>
+          <Text numberOfLines={1} style={[styles.subtitle, { fontFamily: font.medium }]}>{trip.subtitle}</Text>
         </View>
       </ImageBackground>
       </Animated.View>
@@ -37,13 +45,37 @@ export function EchoCard({ trip, onPress }: { trip: TripDraft; onPress: () => vo
   );
 }
 
+function getCardChips(trip: TripDraft) {
+  const people = trip.companionType === 'Solo' ? 'Solo' : 'Group';
+  const mood = getMoodChip(trip);
+  return [people, mood, trip.pace].filter(Boolean).slice(0, 3);
+}
+
+function getMoodChip(trip: TripDraft) {
+  const tags = trip.tags.map((tag) => tag.toLowerCase());
+  if (tags.includes('food')) return 'Food';
+  if (tags.includes('beach')) return 'Beach';
+  if (tags.includes('relax') || tags.includes('low-key')) return 'Reset';
+  if (tags.includes('culture')) return 'Culture';
+  if (tags.includes('nightlife')) return 'Nightlife';
+  if (tags.includes('shopping')) return 'Shopping';
+  return trip.tags[0] ? capitalize(trip.tags[0]) : 'Travel';
+}
+
+function capitalize(value: string) {
+  return value.charAt(0).toUpperCase() + value.slice(1);
+}
+
 const styles = StyleSheet.create({
-  card: { marginBottom: 20, borderRadius: 28, overflow: 'hidden', borderWidth: 1, shadowColor: '#000', shadowOpacity: 0.18, shadowRadius: 28, shadowOffset: { width: 0, height: 10 }, elevation: 8 },
-  image: { height: 244, justifyContent: 'space-between' },
-  imageRadius: { borderRadius: 28 },
-  scorePill: { alignSelf: 'flex-end', margin: 16, paddingHorizontal: 12, paddingVertical: 7, borderRadius: 12, backgroundColor: 'rgba(0,0,0,0.45)' },
-  scoreText: { fontSize: 12, fontWeight: '700', letterSpacing: 0 },
-  copy: { padding: 22 },
-  title: { color: '#F8F8F6', fontSize: 32, fontWeight: '700', letterSpacing: -0.32, textShadowColor: 'rgba(0,0,0,0.35)', textShadowRadius: 4, textShadowOffset: { width: 0, height: 2 } },
-  subtitle: { color: '#F8F8F6', opacity: 0.92, marginTop: 6, fontSize: 15, fontWeight: '700', letterSpacing: 0, lineHeight: 22 },
+  card: { marginBottom: 18, borderRadius: 24, overflow: 'hidden', borderWidth: 1, shadowColor: '#000', shadowOpacity: 0.12, shadowRadius: 22, shadowOffset: { width: 0, height: 8 }, elevation: 6 },
+  image: { height: 204, justifyContent: 'space-between' },
+  imageRadius: { borderRadius: 24 },
+  scorePill: { alignSelf: 'flex-end', margin: 13, paddingHorizontal: 11, paddingVertical: 7, borderRadius: 999, backgroundColor: 'rgba(9,20,17,0.58)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.14)' },
+  scoreText: { fontSize: 11.5, fontWeight: '700', letterSpacing: 0 },
+  copy: { padding: 18 },
+  chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 7, marginBottom: 9 },
+  metaChip: { borderRadius: 999, paddingHorizontal: 9, paddingVertical: 5, backgroundColor: 'rgba(255,255,255,0.18)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.14)' },
+  metaChipText: { color: '#F8F8F6', fontSize: 10.5, fontWeight: '700' },
+  title: { color: '#F8F8F6', fontSize: 28, lineHeight: 32, fontWeight: '700', letterSpacing: -0.28, textShadowColor: 'rgba(0,0,0,0.38)', textShadowRadius: 5, textShadowOffset: { width: 0, height: 2 } },
+  subtitle: { color: '#F8F8F6', opacity: 0.9, marginTop: 4, fontSize: 14, fontWeight: '500', letterSpacing: 0, lineHeight: 20 },
 });

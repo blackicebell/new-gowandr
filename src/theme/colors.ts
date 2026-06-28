@@ -102,10 +102,34 @@ export const themes: Record<ThemeName, AppColors> = {
 export const colors = themes.green;
 
 export const font = {
+  heading: Platform.select({
+    ios: 'InterTight_700Bold',
+    android: 'InterTight_700Bold',
+    web: 'InterTight_700Bold, Satoshi, Neue Montreal, Inter Tight, system-ui, -apple-system, BlinkMacSystemFont, sans-serif',
+    default: undefined,
+  }),
+  body: Platform.select({
+    ios: 'InterTight_400Regular',
+    android: 'InterTight_400Regular',
+    web: 'InterTight_400Regular, Switzer, Inter Tight, system-ui, -apple-system, BlinkMacSystemFont, sans-serif',
+    default: undefined,
+  }),
+  medium: Platform.select({
+    ios: 'InterTight_500Medium',
+    android: 'InterTight_500Medium',
+    web: 'InterTight_500Medium, Switzer, Inter Tight, system-ui, -apple-system, BlinkMacSystemFont, sans-serif',
+    default: undefined,
+  }),
+  semibold: Platform.select({
+    ios: 'InterTight_600SemiBold',
+    android: 'InterTight_600SemiBold',
+    web: 'InterTight_600SemiBold, Satoshi, Switzer, Inter Tight, system-ui, -apple-system, BlinkMacSystemFont, sans-serif',
+    default: undefined,
+  }),
   family: Platform.select({
-    ios: 'Avenir Next',
-    android: 'sans-serif',
-    web: 'Satoshi, Neue Montreal, Inter, Avenir Next, system-ui, -apple-system, BlinkMacSystemFont, sans-serif',
+    ios: 'InterTight_400Regular',
+    android: 'InterTight_400Regular',
+    web: 'InterTight_400Regular, Switzer, Inter Tight, system-ui, -apple-system, BlinkMacSystemFont, sans-serif',
     default: undefined,
   }),
   mono: Platform.select({

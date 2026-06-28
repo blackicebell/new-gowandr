@@ -1,0 +1,28 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /matchupSessions/{sessionId} {
+      allow read: if true;
+
+      allow create: if request.resource.data.keys().hasAll([
+        'matchupName',
+        'trips',
+        'createdAt',
+        'updatedAt',
+        'votes'
+      ])
+      && request.resource.data.matchupName is string
+      && request.resource.data.trips is list
+      && request.resource.data.votes is list;
+
+      allow update: if request.resource.data.diff(resource.data).changedKeys().hasOnly([
+        'votes',
+        'updatedAt'
+      ])
+      && request.resource.data.votes is list;
+
+      allow delete: if false;
+    }
+  }
+}

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { ImageBackground, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { Button } from '../components/Button';
 import { Chip } from '../components/Chip';
-import { colors } from '../theme/colors';
+import { colors, font } from '../theme/colors';
 import { TripDraft, VoteAnswer, VotePrompt } from '../types';
 
 type PromptConfig = {
@@ -44,9 +44,9 @@ const prompts: PromptConfig[] = [
   },
   {
     id: 'groupFit',
-    text: 'Which trip fits the group better?',
-    helper: 'Pick the one that feels easiest for the actual people going.',
-    reasons: ['Everyone can go', 'Good mix', 'Easy yes', 'Fits the vibe', 'Low drama', 'Need dates'],
+    text: 'Which trip fits real life better?',
+    helper: 'Pick the one that fits the people, budget, timing, and energy you actually have.',
+    reasons: ['Good fit', 'Easy yes', 'Fits the vibe', 'Low drama', 'Need dates', 'People can go'],
     concerns: ['Split interests', 'Too much partying', 'Not relaxing enough', 'Budget mismatch', 'Safety concern'],
   },
   {
@@ -125,7 +125,7 @@ export function VotingScreen({ trips, matchupName, onCancel, onComplete }: { tri
             ))}
           </View>
           <View style={styles.bottomActions}>
-            <Button label="Cancel Matchup" variant="ghost" onPress={onCancel} />
+            <Button label="Cancel Compare" variant="ghost" onPress={onCancel} />
           </View>
         </View>
       ) : (
@@ -173,7 +173,7 @@ export function VotingScreen({ trips, matchupName, onCancel, onComplete }: { tri
               <Text style={styles.changePickText}>Back to trip choices</Text>
             </TouchableOpacity>
             <Button label={step >= prompts.length - 1 ? 'See Results' : 'Next Question'} disabled={!reason.trim() && !reaction} onPress={submitWhy} />
-            <Button label="Cancel Matchup" variant="ghost" onPress={onCancel} />
+            <Button label="Cancel Compare" variant="ghost" onPress={onCancel} />
           </View>
         </View>
       )}
@@ -182,34 +182,34 @@ export function VotingScreen({ trips, matchupName, onCancel, onComplete }: { tri
 }
 
 const styles = StyleSheet.create({
-  kicker: { color: colors.tealDark, fontWeight: '800', textTransform: 'uppercase', fontSize: 12, marginTop: 10 },
-  title: { color: colors.charcoal, fontWeight: '800', fontSize: 31, lineHeight: 37, marginTop: 6, letterSpacing: -0.4 },
-  helper: { color: colors.muted, fontSize: 15, lineHeight: 22, marginTop: 8 },
-  progress: { color: colors.muted, fontWeight: '700', marginTop: 10, marginBottom: 18 },
+  kicker: { color: colors.tealDark, fontFamily: font.semibold, fontWeight: '600', textTransform: 'uppercase', fontSize: 12, marginTop: 10 },
+  title: { color: colors.charcoal, fontFamily: font.heading, fontWeight: '700', fontSize: 31, lineHeight: 37, marginTop: 6, letterSpacing: -0.4 },
+  helper: { color: colors.muted, fontFamily: font.body, fontWeight: '400', fontSize: 15, lineHeight: 22, marginTop: 8 },
+  progress: { color: colors.muted, fontFamily: font.semibold, fontWeight: '600', marginTop: 10, marginBottom: 18 },
   cards: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
   voteCard: { width: '48%', borderRadius: 24, overflow: 'hidden', backgroundColor: colors.charcoal, shadowColor: '#000', shadowOpacity: 0.10, shadowRadius: 16, shadowOffset: { width: 0, height: 7 }, elevation: 4 },
   image: { minHeight: 216, justifyContent: 'flex-end' },
   imageRadius: { borderRadius: 24 },
   shade: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.24)' },
   cardCopy: { padding: 16 },
-  cardTitle: { color: colors.white, fontWeight: '800', fontSize: 23, lineHeight: 27 },
-  cardMeta: { color: colors.white, opacity: 0.92, fontWeight: '700', marginTop: 5, textTransform: 'capitalize', fontSize: 12 },
+  cardTitle: { color: colors.white, fontFamily: font.heading, fontWeight: '700', fontSize: 23, lineHeight: 27 },
+  cardMeta: { color: colors.white, fontFamily: font.semibold, opacity: 0.92, fontWeight: '600', marginTop: 5, textTransform: 'capitalize', fontSize: 12 },
   whyCard: { borderRadius: 24, backgroundColor: 'rgba(255,255,255,0.82)', padding: 18, borderWidth: 1, borderColor: 'rgba(32,38,35,0.06)', shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 12, shadowOffset: { width: 0, height: 5 }, elevation: 2 },
-  whyLabel: { color: colors.tealDark, fontWeight: '800', textTransform: 'uppercase', fontSize: 11 },
-  whyTitle: { color: colors.charcoal, fontWeight: '800', fontSize: 27, marginTop: 4, letterSpacing: -0.25 },
-  whyBody: { color: colors.muted, fontSize: 15, lineHeight: 21, marginTop: 6, marginBottom: 12 },
-  reasonInput: { minHeight: 104, borderRadius: 18, borderWidth: 1, borderColor: 'rgba(32,38,35,0.08)', backgroundColor: 'rgba(255,255,255,0.68)', color: colors.charcoal, padding: 14, fontSize: 15, textAlignVertical: 'top' },
+  whyLabel: { color: colors.tealDark, fontFamily: font.semibold, fontWeight: '600', textTransform: 'uppercase', fontSize: 11 },
+  whyTitle: { color: colors.charcoal, fontFamily: font.heading, fontWeight: '700', fontSize: 27, marginTop: 4, letterSpacing: -0.25 },
+  whyBody: { color: colors.muted, fontFamily: font.body, fontWeight: '400', fontSize: 15, lineHeight: 21, marginTop: 6, marginBottom: 12 },
+  reasonInput: { minHeight: 104, borderRadius: 18, borderWidth: 1, borderColor: 'rgba(32,38,35,0.08)', backgroundColor: 'rgba(255,255,255,0.68)', color: colors.charcoal, fontFamily: font.body, padding: 14, fontSize: 15, textAlignVertical: 'top' },
   choiceSection: { marginTop: 24 },
-  label: { color: colors.charcoal, fontWeight: '800', fontSize: 18, marginBottom: 5, letterSpacing: -0.12 },
-  sectionHint: { color: colors.muted, fontSize: 13, lineHeight: 18, marginBottom: 12 },
+  label: { color: colors.charcoal, fontFamily: font.heading, fontWeight: '700', fontSize: 18, marginBottom: 5, letterSpacing: -0.12 },
+  sectionHint: { color: colors.muted, fontFamily: font.body, fontWeight: '400', fontSize: 13, lineHeight: 18, marginBottom: 12 },
   wrap: { flexDirection: 'row', flexWrap: 'wrap', columnGap: 10, rowGap: 10 },
   meter: { gap: 9 },
   meterItem: { minHeight: 48, borderRadius: 16, paddingHorizontal: 14, justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.78)', borderWidth: 1, borderColor: 'rgba(32,38,35,0.07)' },
   meterActive: { backgroundColor: colors.teal, borderColor: colors.tealDark },
-  meterText: { color: colors.charcoal, fontWeight: '700' },
-  meterTextActive: { color: colors.charcoal, fontWeight: '800' },
+  meterText: { color: colors.charcoal, fontFamily: font.semibold, fontWeight: '600' },
+  meterTextActive: { color: colors.charcoal, fontWeight: '700' },
   whyActions: { gap: 11, marginTop: 22 },
   changePick: { minHeight: 46, borderRadius: 16, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.68)', borderWidth: 1, borderColor: 'rgba(32,38,35,0.07)' },
-  changePickText: { color: colors.tealDark, fontWeight: '800', fontSize: 14 },
+  changePickText: { color: colors.tealDark, fontFamily: font.semibold, fontWeight: '600', fontSize: 14 },
   bottomActions: { marginTop: 18 },
 });

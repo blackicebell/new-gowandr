@@ -1,11 +1,12 @@
 import React, { useRef } from 'react';
-import { Animated, ImageBackground, Linking, StyleSheet, Text, View } from 'react-native';
+import { Animated, ImageBackground, Linking, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { font, useThemeColors } from '../theme/colors';
 import { TripIdea } from '../types';
 import { PressableScale } from './PressableScale';
+import { SourceThumbnail, getSourceLabel } from './SourceThumbnail';
 
-export function IdeaCard({ idea }: { idea: TripIdea }) {
+export function IdeaCard({ idea, onEdit, onDelete }: { idea: TripIdea; onEdit?: () => void; onDelete?: () => void }) {
   const colors = useThemeColors();
   const hasLink = !!idea.link?.trim();
   const imageOpacity = useRef(new Animated.Value(0)).current;
@@ -27,27 +28,45 @@ export function IdeaCard({ idea }: { idea: TripIdea }) {
   };
 
   return (
-    <PressableScale disabled={!hasLink} onPress={openLink} style={[styles.card, { borderColor: hasLink ? '#6ED8B5' : 'rgba(255,255,255,0.22)' }]}>
-      <Animated.View style={{ opacity: imageOpacity }}>
-      <ImageBackground source={{ uri: idea.imageUrl ?? fallbackForCategory(idea.category) }} onLoad={fadeInImage} style={styles.image} imageStyle={styles.imageRadius}>
-        <LinearGradient colors={['rgba(0,0,0,0.15)', 'rgba(0,0,0,0.55)']} style={StyleSheet.absoluteFill} />
-        <View style={styles.priority}>
-          <Text style={[styles.priorityText, { fontFamily: font.family }]}>{idea.priority}</Text>
-        </View>
-      </ImageBackground>
-      </Animated.View>
+    <PressableScale disabled={!hasLink} onPress={openLink} containerStyle={styles.cardShell} style={[styles.card, { borderColor: hasLink ? '#6ED8B5' : 'rgba(255,255,255,0.22)' }]}>
+      {idea.imageUrl ? (
+        <Animated.View style={{ opacity: imageOpacity }}>
+          <ImageBackground source={{ uri: idea.imageUrl }} onLoad={fadeInImage} style={styles.image} imageStyle={styles.imageRadius}>
+            <LinearGradient colors={['rgba(0,0,0,0.15)', 'rgba(0,0,0,0.55)']} style={StyleSheet.absoluteFill} />
+            <View style={styles.priority}>
+              <Text style={[styles.priorityText, { fontFamily: font.semibold }]}>{getPriorityLabel(idea.priority)}</Text>
+            </View>
+          </ImageBackground>
+        </Animated.View>
+      ) : (
+        <SourceThumbnail link={idea.link} priority={idea.priority} />
+      )}
       <View style={styles.body}>
         <View style={styles.metaRow}>
-          <Text style={[styles.category, { fontFamily: font.family }]}>{idea.category}</Text>
+          <Text style={[styles.category, { fontFamily: font.semibold }]}>{idea.category}</Text>
           {hasLink && (
             <View style={styles.openPill}>
-              <Text style={[styles.openCue, { fontFamily: font.family }]}>Open link</Text>
+              <Text style={[styles.openCue, { fontFamily: font.semibold }]}>Open link</Text>
             </View>
           )}
         </View>
-        <Text style={[styles.title, { fontFamily: font.family }]}>{idea.title}</Text>
-        {!!idea.note && <Text style={[styles.note, { fontFamily: font.family }]}>{idea.note}</Text>}
-        {hasLink && <Text style={[styles.linkText, { fontFamily: font.family }]} numberOfLines={1}>{getPlatformLabel(idea.link ?? '')}</Text>}
+        <Text style={[styles.title, { fontFamily: font.heading }]}>{idea.title}</Text>
+        {!!idea.note && <Text style={[styles.note, { fontFamily: font.body }]}>{idea.note}</Text>}
+        <Text style={[styles.linkText, { fontFamily: font.semibold }]} numberOfLines={1}>{getSourceLabel(idea.link)}</Text>
+        {(onEdit || onDelete) && (
+          <View style={styles.cardActions}>
+            {onEdit && (
+              <TouchableOpacity style={styles.editAction} onPress={(event) => { event.stopPropagation(); onEdit(); }}>
+                <Text style={[styles.editActionText, { fontFamily: font.semibold }]}>Edit</Text>
+              </TouchableOpacity>
+            )}
+            {onDelete && (
+              <TouchableOpacity style={styles.deleteAction} onPress={(event) => { event.stopPropagation(); onDelete(); }}>
+                <Text style={[styles.deleteActionText, { fontFamily: font.semibold }]}>Delete</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        )}
       </View>
     </PressableScale>
   );
@@ -59,33 +78,30 @@ function normalizeUrl(value: string) {
   return `https://${trimmed}`;
 }
 
-function getPlatformLabel(value: string) {
-  const link = value.toLowerCase();
-  if (link.includes('instagram.com')) return 'Instagram post';
-  if (link.includes('tiktok.com')) return 'TikTok post';
-  if (link.includes('youtube.com') || link.includes('youtu.be')) return 'YouTube video';
-  return 'Saved website';
-}
-
-function fallbackForCategory(category: string) {
-  if (category === 'Food') return 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=700&q=80';
-  if (category === 'Beach') return 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=700&q=80';
-  if (category === 'Nightlife') return 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=700&q=80';
-  return 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=700&q=80';
+function getPriorityLabel(priority: TripIdea['priority']) {
+  if (priority === 'Must-do') return 'Favorite';
+  if (priority === 'Maybe') return 'Considering';
+  return 'Skip';
 }
 
 const styles = StyleSheet.create({
-  card: { width: '48%', marginBottom: 18, borderRadius: 24, overflow: 'hidden', borderWidth: 1, backgroundColor: 'rgba(255,255,255,0.06)', shadowColor: '#000', shadowOpacity: 0.22, shadowRadius: 28, shadowOffset: { width: 0, height: 10 }, elevation: 8 },
+  cardShell: { width: '48%', minWidth: 156, marginBottom: 18 },
+  card: { width: '100%', minHeight: 286, borderRadius: 24, overflow: 'hidden', borderWidth: 1, backgroundColor: '#16231F', shadowColor: '#000', shadowOpacity: 0.18, shadowRadius: 24, shadowOffset: { width: 0, height: 9 }, elevation: 7 },
   image: { height: 124, alignItems: 'flex-start', justifyContent: 'flex-start' },
   imageRadius: { borderTopLeftRadius: 24, borderTopRightRadius: 24 },
   priority: { margin: 10, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12, backgroundColor: 'rgba(0,0,0,0.45)' },
   priorityText: { color: '#F8F8F6', fontSize: 10, fontWeight: '700', letterSpacing: 0 },
-  body: { padding: 14 },
+  body: { minHeight: 162, padding: 14, backgroundColor: '#16231F' },
   metaRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 6 },
-  category: { color: '#F4D06F', fontWeight: '900', fontSize: 10, textTransform: 'uppercase', letterSpacing: 0 },
+  category: { color: '#F4D06F', fontWeight: '600', fontSize: 10, textTransform: 'uppercase', letterSpacing: 0 },
   openPill: { backgroundColor: 'rgba(0,0,0,0.45)', paddingHorizontal: 9, paddingVertical: 5, borderRadius: 12 },
   openCue: { color: '#A8F0D4', fontWeight: '700', fontSize: 10, letterSpacing: 0 },
-  title: { color: '#F8F8F6', fontWeight: '700', fontSize: 16, marginTop: 7, letterSpacing: -0.16 },
+  title: { color: '#F8F8F6', fontWeight: '700', fontSize: 16, lineHeight: 20, marginTop: 7, letterSpacing: -0.16 },
   note: { color: 'rgba(255,255,255,0.75)', fontSize: 12, marginTop: 5, lineHeight: 17 },
   linkText: { color: '#6ED8B5', fontWeight: '800', fontSize: 11, marginTop: 8, letterSpacing: 0 },
+  cardActions: { flexDirection: 'row', gap: 8, marginTop: 12 },
+  editAction: { flex: 1, minHeight: 38, borderRadius: 14, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(168,240,212,0.15)', borderWidth: 1, borderColor: 'rgba(168,240,212,0.22)' },
+  editActionText: { color: '#A8F0D4', fontWeight: '600', fontSize: 12 },
+  deleteAction: { flex: 1, minHeight: 38, borderRadius: 14, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(217,94,79,0.14)', borderWidth: 1, borderColor: 'rgba(217,94,79,0.22)' },
+  deleteActionText: { color: '#FFB4AA', fontWeight: '600', fontSize: 12 },
 });

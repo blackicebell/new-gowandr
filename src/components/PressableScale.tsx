@@ -4,10 +4,11 @@ import * as Haptics from 'expo-haptics';
 
 type PressableScaleProps = Omit<PressableProps, 'children' | 'style'> & {
   children: React.ReactNode;
+  containerStyle?: StyleProp<ViewStyle>;
   style?: StyleProp<ViewStyle>;
 };
 
-export function PressableScale({ children, style, onPress, disabled, ...props }: PressableScaleProps) {
+export function PressableScale({ children, containerStyle, style, onPress, disabled, ...props }: PressableScaleProps) {
   const scale = useRef(new Animated.Value(1)).current;
 
   const animateTo = (value: number) => {
@@ -25,7 +26,7 @@ export function PressableScale({ children, style, onPress, disabled, ...props }:
   };
 
   return (
-    <Pressable disabled={disabled} onPress={handlePress} onPressIn={() => animateTo(0.97)} onPressOut={() => animateTo(1)} {...props}>
+    <Pressable disabled={disabled} onPress={handlePress} onPressIn={() => animateTo(0.97)} onPressOut={() => animateTo(1)} style={containerStyle} {...props}>
       <Animated.View style={[style, { transform: [{ scale }] }]}>{children}</Animated.View>
     </Pressable>
   );

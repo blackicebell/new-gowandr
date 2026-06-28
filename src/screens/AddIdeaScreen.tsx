@@ -8,19 +8,29 @@ import { IdeaCategory, IdeaPriority, TripDraft, TripIdea } from '../types';
 import { PressableScale } from '../components/PressableScale';
 
 const categories: IdeaCategory[] = ['Food', 'Stay', 'Beach', 'Nightlife', 'Culture', 'Adventure', 'Shopping', 'Photo Spot', 'Relax', 'Other'];
-const tags = ['Must-do', 'Maybe', 'Chill', 'Active', 'Romantic', 'Friends', 'Family', 'Solo', 'Food', 'Nightlife', 'Beach', 'Culture', 'Luxury', 'Low-key'];
+const tags = ['Food', 'Beach', 'Culture', 'Nature', 'Nightlife', 'Shopping', 'Relax', 'Stay'];
+const visibleTagCount = 6;
+const priorityOptions: { label: string; value: IdeaPriority }[] = [
+  { label: 'Favorite', value: 'Must-do' },
+  { label: 'Considering', value: 'Maybe' },
+  { label: 'Skip', value: 'Skip' },
+];
 
-export function AddIdeaScreen({ trip, onBack, onSave }: { trip: TripDraft; onBack: () => void; onSave: (idea: TripIdea) => void }) {
+export function AddIdeaScreen({ trip, onBack, onSave, initialIdea, onDelete }: { trip: TripDraft; onBack: () => void; onSave: (idea: TripIdea) => void; initialIdea?: TripIdea; onDelete?: () => void }) {
   const theme = useThemeColors();
-  const [title, setTitle] = useState('');
-  const [note, setNote] = useState('');
-  const [link, setLink] = useState('');
-  const [category, setCategory] = useState<IdeaCategory>('Food');
-  const [priority, setPriority] = useState<IdeaPriority>('Maybe');
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const isEditing = !!initialIdea;
+  const [inputMode, setInputMode] = useState<'link' | 'note'>(initialIdea && !initialIdea.link ? 'note' : 'link');
+  const [title, setTitle] = useState(initialIdea?.title ?? '');
+  const [note, setNote] = useState(initialIdea?.note ?? '');
+  const [link, setLink] = useState(initialIdea?.link ?? '');
+  const [category, setCategory] = useState<IdeaCategory>(initialIdea?.category ?? 'Food');
+  const [priority, setPriority] = useState<IdeaPriority>(initialIdea?.priority ?? 'Maybe');
+  const [selectedTags, setSelectedTags] = useState<string[]>(initialIdea?.tags ?? []);
+  const [step, setStep] = useState<1 | 2 | 3>(initialIdea ? 2 : 1);
   const [pasteMessage, setPasteMessage] = useState('');
+  const [showAllTags, setShowAllTags] = useState(false);
   const canSave = !!link.trim() || !!title.trim() || !!note.trim();
+  const visibleTags = showAllTags ? tags : tags.slice(0, visibleTagCount);
 
   const pasteFromClipboard = async () => {
     const pastedText = await Clipboard.getStringAsync();
@@ -37,12 +47,13 @@ export function AddIdeaScreen({ trip, onBack, onSave }: { trip: TripDraft; onBac
   };
 
   const save = () => {
-    const fallbackTitle = detectPlatform(link) ? `${detectPlatform(link)} save` : 'New travel idea';
+    const fallbackTitle = inputMode === 'note' ? 'Travel note' : detectPlatform(link) ? `${detectPlatform(link)} save` : 'New travel idea';
     onSave({
-      id: `idea-${Date.now()}`,
+      ...initialIdea,
+      id: initialIdea?.id ?? `idea-${Date.now()}`,
       title: title.trim() || fallbackTitle,
       note,
-      link,
+      link: inputMode === 'note' ? '' : link,
       category,
       priority,
       tags: selectedTags,
@@ -52,66 +63,95 @@ export function AddIdeaScreen({ trip, onBack, onSave }: { trip: TripDraft; onBac
 
   return (
     <View>
-      <Text style={[styles.back, { color: '#137D68', fontFamily: font.family }]} onPress={onBack}>Back to {trip.title}</Text>
-      <Text style={[styles.title, { color: theme.charcoal, fontFamily: font.family }]}>Add inspiration</Text>
-      <Text style={[styles.body, { color: theme.muted, fontFamily: font.family }]}>Start with the thing you found. You can organize it after, but you should not have to do all the work upfront.</Text>
+      <Text style={[styles.back, { color: '#137D68', fontFamily: font.semibold }]} onPress={onBack}>Back to {trip.title}</Text>
+      <Text style={[styles.title, { color: theme.charcoal, fontFamily: font.heading }]}>{isEditing ? 'Edit inspiration' : 'Add inspiration'}</Text>
+      <Text style={[styles.body, { color: theme.muted, fontFamily: font.body }]}>{isEditing ? 'Update the label, note, link, and how this idea should appear on the trip page.' : 'Start with a link or a quick note. You can organize it after, but you should not have to do all the work upfront.'}</Text>
 
-      <StepHeader number={1} title="Paste or type the link" active={step === 1} done={!!link.trim()} onPress={() => setStep(1)} />
-      {step === 1 && (
+      {!isEditing && (
+        <View style={styles.modeSwitch}>
+          <TouchableOpacity style={[styles.modeButton, inputMode === 'link' && styles.modeButtonActive]} onPress={() => { setInputMode('link'); setStep(1); }}>
+            <Text style={[styles.modeText, inputMode === 'link' && styles.modeTextActive, { fontFamily: font.semibold }]}>Link</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={[styles.modeButton, inputMode === 'note' && styles.modeButtonActive]} onPress={() => { setInputMode('note'); setStep(2); }}>
+            <Text style={[styles.modeText, inputMode === 'note' && styles.modeTextActive, { fontFamily: font.semibold }]}>Note</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {inputMode === 'link' && <StepHeader number={1} title="Paste or type the link" active={step === 1} done={!!link.trim()} onPress={() => setStep(1)} />}
+      {inputMode === 'link' && step === 1 && (
         <View style={styles.stepCard}>
-          <Text style={styles.stepBody}>Copy a TikTok, Reel, YouTube, blog, restaurant, or destination link, then paste it here.</Text>
+          <Text style={[styles.stepBody, { fontFamily: font.body }]}>Copy a TikTok, Reel, YouTube, blog, restaurant, or destination link, then paste it here.</Text>
           <View style={styles.linkRow}>
-            <Text style={[styles.inputLabel, { fontFamily: font.family }]}>Travel link</Text>
-            <TextInput placeholder="Paste TikTok, Reel, YouTube, blog, or restaurant link" placeholderTextColor={theme.muted} value={link} onChangeText={setLink} style={[styles.input, styles.linkInput, { color: theme.charcoal, fontFamily: font.family }]} autoCapitalize="none" />
+            <Text style={[styles.inputLabel, { fontFamily: font.semibold }]}>Travel link</Text>
+            <TextInput placeholder="Paste TikTok, Reel, YouTube, blog, or restaurant link" placeholderTextColor={theme.muted} value={link} onChangeText={setLink} style={[styles.input, styles.linkInput, { color: theme.charcoal, fontFamily: font.body }]} autoCapitalize="none" />
             <PrimaryLocalButton label="Paste here" onPress={pasteFromClipboard} />
           </View>
-          {!!pasteMessage && <Text style={styles.detected}>{pasteMessage}</Text>}
-          {!!link && <Text style={styles.detected}>{detectPlatform(link) ? `${detectPlatform(link)} detected. We will save the link even if a thumbnail is not available.` : 'Saved as a regular link with a polished fallback card.'}</Text>}
+          {!!pasteMessage && <Text style={[styles.detected, { fontFamily: font.semibold }]}>{pasteMessage}</Text>}
+          {!!link && <Text style={[styles.detected, { fontFamily: font.semibold }]}>{detectPlatform(link) ? `${detectPlatform(link)} detected. We will save the link even if a thumbnail is not available.` : 'Saved as a regular link with a polished fallback card.'}</Text>}
           <SecondaryLocalButton label="Next: Add a quick label" disabled={!link.trim()} onPress={() => setStep(2)} />
         </View>
       )}
 
-      <StepHeader number={2} title="Add a quick label" active={step === 2} done={!!title.trim() || !!note.trim()} onPress={() => setStep(2)} />
+      <StepHeader number={inputMode === 'note' ? 1 : 2} title={inputMode === 'note' ? 'Write the note' : 'Add a quick label'} active={step === 2} done={!!title.trim() || !!note.trim()} onPress={() => setStep(2)} />
       {step === 2 && (
         <View style={styles.stepCard}>
-          <Text style={styles.stepBody}>Give it just enough context so future-you remembers why it mattered.</Text>
-          <TextInput placeholder="Title, like Rooftop dinner or Beach club" placeholderTextColor="rgba(32,38,35,0.48)" value={title} onChangeText={setTitle} style={[styles.input, { color: theme.charcoal, fontFamily: font.family }]} />
-          <TextInput placeholder="Optional note" placeholderTextColor="rgba(32,38,35,0.48)" value={note} onChangeText={setNote} style={[styles.input, styles.note, { color: theme.charcoal, fontFamily: font.family }]} multiline />
+          <Text style={[styles.stepBody, { fontFamily: font.body }]}>{inputMode === 'note' ? 'Jot the idea down before it disappears. You can sort it into the trip after.' : 'Give it just enough context so future-you remembers why it mattered.'}</Text>
+          <TextInput placeholder={inputMode === 'note' ? 'Title, like Lisbon in spring or Birthday dinner idea' : 'Title, like Rooftop dinner or Beach club'} placeholderTextColor="rgba(32,38,35,0.48)" value={title} onChangeText={setTitle} style={[styles.input, { color: theme.charcoal, fontFamily: font.body }]} />
+          <TextInput placeholder={inputMode === 'note' ? 'Write the note here' : 'Why did you save this?'} placeholderTextColor="rgba(32,38,35,0.48)" value={note} onChangeText={setNote} style={[styles.input, styles.note, { color: theme.charcoal, fontFamily: font.body }]} multiline />
           <SecondaryLocalButton label="Next: Organize it" onPress={() => setStep(3)} />
         </View>
       )}
 
-      <StepHeader number={3} title="Organize it, optional" active={step === 3} done={selectedTags.length > 0 || priority !== 'Maybe' || category !== 'Food'} onPress={() => setStep(3)} />
+      <StepHeader number={inputMode === 'note' ? 2 : 3} title="Organize it" active={step === 3} done={step === 3 || selectedTags.length > 0 || !!category || !!priority} onPress={() => setStep(3)} />
       {step === 3 && (
         <View style={styles.stepCard}>
-          <Text style={styles.stepBody}>These help GoWandr sort your ideas later. Skip anything you are not sure about.</Text>
+          <Text style={[styles.stepBody, { fontFamily: font.body }]}>Choose a type and whether this should be a top highlight. Tags are optional.</Text>
 
-          <Text style={styles.label}>What kind of idea is it?</Text>
-          <View style={styles.wrap}>
-            {categories.map((item) => (
-              <Chip key={item} label={item} active={category === item} onPress={() => setCategory(item)} />
-            ))}
+          <View style={styles.questionGroup}>
+            <Text style={[styles.label, { fontFamily: font.heading }]}>What kind of idea is it?</Text>
+            <View style={styles.wrap}>
+              {categories.map((item) => (
+                <Chip key={item} label={item} active={category === item} onPress={() => setCategory(item)} />
+              ))}
+            </View>
           </View>
 
-          <Text style={styles.label}>How important is it?</Text>
-          <View style={styles.wrap}>
-            {(['Must-do', 'Maybe', 'Skip'] as IdeaPriority[]).map((item) => (
-              <Chip key={item} label={item} active={priority === item} onPress={() => setPriority(item)} />
-            ))}
+          <View style={styles.questionGroup}>
+            <Text style={[styles.label, { fontFamily: font.heading }]}>Should this be a highlight?</Text>
+            <Text style={[styles.helperText, { fontFamily: font.body }]}>Favorite ideas become the anchors that make a trip easier to compare.</Text>
+            <View style={styles.wrap}>
+              {priorityOptions.map((item) => (
+                <Chip key={item.value} label={item.label} active={priority === item.value} onPress={() => setPriority(item.value)} />
+              ))}
+            </View>
           </View>
 
-          <Text style={styles.label}>Quick tags</Text>
-          <View style={styles.wrap}>
-            {tags.map((item) => (
-              <Chip key={item} label={item} active={selectedTags.includes(item)} onPress={() => setSelectedTags((current) => current.includes(item) ? current.filter((tag) => tag !== item) : [...current, item])} />
-            ))}
+          <View style={styles.questionGroup}>
+            <Text style={[styles.label, { fontFamily: font.heading }]}>Quick tags</Text>
+            <Text style={[styles.helperText, { fontFamily: font.body }]}>Optional details for sorting later.</Text>
+            <View style={styles.wrap}>
+              {visibleTags.map((item) => (
+                <Chip key={item} label={item} active={selectedTags.includes(item)} onPress={() => setSelectedTags((current) => current.includes(item) ? current.filter((tag) => tag !== item) : [...current, item])} />
+              ))}
+              <TouchableOpacity style={styles.moreTagsButton} onPress={() => setShowAllTags((current) => !current)}>
+                <Text style={[styles.moreTagsText, { fontFamily: font.semibold }]}>{showAllTags ? 'Show less' : `More tags`}</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       )}
 
       {canSave && (
         <View style={styles.save}>
-          <PrimaryLocalButton label="Save Inspiration" onPress={save} muted={step === 1 && !title.trim() && !note.trim()} quiet />
+          <PrimaryLocalButton label={isEditing ? 'Save Changes' : 'Save Inspiration'} onPress={save} />
+        </View>
+      )}
+      {isEditing && onDelete && (
+        <View style={styles.deleteArea}>
+          <TouchableOpacity style={styles.deleteButton} onPress={onDelete}>
+            <Text style={[styles.deleteText, { fontFamily: font.semibold }]}>Delete Inspiration</Text>
+          </TouchableOpacity>
         </View>
       )}
     </View>
@@ -122,7 +162,7 @@ function PrimaryLocalButton({ label, onPress, muted = false, quiet = false }: { 
   if (quiet) {
     return (
       <PressableScale onPress={onPress} style={[styles.localButtonShell, styles.quietSaveButton, muted && styles.mutedAction]}>
-        <Text style={[styles.quietSaveText, { fontFamily: font.family }]}>{label}</Text>
+        <Text style={[styles.quietSaveText, { fontFamily: font.semibold }]}>{label}</Text>
       </PressableScale>
     );
   }
@@ -131,7 +171,7 @@ function PrimaryLocalButton({ label, onPress, muted = false, quiet = false }: { 
     <PressableScale onPress={onPress} style={[styles.localButtonShell, muted && styles.mutedAction]}>
       <LinearGradient colors={['#A8F0D4', '#6ED8B5', '#2FAF8A']} locations={[0, 0.4, 1]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.localPrimary}>
         <View style={styles.innerHighlight} />
-        <Text style={[styles.localPrimaryText, { fontFamily: font.family }]}>{label}</Text>
+        <Text style={[styles.localPrimaryText, { fontFamily: font.semibold }]}>{label}</Text>
       </LinearGradient>
     </PressableScale>
   );
@@ -140,7 +180,7 @@ function PrimaryLocalButton({ label, onPress, muted = false, quiet = false }: { 
 function SecondaryLocalButton({ label, onPress, disabled = false }: { label: string; onPress: () => void; disabled?: boolean }) {
   return (
     <PressableScale disabled={disabled} onPress={onPress} style={[styles.localSecondary, disabled && styles.disabledButton]}>
-      <Text style={[styles.localSecondaryText, { fontFamily: font.family }]}>{label}</Text>
+      <Text style={[styles.localSecondaryText, { fontFamily: font.semibold }]}>{label}</Text>
     </PressableScale>
   );
 }
@@ -150,10 +190,10 @@ function StepHeader({ number, title, active, done, onPress }: { number: number; 
   return (
     <TouchableOpacity style={[styles.stepHeader, active && styles.stepHeaderActive]} onPress={onPress}>
       <View style={[styles.stepNumber, done && styles.stepNumberDone, active && !done && styles.stepNumberActive]}>
-        <Text style={[styles.stepNumberText, { fontFamily: font.family }]}>{done ? 'OK' : number}</Text>
+        <Text style={[styles.stepNumberText, { fontFamily: font.semibold }]}>{done ? 'OK' : number}</Text>
       </View>
-      <Text style={[styles.stepTitle, { fontFamily: font.family }]}>{title}</Text>
-      {active ? <Text style={[styles.activePill, { fontFamily: font.family }]}>Active</Text> : done ? <Text style={[styles.stepAction, { fontFamily: font.family }]}>Edit</Text> : null}
+      <Text style={[styles.stepTitle, { fontFamily: font.semibold }]}>{title}</Text>
+      {active ? <Text style={[styles.activePill, { fontFamily: font.semibold }]}>Active</Text> : done ? <Text style={[styles.stepAction, { fontFamily: font.semibold }]}>Edit</Text> : null}
     </TouchableOpacity>
   );
 }
@@ -175,35 +215,47 @@ function youtubeThumbnail(link: string) {
 const styles = StyleSheet.create({
   back: { fontWeight: '800', paddingVertical: 10 },
   title: { fontWeight: '700', fontSize: 38, lineHeight: 46, letterSpacing: -0.4 },
-  body: { fontSize: 16, lineHeight: 24, marginTop: 8, marginBottom: 22, fontWeight: '500' },
+  body: { fontSize: 16, lineHeight: 24, marginTop: 8, marginBottom: 22, fontWeight: '400' },
+  modeSwitch: { flexDirection: 'row', gap: 8, padding: 5, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.68)', borderWidth: 1, borderColor: 'rgba(15,17,21,0.07)', marginBottom: 14 },
+  modeButton: { flex: 1, minHeight: 44, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
+  modeButtonActive: { backgroundColor: 'rgba(168,240,212,0.72)', shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 8, shadowOffset: { width: 0, height: 3 }, elevation: 1 },
+  modeText: { color: 'rgba(32,38,35,0.58)', fontSize: 14, fontWeight: '700' },
+  modeTextActive: { color: '#173A33' },
   stepHeader: { minHeight: 54, flexDirection: 'row', alignItems: 'center', gap: 11, paddingHorizontal: 13, paddingVertical: 10, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.72)', borderWidth: 1, borderColor: 'rgba(15,17,21,0.07)', marginBottom: 9, shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 12, shadowOffset: { width: 0, height: 5 }, elevation: 2 },
   stepHeaderActive: { backgroundColor: 'rgba(255,255,255,0.84)', borderColor: 'rgba(47,175,138,0.20)', shadowOpacity: 0.09 },
   stepNumber: { width: 30, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(168,240,212,0.28)', borderWidth: 1, borderColor: 'rgba(47,175,138,0.10)' },
   stepNumberActive: { backgroundColor: 'rgba(168,240,212,0.58)', borderColor: 'rgba(47,175,138,0.14)' },
   stepNumberDone: { backgroundColor: '#6ED8B5' },
-  stepNumberText: { color: '#202623', fontWeight: '700', fontSize: 12 },
-  stepTitle: { flex: 1, color: '#202623', fontWeight: '700', fontSize: 15.5, lineHeight: 20 },
+  stepNumberText: { color: '#26302C', fontWeight: '700', fontSize: 12 },
+  stepTitle: { flex: 1, color: '#26302C', fontWeight: '700', fontSize: 15.5, lineHeight: 20 },
   stepAction: { color: 'rgba(0,0,0,0.55)', fontWeight: '700', fontSize: 12 },
   activePill: { color: '#202623', fontWeight: '700', fontSize: 11, paddingHorizontal: 9, paddingVertical: 5, borderRadius: 999, backgroundColor: 'rgba(168,240,212,0.46)', overflow: 'hidden' },
   stepCard: { backgroundColor: 'rgba(255,255,255,0.78)', borderWidth: 1, borderColor: 'rgba(15,17,21,0.06)', borderRadius: 24, padding: 16, marginTop: -2, marginBottom: 13, shadowColor: '#000', shadowOpacity: 0.13, shadowRadius: 22, shadowOffset: { width: 0, height: 8 }, elevation: 5 },
-  stepBody: { color: 'rgba(0,0,0,0.65)', fontSize: 14.5, lineHeight: 21, marginBottom: 14, fontWeight: '500' },
+  stepBody: { color: '#596861', fontSize: 14.5, lineHeight: 22, marginBottom: 16, fontWeight: '400' },
   linkRow: { gap: 10 },
-  inputLabel: { color: 'rgba(0,0,0,0.62)', fontSize: 12, fontWeight: '700', marginBottom: -2 },
+  inputLabel: { color: '#596861', fontSize: 12, fontWeight: '700', marginBottom: -2 },
   input: { minHeight: 54, borderRadius: 16, borderWidth: 1, borderColor: 'rgba(15,17,21,0.10)', backgroundColor: 'rgba(255,255,255,0.86)', paddingHorizontal: 16, color: colors.charcoal, fontSize: 15, marginBottom: 12, shadowColor: '#000', shadowOpacity: 0.035, shadowRadius: 8, shadowOffset: { width: 0, height: 3 }, elevation: 1 },
   linkInput: { marginBottom: 0 },
   note: { minHeight: 96, paddingTop: 14, textAlignVertical: 'top' },
-  detected: { color: '#2FAF8A', fontWeight: '700', marginBottom: 10, fontSize: 13, lineHeight: 18 },
-  label: { color: '#202623', fontWeight: '700', fontSize: 15.5, marginTop: 14, marginBottom: 10 },
-  wrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  detected: { color: '#168C70', fontWeight: '700', marginBottom: 10, fontSize: 13, lineHeight: 18 },
+  questionGroup: { gap: 10, marginTop: 18, paddingTop: 18, borderTopWidth: 1, borderTopColor: 'rgba(32,38,35,0.07)' },
+  label: { color: '#26302C', fontWeight: '700', fontSize: 16, letterSpacing: -0.12 },
+  helperText: { color: '#68746F', fontSize: 13.5, lineHeight: 19, marginTop: -4, fontWeight: '400' },
+  wrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   save: { marginTop: 18 },
   localButtonShell: { borderRadius: 18 },
-  localPrimary: { minHeight: 50, borderRadius: 18, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 22, overflow: 'hidden' },
+  localPrimary: { minHeight: 54, borderRadius: 18, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 22, overflow: 'hidden', shadowColor: '#2FAF8A', shadowOpacity: 0.22, shadowRadius: 18, shadowOffset: { width: 0, height: 7 }, elevation: 5 },
   innerHighlight: { position: 'absolute', top: 1, left: 1, right: 1, height: 1, backgroundColor: 'rgba(255,255,255,0.35)' },
-  localPrimaryText: { color: '#202623', fontWeight: '800', fontSize: 15 },
+  localPrimaryText: { color: '#173A33', fontWeight: '800', fontSize: 15 },
   quietSaveButton: { minHeight: 50, borderRadius: 18, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 22, backgroundColor: 'rgba(255,255,255,0.86)', borderWidth: 1, borderColor: 'rgba(32,38,35,0.08)', shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 16, shadowOffset: { width: 0, height: 6 }, elevation: 3 },
   quietSaveText: { color: '#137D68', fontWeight: '800', fontSize: 15, letterSpacing: -0.05 },
-  localSecondary: { minHeight: 48, borderRadius: 18, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 22, marginTop: 12, backgroundColor: 'rgba(255,255,255,0.34)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.28)' },
-  localSecondaryText: { color: '#202623', fontWeight: '700', fontSize: 14.5 },
+  localSecondary: { minHeight: 52, borderRadius: 18, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 22, marginTop: 18, backgroundColor: 'rgba(255,255,255,0.82)', borderWidth: 1, borderColor: 'rgba(47,175,138,0.18)', shadowColor: '#000', shadowOpacity: 0.055, shadowRadius: 12, shadowOffset: { width: 0, height: 5 }, elevation: 2 },
+  localSecondaryText: { color: '#26302C', fontWeight: '700', fontSize: 14.5 },
   disabledButton: { opacity: 0.42 },
   mutedAction: { opacity: 0.78 },
+  moreTagsButton: { minHeight: 36, borderRadius: 999, paddingHorizontal: 14, paddingVertical: 8, borderWidth: 1, borderColor: 'rgba(47,175,138,0.18)', backgroundColor: 'rgba(168,240,212,0.22)', alignItems: 'center', justifyContent: 'center' },
+  moreTagsText: { color: '#137D68', fontSize: 12.5, fontWeight: '700' },
+  deleteArea: { marginTop: 18, paddingTop: 18, borderTopWidth: 1, borderTopColor: 'rgba(32,38,35,0.08)' },
+  deleteButton: { minHeight: 50, borderRadius: 18, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(217,94,79,0.10)', borderWidth: 1, borderColor: 'rgba(217,94,79,0.22)' },
+  deleteText: { color: '#B84A3F', fontSize: 15, fontWeight: '600' },
 });

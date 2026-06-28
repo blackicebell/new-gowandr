@@ -13,6 +13,20 @@ export type TripIdea = {
   imageUrl?: string;
 };
 
+export type MatchupResultSummary = {
+  matchupName: string;
+  groupMatch: number;
+  summary: string;
+  decidedAt: string;
+};
+
+export type PlanChecklistItem = {
+  id: string;
+  title: string;
+  done: boolean;
+  category?: string;
+};
+
 export type TripDraft = {
   id: string;
   title: string;
@@ -22,6 +36,12 @@ export type TripDraft = {
   pace: 'Relaxed' | 'Balanced' | 'Packed';
   companionType: 'Solo' | 'Couple' | 'Friends' | 'Family' | 'Group';
   ideas: TripIdea[];
+  finalPlan?: boolean;
+  planStartDate?: string;
+  planEndDate?: string;
+  planCompletedAt?: string;
+  latestMatchupResult?: MatchupResultSummary;
+  planChecklist?: PlanChecklistItem[];
 };
 
 export type VotePrompt = 'exciting' | 'easy' | 'commit' | 'memorable' | 'groupFit' | 'regret';
@@ -33,4 +53,14 @@ export type VoteAnswer = {
   dealbreaker?: string;
   commitment: number;
   reason?: string;
+};
+
+export type MatchupSession = {
+  id: string;
+  matchupName: string;
+  trips: TripDraft[];
+  createdAt: string;
+  updatedAt: string;
+  ownerDeviceId?: string;
+  votes: VoteAnswer[][];
 };

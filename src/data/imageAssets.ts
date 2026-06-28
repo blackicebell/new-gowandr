@@ -1,10 +1,14 @@
-import { Image } from 'react-native';
+import { Asset } from 'expo-asset';
+
+function assetUri(moduleId: number) {
+  return Asset.fromModule(moduleId).uri;
+}
 
 export const starterImageUris = {
-  city: Image.resolveAssetSource(require('../../assets/starter/city.jpg')).uri,
-  coast: Image.resolveAssetSource(require('../../assets/starter/coast.jpg')).uri,
-  food: Image.resolveAssetSource(require('../../assets/starter/food.jpg')).uri,
-  island: Image.resolveAssetSource(require('../../assets/starter/island.jpg')).uri,
-  nightOut: Image.resolveAssetSource(require('../../assets/starter/night-out.jpg')).uri,
-  outdoors: Image.resolveAssetSource(require('../../assets/starter/outdoors.jpg')).uri,
+  city: assetUri(require('../../assets/starter/city.jpg')),
+  coast: assetUri(require('../../assets/starter/coast.jpg')),
+  food: assetUri(require('../../assets/starter/food.jpg')),
+  island: assetUri(require('../../assets/starter/island.jpg')),
+  nightOut: assetUri(require('../../assets/starter/night-out.jpg')),
+  outdoors: assetUri(require('../../assets/starter/outdoors.jpg')),
 };

@@ -11,10 +11,10 @@ export const demoTrips: TripDraft[] = [
     pace: 'Packed',
     companionType: 'Friends',
     ideas: [
-      idea('miami-1', 'Rooftop dinner', 'Nightlife', 'Must-do', ['friends', 'luxury'], 'Dress-up dinner before going out.'),
-      idea('miami-2', 'Beach day', 'Beach', 'Must-do', ['beach', 'chill'], 'Keep one afternoon totally open.'),
-      idea('miami-3', 'Wynwood photos', 'Photo Spot', 'Maybe', ['culture', 'friends'], 'Good daytime group moment.'),
-      idea('miami-4', 'Night out', 'Nightlife', 'Must-do', ['active', 'nightlife'], 'The birthday anchor.'),
+      idea('miami-1', 'Rooftop dinner', 'Nightlife', 'Must-do', ['friends', 'luxury'], 'Dress-up dinner before going out.', 'https://www.tiktok.com/@gowandr/video/7350000000000000000'),
+      idea('miami-2', 'Beach day', 'Beach', 'Must-do', ['beach', 'chill'], 'Keep one afternoon totally open.', 'https://www.instagram.com/p/C7gowandr-demo/'),
+      idea('miami-3', 'Wynwood photos', 'Photo Spot', 'Maybe', ['culture', 'friends'], 'Good daytime group moment.', 'https://www.youtube.com/watch?v=gowandrDemo01'),
+      idea('miami-4', 'Night out', 'Nightlife', 'Must-do', ['active', 'nightlife'], 'The birthday anchor.', 'https://www.timeout.com/miami/nightlife'),
       idea('miami-5', 'Brunch spot', 'Food', 'Maybe', ['food'], 'Easy recovery morning.'),
     ],
   },
@@ -68,6 +68,6 @@ export const demoTrips: TripDraft[] = [
   },
 ];
 
-function idea(id: string, title: string, category: TripDraft['ideas'][number]['category'], priority: TripDraft['ideas'][number]['priority'], tags: string[], note: string) {
-  return { id, title, category, priority, tags, note };
+function idea(id: string, title: string, category: TripDraft['ideas'][number]['category'], priority: TripDraft['ideas'][number]['priority'], tags: string[], note: string, link?: string) {
+  return { id, title, category, priority, tags, note, link };
 }

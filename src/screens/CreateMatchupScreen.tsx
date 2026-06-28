@@ -35,7 +35,7 @@ export function CreateMatchupScreen({
   const availableTrips = useMemo(() => trips.filter((trip) => !selected.includes(trip.id)), [selected, trips]);
   const [shareState, setShareState] = useState<'idle' | 'creating' | 'missingConfig'>('idle');
   const [sharePreview, setSharePreview] = useState<SharePreviewState | undefined>();
-  const [flowStep, setFlowStep] = useState<'choose' | 'preparing' | 'decide' | 'intro' | 'curate'>('choose');
+  const [flowStep, setFlowStep] = useState<'choose' | 'preparing' | 'decide' | 'intro' | 'finding' | 'curate'>('choose');
   const [showHistory, setShowHistory] = useState(false);
   const [includedHighlightIds, setIncludedHighlightIds] = useState<string[]>([]);
 
@@ -65,7 +65,8 @@ export function CreateMatchupScreen({
   };
 
   const beginOwnComparison = () => {
-    onStart(selected, 'Weekend Escape');
+    setFlowStep('finding');
+    setTimeout(() => onStart(selected, 'Weekend Escape'), 520);
   };
 
   const openShareCuration = () => {
@@ -138,37 +139,56 @@ export function CreateMatchupScreen({
     );
   }
 
+  if (flowStep === 'finding') {
+    return (
+      <View style={styles.preparingScreen}>
+        <View style={styles.preparingCard}>
+          <Text style={styles.preparingLabel}>Finding your strongest pull</Text>
+          <DecisionMatchupPreview trips={selectedTrips} compact />
+          <Text style={styles.preparingBody}>One quick feel-check at a time.</Text>
+        </View>
+      </View>
+    );
+  }
+
   if (flowStep === 'decide') {
     return (
       <View>
         <View style={styles.readyHeaderRow}>
           <Text style={styles.back} onPress={() => setFlowStep('choose')}>Back to trips</Text>
+          <TouchableOpacity onPress={() => setShowHistory((current) => !current)} style={styles.historyButton}>
+            <Text style={styles.historyButtonText}>History</Text>
+          </TouchableOpacity>
         </View>
         <Text style={styles.heroDecisionTitle}>You've narrowed it down.</Text>
-        <Text style={styles.body}>Ready to decide? Choose privately, or get a read from people you trust.</Text>
+        <Text style={styles.body}>You've done the hard part. Now choose which trip deserves to happen next.</Text>
+
+        {showHistory && (
+          <VotingInbox sessions={ownedSessions} loading={ownedSessionsLoading} onRefresh={onRefreshSessions} onOpenResults={onOpenSessionResults} onDeleteSession={onDeleteSession} />
+        )}
 
         <DecisionMatchupPreview trips={selectedTrips} />
 
         <View style={styles.decidePanel}>
-          <Text style={styles.decideLabel}>Decision mode</Text>
+          <Text style={styles.decideLabel}>Choose your path</Text>
           <Text style={styles.decideTitle}>How do you want to choose?</Text>
-          <Text style={styles.decideBody}>Two simple paths. Same goal: get closer to the trip you will actually take.</Text>
+          <Text style={styles.decideBody}>Decide privately, or invite people in when another perspective would help.</Text>
           <View style={styles.decideCards}>
             <DecisionChoiceCard
-              icon="Private"
-              badge="Quick / personal / no sharing"
+              icon="Me"
+              badge="Private"
               title="Help Me Decide"
-              body="Answer four quick questions and discover which trip pulls you most."
+              body="Takes about one minute."
               action="Start"
               tone="private"
               disabled={selected.length < 2}
               onPress={startOwnComparison}
             />
             <DecisionChoiceCard
-              icon="People"
-              badge="Collaborative / link-based"
+              icon="Friends"
+              badge="Share with friends"
               title="Get Opinions"
-              body="Share the highlights with friends and see which trip builds the most momentum."
+              body="Share a link. Friends react. See what builds momentum."
               action="Create Share Link"
               tone="social"
               disabled={selected.length < 2}
@@ -176,12 +196,6 @@ export function CreateMatchupScreen({
             />
           </View>
         </View>
-        <TouchableOpacity onPress={() => setShowHistory((current) => !current)} style={styles.pastReadsLink}>
-          <Text style={styles.pastReadsLinkText}>{showHistory ? 'Hide past reads' : 'View past reads'}</Text>
-        </TouchableOpacity>
-        {showHistory && (
-          <VotingInbox sessions={ownedSessions} loading={ownedSessionsLoading} onRefresh={onRefreshSessions} onOpenResults={onOpenSessionResults} onDeleteSession={onDeleteSession} />
-        )}
         <ShareLinkModal preview={sharePreview} onClose={() => setSharePreview(undefined)} />
       </View>
     );
@@ -366,11 +380,13 @@ function DecisionMatchupPreview({ trips, compact }: { trips: TripDraft[]; compac
   if (trips.length === 2) {
     return (
       <View style={[styles.matchupPreview, compact && styles.matchupPreviewCompact]}>
+        {!compact && <View style={styles.matchupRule} />}
         <MatchupTripLine trip={trips[0]} />
         <View style={styles.vsPill}>
           <Text style={styles.vsText}>VS</Text>
         </View>
         <MatchupTripLine trip={trips[1]} alignRight />
+        {!compact && <View style={styles.matchupRule} />}
       </View>
     );
   }
@@ -385,12 +401,17 @@ function DecisionMatchupPreview({ trips, compact }: { trips: TripDraft[]; compac
 }
 
 function MatchupTripLine({ trip, alignRight }: { trip: TripDraft; alignRight?: boolean }) {
+  const highlights = getTopHighlights(trip);
   return (
     <View style={[styles.matchupTripLine, alignRight && styles.matchupTripLineRight]}>
       <ImageBackground source={{ uri: trip.heroImage }} style={styles.matchupThumb} imageStyle={styles.matchupThumbImage} />
       <View style={[styles.matchupTripCopy, alignRight && styles.matchupTripCopyRight]}>
+        <Text style={styles.matchupTripTheme} numberOfLines={1}>{getTripThemeLabel(trip)}</Text>
         <Text style={styles.matchupTripTitle} numberOfLines={1}>{trip.title}</Text>
         <Text style={styles.matchupTripMeta} numberOfLines={1}>{getMetaChips(trip).join(' / ')}</Text>
+        {!!highlights.length && (
+          <Text style={styles.matchupHighlights} numberOfLines={1}>{highlights.join(' / ')}</Text>
+        )}
       </View>
     </View>
   );
@@ -590,6 +611,23 @@ function getMetaChips(trip: TripDraft) {
   return chips.slice(0, 3);
 }
 
+function getTripThemeLabel(trip: TripDraft) {
+  const tags = trip.tags.map((tag) => tag.toLowerCase());
+  if (tags.includes('food')) return 'Food escape';
+  if (tags.includes('beach')) return 'Beach weekend';
+  if (tags.includes('nightlife')) return 'Night out';
+  if (tags.includes('culture')) return 'Culture trip';
+  if (tags.includes('relax')) return 'Reset trip';
+  return `${trip.pace} trip`;
+}
+
+function getTopHighlights(trip: TripDraft) {
+  return trip.ideas
+    .filter((idea) => idea.priority !== 'Skip')
+    .slice(0, 3)
+    .map((idea) => idea.title);
+}
+
 function capitalize(value: string) {
   return value.charAt(0).toUpperCase() + value.slice(1);
 }
@@ -649,17 +687,20 @@ const styles = StyleSheet.create({
   summaryShade: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.24)' },
   summaryTitle: { color: colors.white, fontFamily: font.heading, fontWeight: '700', fontSize: 17, lineHeight: 21, letterSpacing: -0.14, textShadowColor: 'rgba(0,0,0,0.25)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 5, backgroundColor: 'transparent', includeFontPadding: false },
   summaryMeta: { color: colors.muted, fontFamily: font.semibold, fontWeight: '700', fontSize: 11.5, marginTop: 8, paddingHorizontal: 2, backgroundColor: 'transparent', includeFontPadding: false },
-  matchupPreview: { borderRadius: 28, padding: 16, gap: 10, backgroundColor: 'rgba(255,255,255,0.86)', borderWidth: 1, borderColor: 'rgba(32,38,35,0.07)', shadowColor: '#000', shadowOpacity: 0.07, shadowRadius: 16, shadowOffset: { width: 0, height: 6 }, elevation: 3, marginBottom: 22 },
+  matchupPreview: { borderRadius: 30, padding: 18, gap: 11, backgroundColor: 'rgba(255,255,255,0.90)', borderWidth: 1, borderColor: 'rgba(32,38,35,0.07)', shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 18, shadowOffset: { width: 0, height: 8 }, elevation: 4, marginBottom: 22 },
   matchupPreviewCompact: { marginBottom: 0, shadowOpacity: 0, backgroundColor: 'rgba(168,240,212,0.20)' },
-  matchupTripLine: { minHeight: 72, flexDirection: 'row', alignItems: 'center', gap: 12 },
+  matchupRule: { height: 1, backgroundColor: 'rgba(32,38,35,0.08)', marginHorizontal: 2 },
+  matchupTripLine: { minHeight: 92, flexDirection: 'row', alignItems: 'center', gap: 12 },
   matchupTripLineRight: { flexDirection: 'row-reverse' },
-  matchupThumb: { width: 82, height: 58, borderRadius: 17, overflow: 'hidden', backgroundColor: 'rgba(32,38,35,0.08)' },
+  matchupThumb: { width: 92, height: 66, borderRadius: 18, overflow: 'hidden', backgroundColor: 'rgba(32,38,35,0.08)' },
   matchupThumbImage: { borderRadius: 17 },
   matchupTripCopy: { flex: 1 },
   matchupTripCopyRight: { alignItems: 'flex-end' },
+  matchupTripTheme: { color: colors.tealDark, fontFamily: font.semibold, fontWeight: '800', fontSize: 10.5, textTransform: 'uppercase', marginBottom: 4, backgroundColor: 'transparent', includeFontPadding: false },
   matchupTripTitle: { color: colors.charcoal, fontFamily: font.heading, fontWeight: '700', fontSize: 19, lineHeight: 23, letterSpacing: -0.18, backgroundColor: 'transparent', includeFontPadding: false },
   matchupTripMeta: { color: colors.muted, fontFamily: font.semibold, fontWeight: '600', fontSize: 13, marginTop: 4, backgroundColor: 'transparent', includeFontPadding: false },
-  vsPill: { alignSelf: 'center', minWidth: 48, minHeight: 32, borderRadius: 16, paddingHorizontal: 13, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.charcoal, shadowColor: '#000', shadowOpacity: 0.12, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 3 },
+  matchupHighlights: { color: 'rgba(32,38,35,0.58)', fontFamily: font.body, fontSize: 12.5, lineHeight: 18, marginTop: 6, backgroundColor: 'transparent', includeFontPadding: false },
+  vsPill: { alignSelf: 'center', minWidth: 54, minHeight: 36, borderRadius: 18, paddingHorizontal: 15, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.charcoal, shadowColor: '#000', shadowOpacity: 0.14, shadowRadius: 12, shadowOffset: { width: 0, height: 5 }, elevation: 4 },
   vsText: { color: colors.white, fontFamily: font.semibold, fontWeight: '800', fontSize: 12, letterSpacing: 0.6, backgroundColor: 'transparent', includeFontPadding: false },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, marginTop: 4 },
   sectionTitle: { color: colors.charcoal, fontFamily: font.heading, fontWeight: '700', fontSize: 20, letterSpacing: -0.2 },
@@ -684,7 +725,7 @@ const styles = StyleSheet.create({
   decideTitle: { color: colors.charcoal, fontFamily: font.heading, fontWeight: '700', fontSize: 24, lineHeight: 29, letterSpacing: -0.24, marginTop: 5, backgroundColor: 'transparent', includeFontPadding: false },
   decideBody: { color: colors.muted, fontFamily: font.body, fontSize: 14.5, lineHeight: 21, marginTop: 5, marginBottom: 14, backgroundColor: 'transparent', includeFontPadding: false },
   decideCards: { gap: 12 },
-  decisionCard: { minHeight: 148, borderRadius: 24, padding: 16, flexDirection: 'row', gap: 13, backgroundColor: 'rgba(248,250,249,0.92)', borderWidth: 1, borderColor: 'rgba(32,38,35,0.07)' },
+  decisionCard: { minHeight: 150, borderRadius: 24, padding: 16, flexDirection: 'row', gap: 13, backgroundColor: 'rgba(248,250,249,0.94)', borderWidth: 1, borderColor: 'rgba(32,38,35,0.07)' },
   decisionCardSocial: { backgroundColor: 'rgba(168,240,212,0.22)', borderColor: 'rgba(47,175,138,0.18)' },
   decisionCardDisabled: { opacity: 0.48 },
   decisionIcon: { width: 42, height: 42, borderRadius: 16, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(168,240,212,0.52)', borderWidth: 1, borderColor: 'rgba(47,175,138,0.14)' },
@@ -696,7 +737,7 @@ const styles = StyleSheet.create({
   decisionTitle: { color: colors.charcoal, fontFamily: font.heading, fontWeight: '700', fontSize: 19, lineHeight: 23, letterSpacing: -0.16, backgroundColor: 'transparent', includeFontPadding: false },
   decisionBody: { color: colors.muted, fontFamily: font.body, fontSize: 14, lineHeight: 20, marginTop: 5, backgroundColor: 'transparent', includeFontPadding: false },
   decisionAction: { color: colors.tealDark, fontFamily: font.semibold, fontWeight: '700', fontSize: 13.5, marginTop: 11, backgroundColor: 'transparent', includeFontPadding: false },
-  decisionButton: { alignSelf: 'flex-start', minHeight: 38, borderRadius: 14, paddingHorizontal: 15, alignItems: 'center', justifyContent: 'center', marginTop: 13, backgroundColor: '#A8F0D4', borderWidth: 1, borderColor: 'rgba(47,175,138,0.16)' },
+  decisionButton: { alignSelf: 'stretch', minHeight: 48, borderRadius: 17, paddingHorizontal: 15, alignItems: 'center', justifyContent: 'center', marginTop: 15, backgroundColor: '#A8F0D4', borderWidth: 1, borderColor: 'rgba(47,175,138,0.16)' },
   decisionButtonSocial: { backgroundColor: colors.charcoal, borderColor: colors.charcoal },
   decisionButtonText: { color: '#173A33', fontFamily: font.semibold, fontWeight: '800', fontSize: 13, backgroundColor: 'transparent', includeFontPadding: false },
   decisionButtonTextSocial: { color: colors.white },

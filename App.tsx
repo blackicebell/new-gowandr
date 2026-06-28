@@ -178,6 +178,7 @@ export default function App() {
 
   const createTrip = (trip: TripDraft) => {
     setTrips((current) => [trip, ...current]);
+    setMomentumMessage('Saved. Now add the first idea that made this trip feel possible.');
     setRoute({ name: 'detail', tripId: trip.id });
   };
 
@@ -287,8 +288,16 @@ export default function App() {
   };
 
   const openFastAdd = () => {
-    if (trips.length) setRoute({ name: 'addIdea', tripId: trips[0].id });
-    else setRoute({ name: 'newTrip' });
+    if (trips.length === 1) {
+      setRoute({ name: 'addIdea', tripId: trips[0].id });
+      return;
+    }
+    if (trips.length > 1) {
+      setMomentumMessage('Choose the trip notebook where this inspiration belongs.');
+      setRoute({ name: 'echo' });
+      return;
+    }
+    setRoute({ name: 'newTrip' });
   };
 
   const rememberMatchupSession = async (sessionId: string) => {
@@ -393,12 +402,6 @@ export default function App() {
     setRoute({ name: 'newTrip' });
   };
 
-  const tryDemoFromOnboarding = async () => {
-    setHasSeenOnboarding(true);
-    await saveHasSeenOnboarding();
-    setRoute({ name: 'voting', tripIds: ['miami', 'new-orleans', 'jamaica'], matchupName: 'Weekend Escape' });
-  };
-
   if (!fontsLoaded || hasSeenOnboarding === undefined) {
     return <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.canvasDeep }]} />;
   }
@@ -406,7 +409,7 @@ export default function App() {
   if (hasSeenOnboarding === false && route.name !== 'sharedVoting') {
     return (
       <ThemeProvider value={theme}>
-        <OnboardingScreen onFinish={finishOnboarding} onTryDemo={tryDemoFromOnboarding} />
+        <OnboardingScreen onFinish={finishOnboarding} />
       </ThemeProvider>
     );
   }
@@ -436,7 +439,7 @@ export default function App() {
         </ScrollView>
         <View style={[styles.bottomNav, { backgroundColor: 'rgba(255,255,255,0.88)', borderColor: 'rgba(32,38,35,0.06)' }]}>
           <NavItem label="Home" active={route.name === 'home'} onPress={() => setRoute({ name: 'home' })} />
-          <NavItem label="Ideas" active={route.name === 'echo' || route.name === 'detail' || route.name === 'addIdea' || route.name === 'editIdea' || route.name === 'newTrip' || route.name === 'editTrip'} onPress={() => setRoute({ name: 'echo' })} />
+          <NavItem label="Trips" active={route.name === 'echo' || route.name === 'detail' || route.name === 'addIdea' || route.name === 'editIdea' || route.name === 'newTrip' || route.name === 'editTrip'} onPress={() => setRoute({ name: 'echo' })} />
           <NavItem label="Compare" active={route.name === 'createMatchup' || route.name === 'voting' || route.name === 'sharedVoting' || route.name === 'sessionResults' || route.name === 'results'} onPress={() => setRoute({ name: 'createMatchup' })} />
           <NavItem label="Plan" active={route.name === 'lab'} onPress={() => setRoute({ name: 'lab' })} />
         </View>
@@ -534,7 +537,7 @@ function LogoShimmer() {
 const styles = StyleSheet.create({
   safeArea: { flex: 1 },
   shell: { flex: 1, width: '100%', maxWidth: 680, alignSelf: 'center' },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 28, paddingTop: 10, paddingBottom: 12 },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 28, paddingTop: 4, paddingBottom: 10 },
   logoShell: { borderRadius: 20, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: 'rgba(255,255,255,0.86)', borderWidth: 1, overflow: 'hidden', shadowColor: '#6ED8B5', shadowOpacity: 0.24, shadowRadius: 13, shadowOffset: { width: 0, height: 0 } },
   logo: { width: 118, height: 29 },
   logoShimmer: { position: 'absolute', top: 0, bottom: 0, width: 42, left: 28, backgroundColor: '#A8F0D4', transform: [{ skewX: '-18deg' }] },
@@ -544,8 +547,8 @@ const styles = StyleSheet.create({
   sharedStatusTitle: { color: '#202623', fontFamily: font.heading, fontWeight: '700', fontSize: 26, lineHeight: 32, letterSpacing: -0.26 },
   sharedStatusBody: { color: 'rgba(32,38,35,0.66)', fontFamily: font.body, fontWeight: '400', fontSize: 15, lineHeight: 22, marginTop: 8 },
   content: { flex: 1 },
-  contentInner: { paddingHorizontal: 28, paddingBottom: 280 },
-  bottomNav: { position: 'absolute', width: '74%', maxWidth: 340, alignSelf: 'center', bottom: 10, minHeight: 58, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 12, paddingVertical: 7, borderRadius: 24, borderWidth: 1, shadowColor: '#000', shadowOpacity: 0.09, shadowRadius: 18, shadowOffset: { width: 0, height: 7 }, elevation: 8 },
+  contentInner: { paddingHorizontal: 28, paddingBottom: 220 },
+  bottomNav: { position: 'absolute', width: '78%', maxWidth: 350, alignSelf: 'center', bottom: 12, minHeight: 58, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 12, paddingVertical: 7, borderRadius: 24, borderWidth: 1, shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 16, shadowOffset: { width: 0, height: 7 }, elevation: 8 },
   navItemShell: { flex: 1, alignItems: 'center' },
   navItem: { width: 62, minHeight: 44, alignItems: 'center', justifyContent: 'center', borderRadius: 16, paddingHorizontal: 4 },
   navItemActive: { backgroundColor: 'rgba(168,240,212,0.54)' },

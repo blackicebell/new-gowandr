@@ -22,6 +22,8 @@ export function NewTripScreen({ onBack, onCreate, initialTrip, onUpdate, onDelet
   const [selectedTags, setSelectedTags] = useState<string[]>(initialTrip?.tags ?? ['food', 'relax']);
   const [pace, setPace] = useState<TripDraft['pace']>(initialTrip?.pace ?? 'Balanced');
   const [companionType, setCompanionType] = useState<TripDraft['companionType']>(initialTrip?.companionType ?? 'Friends');
+  const [step, setStep] = useState<1 | 2>(initialTrip ? 2 : 1);
+  const canContinue = !!title.trim();
 
   const createTrip = () => {
     const cleanTitle = title.trim();
@@ -45,14 +47,21 @@ export function NewTripScreen({ onBack, onCreate, initialTrip, onUpdate, onDelet
   return (
     <View>
       <Text style={[styles.back, { color: '#137D68', fontFamily: font.semibold }]} onPress={onBack}>Back to Trip Ideas</Text>
-      <Text style={[styles.title, { color: theme.charcoal, fontFamily: font.heading }]}>{isEditing ? 'Edit trip idea' : 'Start a trip idea'}</Text>
-      <Text style={[styles.body, { color: theme.muted, fontFamily: font.body }]}>{isEditing ? 'Update the brief so this trip is easier to compare later.' : 'Name the trip, pick the mood, and give yourself a clean place to save everything you find later.'}</Text>
+      <Text style={[styles.title, { color: theme.charcoal, fontFamily: font.heading }]}>{isEditing ? 'Edit trip notebook' : 'New trip notebook'}</Text>
+      <Text style={[styles.body, { color: theme.muted, fontFamily: font.body }]}>{isEditing ? 'Update the brief so this trip is easier to compare later.' : 'Start with a name and a cover photo. You can add the details after it has a home.'}</Text>
 
-      <TextInput value={title} onChangeText={setTitle} placeholder="Example: Paris Girls Trip" placeholderTextColor={theme.muted} style={[styles.input, { backgroundColor: theme.paper, borderColor: theme.line, color: theme.charcoal, fontFamily: font.body }]} />
-      <TextInput value={subtitle} onChangeText={setSubtitle} placeholder="Optional short note" placeholderTextColor={theme.muted} style={[styles.input, { backgroundColor: theme.paper, borderColor: theme.line, color: theme.charcoal, fontFamily: font.body }]} />
+      {!isEditing && (
+        <View style={styles.stepper}>
+          <View style={[styles.stepDot, step === 1 && styles.stepDotActive]} />
+          <View style={[styles.stepLine, step === 2 && styles.stepLineActive]} />
+          <View style={[styles.stepDot, step === 2 && styles.stepDotActive]} />
+        </View>
+      )}
+
+      <TextInput value={title} onChangeText={setTitle} placeholder="Example: Istanbul food weekend" placeholderTextColor={theme.muted} style={[styles.input, { backgroundColor: theme.paper, borderColor: theme.line, color: theme.charcoal, fontFamily: font.body }]} />
 
       <Text style={[styles.label, { color: theme.charcoal, fontFamily: font.heading }]}>Choose a starter photo</Text>
-      <Text style={[styles.helper, { color: theme.muted, fontFamily: font.body }]}>Pick one image to set the mood. You can change it later.</Text>
+      <Text style={[styles.helper, { color: theme.muted, fontFamily: font.body }]}>Pick one image to set the mood. This is only a cover, not a promise.</Text>
       <View style={styles.photoGrid}>
         {photoOptions.map((photo) => (
           <TouchableOpacity key={photo.id} onPress={() => setSelectedPhoto(photo)} style={[styles.photoChoice, { borderColor: selectedPhoto.id === photo.id ? theme.teal : 'transparent' }]}>
@@ -67,37 +76,47 @@ export function NewTripScreen({ onBack, onCreate, initialTrip, onUpdate, onDelet
         ))}
       </View>
 
-      <Text style={[styles.label, { color: theme.charcoal, fontFamily: font.heading }]}>Trip mood</Text>
-      <Text style={[styles.helper, { color: theme.muted, fontFamily: font.body }]}>Pick the feeling behind the trip. Keep it simple.</Text>
-      <View style={styles.wrap}>
-        {vibeTags.map((tag) => (
-          <Chip key={tag} label={tag} active={selectedTags.includes(tag)} onPress={() => setSelectedTags((current) => current.includes(tag) ? current.filter((item) => item !== tag) : [...current, tag])} />
-        ))}
-      </View>
+      {(isEditing || step === 2) && (
+        <>
+          <TextInput value={subtitle} onChangeText={setSubtitle} placeholder="Optional short note" placeholderTextColor={theme.muted} style={[styles.input, { backgroundColor: theme.paper, borderColor: theme.line, color: theme.charcoal, fontFamily: font.body }]} />
 
-      <Text style={[styles.label, { color: theme.charcoal, fontFamily: font.heading }]}>People</Text>
-      <Text style={[styles.helper, { color: theme.muted, fontFamily: font.body }]}>This starts as your trip. You can involve people later if you want input.</Text>
-      <View style={styles.wrap}>
-        {companionTypes.map((item) => (
-          <Chip key={item} label={item} active={companionType === item} onPress={() => setCompanionType(item)} />
-        ))}
-      </View>
+          <Text style={[styles.label, { color: theme.charcoal, fontFamily: font.heading }]}>Trip mood</Text>
+          <Text style={[styles.helper, { color: theme.muted, fontFamily: font.body }]}>Pick the feeling behind the trip. Keep it simple.</Text>
+          <View style={styles.wrap}>
+            {vibeTags.map((tag) => (
+              <Chip key={tag} label={tag} active={selectedTags.includes(tag)} onPress={() => setSelectedTags((current) => current.includes(tag) ? current.filter((item) => item !== tag) : [...current, tag])} />
+            ))}
+          </View>
 
-      <Text style={[styles.label, { color: theme.charcoal, fontFamily: font.heading }]}>Trip pace</Text>
-      <Text style={[styles.helper, { color: theme.muted, fontFamily: font.body }]}>How full should this trip feel?</Text>
-      <View style={styles.wrap}>
-        {paces.map((item) => (
-          <Chip key={item} label={item} active={pace === item} onPress={() => setPace(item)} />
-        ))}
-      </View>
-      <View style={[styles.paceCard, { backgroundColor: theme.paper, borderColor: theme.line }]}>
-        <Text style={[styles.paceTitle, { color: theme.charcoal, fontFamily: font.heading }]}>{paceGuidance[pace].label}: {paceGuidance[pace].short}</Text>
-        <Text style={[styles.paceBody, { color: theme.muted, fontFamily: font.body }]}>{paceGuidance[pace].detail}</Text>
-        <Text style={[styles.paceMeta, { color: '#137D68', fontFamily: font.semibold }]}>Use this as a feel-check, not a strict itinerary.</Text>
-      </View>
+          <Text style={[styles.label, { color: theme.charcoal, fontFamily: font.heading }]}>People</Text>
+          <Text style={[styles.helper, { color: theme.muted, fontFamily: font.body }]}>This starts as your trip. You can involve people later if you want input.</Text>
+          <View style={styles.wrap}>
+            {companionTypes.map((item) => (
+              <Chip key={item} label={item} active={companionType === item} onPress={() => setCompanionType(item)} />
+            ))}
+          </View>
+
+          <Text style={[styles.label, { color: theme.charcoal, fontFamily: font.heading }]}>Trip pace</Text>
+          <Text style={[styles.helper, { color: theme.muted, fontFamily: font.body }]}>How full should this trip feel?</Text>
+          <View style={styles.wrap}>
+            {paces.map((item) => (
+              <Chip key={item} label={item} active={pace === item} onPress={() => setPace(item)} />
+            ))}
+          </View>
+          <View style={[styles.paceCard, { backgroundColor: theme.paper, borderColor: theme.line }]}>
+            <Text style={[styles.paceTitle, { color: theme.charcoal, fontFamily: font.heading }]}>{paceGuidance[pace].label}: {paceGuidance[pace].short}</Text>
+            <Text style={[styles.paceBody, { color: theme.muted, fontFamily: font.body }]}>{paceGuidance[pace].detail}</Text>
+            <Text style={[styles.paceMeta, { color: '#137D68', fontFamily: font.semibold }]}>Use this as a feel-check, not a strict itinerary.</Text>
+          </View>
+        </>
+      )}
 
       <View style={styles.actions}>
-        <Button label={isEditing ? 'Save Trip Changes' : 'Create Trip Idea'} disabled={!title.trim()} onPress={createTrip} />
+        {!isEditing && step === 1 ? (
+          <Button label="Next: Add the trip feel" disabled={!canContinue} onPress={() => setStep(2)} />
+        ) : (
+          <Button label={isEditing ? 'Save Trip Changes' : 'Save Trip Notebook'} disabled={!title.trim()} onPress={createTrip} />
+        )}
       </View>
       {isEditing && onDelete && (
         <View style={styles.deleteArea}>
@@ -126,6 +145,11 @@ const styles = StyleSheet.create({
   title: { fontWeight: '700', fontSize: 38, lineHeight: 46, letterSpacing: -0.38 },
   body: { fontSize: 16, lineHeight: 23, marginTop: 8, marginBottom: 18 },
   input: { minHeight: 54, borderRadius: 18, borderWidth: 1, paddingHorizontal: 16, fontSize: 15, marginBottom: 10 },
+  stepper: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', gap: 8, marginBottom: 16 },
+  stepDot: { width: 11, height: 11, borderRadius: 999, backgroundColor: 'rgba(32,38,35,0.12)' },
+  stepDotActive: { width: 32, backgroundColor: '#6ED8B5' },
+  stepLine: { width: 28, height: 2, borderRadius: 999, backgroundColor: 'rgba(32,38,35,0.10)' },
+  stepLineActive: { backgroundColor: 'rgba(47,175,138,0.45)' },
   label: { fontWeight: '700', fontSize: 17, marginTop: 16, marginBottom: 10, letterSpacing: -0.17 },
   helper: { fontSize: 14, lineHeight: 20, marginTop: -4, marginBottom: 10 },
   photoGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: 10 },
@@ -139,7 +163,7 @@ const styles = StyleSheet.create({
   paceTitle: { fontWeight: '700', fontSize: 16 },
   paceBody: { fontSize: 14, lineHeight: 20, marginTop: 5 },
   paceMeta: { fontWeight: '600', fontSize: 12, marginTop: 9 },
-  actions: { marginTop: 22 },
+  actions: { marginTop: 22, marginBottom: 112 },
   deleteArea: { marginTop: 18, paddingTop: 18, borderTopWidth: 1, borderTopColor: 'rgba(32,38,35,0.08)' },
   deleteButton: { minHeight: 52, borderRadius: 18, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(217,94,79,0.10)', borderWidth: 1, borderColor: 'rgba(217,94,79,0.24)' },
   deleteText: { color: '#B84A3F', fontSize: 15, fontWeight: '600' },

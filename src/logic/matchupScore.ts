@@ -15,7 +15,7 @@ export function scoreMatchup(trips: TripDraft[], votes: VoteAnswer[]): MatchupRe
   return trips
     .map((trip) => {
       const tripVotes = votes.filter((vote) => vote.tripId === trip.id);
-      const excitement = tripVotes.filter((vote) => vote.prompt === 'exciting' || vote.prompt === 'memorable').length;
+      const excitement = tripVotes.filter((vote) => vote.prompt === 'exciting' || vote.prompt === 'memorable' || vote.prompt === 'mood').length;
       const ease = tripVotes.filter((vote) => vote.prompt === 'easy' || vote.prompt === 'groupFit').length;
       const commitment = tripVotes.reduce((sum, vote) => sum + vote.commitment, 0);
       const dealbreakers = tripVotes.filter((vote) => vote.dealbreaker).length;

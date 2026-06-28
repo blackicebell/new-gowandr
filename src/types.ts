@@ -44,7 +44,7 @@ export type TripDraft = {
   planChecklist?: PlanChecklistItem[];
 };
 
-export type VotePrompt = 'exciting' | 'easy' | 'commit' | 'memorable' | 'groupFit' | 'regret';
+export type VotePrompt = 'exciting' | 'easy' | 'mood' | 'commit' | 'memorable' | 'groupFit' | 'regret';
 
 export type VoteAnswer = {
   prompt: VotePrompt;
@@ -53,6 +53,7 @@ export type VoteAnswer = {
   dealbreaker?: string;
   commitment: number;
   reason?: string;
+  voterName?: string;
 };
 
 export type MatchupSession = {

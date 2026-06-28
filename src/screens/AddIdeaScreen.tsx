@@ -13,7 +13,7 @@ const visibleTagCount = 6;
 const priorityOptions: { label: string; value: IdeaPriority }[] = [
   { label: 'Favorite', value: 'Must-do' },
   { label: 'Considering', value: 'Maybe' },
-  { label: 'Skip', value: 'Skip' },
+  { label: 'Not an anchor', value: 'Skip' },
 ];
 
 export function AddIdeaScreen({ trip, onBack, onSave, initialIdea, onDelete }: { trip: TripDraft; onBack: () => void; onSave: (idea: TripIdea) => void; initialIdea?: TripIdea; onDelete?: () => void }) {
@@ -29,7 +29,9 @@ export function AddIdeaScreen({ trip, onBack, onSave, initialIdea, onDelete }: {
   const [step, setStep] = useState<1 | 2 | 3>(initialIdea ? 2 : 1);
   const [pasteMessage, setPasteMessage] = useState('');
   const [showAllTags, setShowAllTags] = useState(false);
-  const canSave = !!link.trim() || !!title.trim() || !!note.trim();
+  const hasIdeaInput = inputMode === 'note' ? !!title.trim() || !!note.trim() : !!link.trim();
+  const hasLabel = !!title.trim() || !!note.trim();
+  const canSave = hasIdeaInput && hasLabel && step === 3;
   const visibleTags = showAllTags ? tags : tags.slice(0, visibleTagCount);
 
   const pasteFromClipboard = async () => {
@@ -65,7 +67,7 @@ export function AddIdeaScreen({ trip, onBack, onSave, initialIdea, onDelete }: {
     <View>
       <Text style={[styles.back, { color: '#137D68', fontFamily: font.semibold }]} onPress={onBack}>Back to {trip.title}</Text>
       <Text style={[styles.title, { color: theme.charcoal, fontFamily: font.heading }]}>{isEditing ? 'Edit inspiration' : 'Add inspiration'}</Text>
-      <Text style={[styles.body, { color: theme.muted, fontFamily: font.body }]}>{isEditing ? 'Update the label, note, link, and how this idea should appear on the trip page.' : 'Start with a link or a quick note. You can organize it after, but you should not have to do all the work upfront.'}</Text>
+      <Text style={[styles.body, { color: theme.muted, fontFamily: font.body }]}>{isEditing ? 'Update the label, note, link, and how this idea should appear on the trip page.' : 'Add the thing you found, give it a quick label, then choose where it belongs in the trip.'}</Text>
 
       {!isEditing && (
         <View style={styles.modeSwitch}>
@@ -99,14 +101,14 @@ export function AddIdeaScreen({ trip, onBack, onSave, initialIdea, onDelete }: {
           <Text style={[styles.stepBody, { fontFamily: font.body }]}>{inputMode === 'note' ? 'Jot the idea down before it disappears. You can sort it into the trip after.' : 'Give it just enough context so future-you remembers why it mattered.'}</Text>
           <TextInput placeholder={inputMode === 'note' ? 'Title, like Lisbon in spring or Birthday dinner idea' : 'Title, like Rooftop dinner or Beach club'} placeholderTextColor="rgba(32,38,35,0.48)" value={title} onChangeText={setTitle} style={[styles.input, { color: theme.charcoal, fontFamily: font.body }]} />
           <TextInput placeholder={inputMode === 'note' ? 'Write the note here' : 'Why did you save this?'} placeholderTextColor="rgba(32,38,35,0.48)" value={note} onChangeText={setNote} style={[styles.input, styles.note, { color: theme.charcoal, fontFamily: font.body }]} multiline />
-          <SecondaryLocalButton label="Next: Organize it" onPress={() => setStep(3)} />
+          <SecondaryLocalButton label="Next: Organize it" disabled={!hasLabel} onPress={() => setStep(3)} />
         </View>
       )}
 
       <StepHeader number={inputMode === 'note' ? 2 : 3} title="Organize it" active={step === 3} done={step === 3 || selectedTags.length > 0 || !!category || !!priority} onPress={() => setStep(3)} />
       {step === 3 && (
         <View style={styles.stepCard}>
-          <Text style={[styles.stepBody, { fontFamily: font.body }]}>Choose a type and whether this should be a top highlight. Tags are optional.</Text>
+          <Text style={[styles.stepBody, { fontFamily: font.body }]}>Choose the type and whether this belongs in the main highlights. Tags are optional.</Text>
 
           <View style={styles.questionGroup}>
             <Text style={[styles.label, { fontFamily: font.heading }]}>What kind of idea is it?</Text>
@@ -118,8 +120,8 @@ export function AddIdeaScreen({ trip, onBack, onSave, initialIdea, onDelete }: {
           </View>
 
           <View style={styles.questionGroup}>
-            <Text style={[styles.label, { fontFamily: font.heading }]}>Should this be a highlight?</Text>
-            <Text style={[styles.helperText, { fontFamily: font.body }]}>Favorite ideas become the anchors that make a trip easier to compare.</Text>
+            <Text style={[styles.label, { fontFamily: font.heading }]}>Where should it sit?</Text>
+            <Text style={[styles.helperText, { fontFamily: font.body }]}>Favorites become anchors. Considering keeps it visible without making it a must.</Text>
             <View style={styles.wrap}>
               {priorityOptions.map((item) => (
                 <Chip key={item.value} label={item.label} active={priority === item.value} onPress={() => setPriority(item.value)} />
@@ -142,11 +144,9 @@ export function AddIdeaScreen({ trip, onBack, onSave, initialIdea, onDelete }: {
         </View>
       )}
 
-      {canSave && (
-        <View style={styles.save}>
-          <PrimaryLocalButton label={isEditing ? 'Save Changes' : 'Save Inspiration'} onPress={save} />
-        </View>
-      )}
+      <View style={styles.save}>
+        <PrimaryLocalButton label={isEditing ? 'Save Changes' : 'Save Inspiration'} muted={!canSave} onPress={canSave ? save : () => setStep(hasIdeaInput && hasLabel ? 3 : hasIdeaInput ? 2 : 1)} />
+      </View>
       {isEditing && onDelete && (
         <View style={styles.deleteArea}>
           <TouchableOpacity style={styles.deleteButton} onPress={onDelete}>
@@ -170,7 +170,6 @@ function PrimaryLocalButton({ label, onPress, muted = false, quiet = false }: { 
   return (
     <PressableScale onPress={onPress} style={[styles.localButtonShell, muted && styles.mutedAction]}>
       <LinearGradient colors={['#A8F0D4', '#6ED8B5', '#2FAF8A']} locations={[0, 0.4, 1]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.localPrimary}>
-        <View style={styles.innerHighlight} />
         <Text style={[styles.localPrimaryText, { fontFamily: font.semibold }]}>{label}</Text>
       </LinearGradient>
     </PressableScale>
@@ -242,10 +241,9 @@ const styles = StyleSheet.create({
   label: { color: '#26302C', fontWeight: '700', fontSize: 16, letterSpacing: -0.12 },
   helperText: { color: '#68746F', fontSize: 13.5, lineHeight: 19, marginTop: -4, fontWeight: '400' },
   wrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  save: { marginTop: 18 },
+  save: { marginTop: 18, marginBottom: 112 },
   localButtonShell: { borderRadius: 18 },
   localPrimary: { minHeight: 54, borderRadius: 18, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 22, overflow: 'hidden', shadowColor: '#2FAF8A', shadowOpacity: 0.22, shadowRadius: 18, shadowOffset: { width: 0, height: 7 }, elevation: 5 },
-  innerHighlight: { position: 'absolute', top: 1, left: 1, right: 1, height: 1, backgroundColor: 'rgba(255,255,255,0.35)' },
   localPrimaryText: { color: '#173A33', fontWeight: '800', fontSize: 15 },
   quietSaveButton: { minHeight: 50, borderRadius: 18, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 22, backgroundColor: 'rgba(255,255,255,0.86)', borderWidth: 1, borderColor: 'rgba(32,38,35,0.08)', shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 16, shadowOffset: { width: 0, height: 6 }, elevation: 3 },
   quietSaveText: { color: '#137D68', fontWeight: '800', fontSize: 15, letterSpacing: -0.05 },

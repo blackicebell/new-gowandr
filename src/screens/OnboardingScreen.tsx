@@ -5,8 +5,8 @@ import { colors, font, useThemeColors } from '../theme/colors';
 
 const slides = [
   {
-    title: 'Stop collecting ideas. Start taking trips.',
-    body: 'Drop in links, notes, restaurants, videos, and "we should go here" moments without building a whole itinerary.',
+    title: 'Turn trip ideas into a real choice.',
+    body: 'Save links, notes, restaurants, videos, and "we should go here" moments in one calm place.',
     image: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80',
   },
   {
@@ -21,7 +21,7 @@ const slides = [
   },
 ];
 
-export function OnboardingScreen({ onFinish, onTryDemo }: { onFinish: () => void; onTryDemo: () => void }) {
+export function OnboardingScreen({ onFinish }: { onFinish: () => void; onTryDemo?: () => void }) {
   const theme = useThemeColors();
   const [index, setIndex] = useState(0);
   const slide = slides[index];
@@ -45,8 +45,7 @@ export function OnboardingScreen({ onFinish, onTryDemo }: { onFinish: () => void
         </View>
       </ImageBackground>
       <View style={styles.actions}>
-        <Button label={isLast ? 'Start with Trip Ideas' : 'Next'} onPress={() => (isLast ? onFinish() : setIndex((current) => current + 1))} />
-        <Button label="Try Demo Compare" variant="secondary" onPress={onTryDemo} />
+        <Button label={isLast ? 'Create Your First Trip Notebook' : 'Next'} onPress={() => (isLast ? onFinish() : setIndex((current) => current + 1))} />
       </View>
     </View>
   );

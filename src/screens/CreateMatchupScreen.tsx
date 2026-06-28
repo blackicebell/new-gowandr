@@ -70,7 +70,7 @@ export function CreateMatchupScreen({
     return (
       <View>
         <Text style={styles.back} onPress={onBack}>Back home</Text>
-        <Text style={styles.title}>Compare Trips</Text>
+        <Text style={styles.title}>Choose Your Trip</Text>
         <Text style={styles.body}>You need at least two trip ideas before comparing.</Text>
         <View style={styles.emptyState}>
           <Text style={styles.emptyTitle}>Start with one more option.</Text>
@@ -83,8 +83,8 @@ export function CreateMatchupScreen({
   return (
     <View>
       <Text style={styles.back} onPress={onBack}>Back home</Text>
-      <Text style={styles.title}>Compare Trips</Text>
-      <Text style={styles.body}>Choose 2 to 4 trip briefs. Decide yourself, or invite people when you want another perspective.</Text>
+      <Text style={styles.title}>Choose Your Trip</Text>
+      <Text style={styles.body}>Pick 2 to 4 trip notebooks. You will see the highlights first, then answer four quick questions.</Text>
 
       <VotingInbox sessions={ownedSessions} loading={ownedSessionsLoading} onRefresh={onRefreshSessions} onOpenResults={onOpenSessionResults} />
 
@@ -113,17 +113,17 @@ export function CreateMatchupScreen({
       )}
 
       <View style={styles.sharePreview}>
-        <Text style={styles.previewLabel}>Optional collaboration</Text>
-        <Text style={styles.previewTitle}>Need another opinion?</Text>
-        <Text style={styles.previewBody}>Compare on your own first. When you’re ready, send a simple prompt so friends can vote and leave quick feedback.</Text>
+        <Text style={styles.previewLabel}>Shareable vote</Text>
+        <Text style={styles.previewTitle}>Want friends to weigh in?</Text>
+        <Text style={styles.previewBody}>Send them the same highlight-first voting link. No login needed, and their answers come back here.</Text>
       </View>
       <Text style={styles.compareHint}>{selected.length < 2 ? 'Choose at least 2 trips to compare.' : `Comparing ${selected.length} of 4 possible trips.`}</Text>
       {shareState === 'missingConfig' && (
         <Text style={styles.shareConfigHint}>Shared voting is not ready yet, so this sends a manual prompt for now.</Text>
       )}
       <View style={styles.actions}>
-        <Button label="Compare Trips" disabled={selected.length < 2} onPress={() => onStart(selected, 'Weekend Escape')} />
-        <Button label={shareState === 'creating' ? 'Creating Link...' : 'Invite Friends'} variant="secondary" disabled={selected.length < 2 || shareState === 'creating'} onPress={inviteFriends} />
+        <Button label="Start Deciding" disabled={selected.length < 2} onPress={() => onStart(selected, 'Weekend Escape')} />
+        <Button label={shareState === 'creating' ? 'Creating Link...' : 'Share with Friends'} variant="secondary" disabled={selected.length < 2 || shareState === 'creating'} onPress={inviteFriends} />
       </View>
     </View>
   );

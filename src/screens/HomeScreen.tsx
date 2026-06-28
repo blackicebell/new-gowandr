@@ -53,13 +53,13 @@ export function HomeScreen({
         <View style={styles.heroCopy}>
           <View style={styles.copyBlock}>
             <Text style={[styles.kicker, { color: theme.accent, fontFamily: font.semibold }]}>Collect. Compare. Commit.</Text>
-            <Text style={[styles.title, { fontFamily: font.heading }]}>Stop collecting ideas. Start taking trips.</Text>
-            <Text style={[styles.body, { fontFamily: font.body }]}>Save what you find, shape real trip options, and choose the one that feels worth doing.</Text>
+            <Text style={[styles.title, { fontFamily: font.heading }]}>Collect the ideas. Choose the trip.</Text>
+            <Text style={[styles.body, { fontFamily: font.body }]}>Save what you find, shape it into real options, and move toward the trip that feels worth doing.</Text>
           </View>
         </View>
       </ImageBackground>
       <View style={styles.heroActions}>
-        <HeroButton label="Start a Trip Draft" tone="primary" onPress={onStartDraft} />
+        <HeroButton label="New Trip Notebook" tone="primary" onPress={onStartDraft} />
         <HeroButton label="Add Inspiration" onPress={onAddIdea} />
       </View>
 

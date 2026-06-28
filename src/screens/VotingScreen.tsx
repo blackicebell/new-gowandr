@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ImageBackground, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { Button } from '../components/Button';
 import { Chip } from '../components/Chip';
+import { SourceThumbnail, getSourceLabel } from '../components/SourceThumbnail';
 import { colors, font } from '../theme/colors';
 import { TripDraft, VoteAnswer, VotePrompt } from '../types';
 
@@ -16,9 +17,9 @@ type PromptConfig = {
 const prompts: PromptConfig[] = [
   {
     id: 'exciting',
-    text: 'Which trip feels more exciting?',
-    helper: 'Pick the one that has the strongest pull.',
-    reasons: ["I'm in", 'Best energy', 'Dream trip', 'Looks fun', 'Biggest memory', 'Maybe'],
+    text: 'Which trip made you think, “I actually want to go”?',
+    helper: 'Pick the experience that pulled you in after seeing the highlights.',
+    reasons: ["I'm in", 'Best energy', 'Dream trip', 'Looks fun', 'Biggest memory'],
     concerns: ['Too expensive', 'Too much partying', 'Not relaxing enough', 'Safety concern', 'Dates unclear'],
   },
   {
@@ -29,25 +30,11 @@ const prompts: PromptConfig[] = [
     concerns: ['Dates unclear', 'Travel hassle', 'Needs budget check', 'Group schedules', 'Too much planning'],
   },
   {
-    id: 'commit',
-    text: 'Which trip would you actually commit to?',
-    helper: 'This is the trip you would help book, plan, and protect on the calendar.',
-    reasons: ['Ready to plan', 'Ready to book', 'Dates work', "I'm in", 'Need dates', 'Need details'],
-    concerns: ['Budget check', 'PTO needed', 'No passport', 'Group buy-in', 'Timing risk'],
-  },
-  {
-    id: 'memorable',
-    text: 'Which trip would people talk about later?',
-    helper: 'Choose the option that feels like the better story.',
-    reasons: ['Best story', 'Dream trip', 'Bucket-list', 'Unique food', 'Big group memory', 'Looks special'],
-    concerns: ['Too expensive', 'Too packed', 'Too far', 'Weather risk', 'Not enough anchors'],
-  },
-  {
-    id: 'groupFit',
-    text: 'Which trip fits real life better?',
-    helper: 'Pick the one that fits the people, budget, timing, and energy you actually have.',
-    reasons: ['Good fit', 'Easy yes', 'Fits the vibe', 'Low drama', 'Need dates', 'People can go'],
-    concerns: ['Split interests', 'Too much partying', 'Not relaxing enough', 'Budget mismatch', 'Safety concern'],
+    id: 'mood',
+    text: 'Which trip fits the mood you are in right now?',
+    helper: 'Think energy, pace, people, and the kind of memory you want.',
+    reasons: ['Fits the vibe', 'Need this', 'Good energy', 'Right pace', 'Feels easy'],
+    concerns: ['Wrong vibe', 'Too packed', 'Too quiet', 'Not enough anchors', 'Needs details'],
   },
   {
     id: 'regret',
@@ -64,7 +51,8 @@ export function VotingScreen({ trips, matchupName, onCancel, onComplete }: { tri
   const [step, setStep] = useState(0);
   const [votes, setVotes] = useState<VoteAnswer[]>([]);
   const [selectedTripId, setSelectedTripId] = useState<string | undefined>();
-  const [phase, setPhase] = useState<'choose' | 'explain'>('choose');
+  const [phase, setPhase] = useState<'preview' | 'choose' | 'explain'>('preview');
+  const [voterName, setVoterName] = useState('');
   const [reaction, setReaction] = useState<string | undefined>();
   const [dealbreaker, setDealbreaker] = useState<string | undefined>();
   const [commitment, setCommitment] = useState(3);
@@ -88,7 +76,7 @@ export function VotingScreen({ trips, matchupName, onCancel, onComplete }: { tri
 
   const submitWhy = () => {
     if (!selectedTripId) return;
-    const nextVotes = [...votes, { prompt: prompt.id, tripId: selectedTripId, reaction, dealbreaker, commitment, reason: reason.trim() || reaction }];
+    const nextVotes = [...votes, { prompt: prompt.id, tripId: selectedTripId, reaction, dealbreaker, commitment, reason: reason.trim() || reaction, voterName: voterName.trim() }];
     setSelectedTripId(undefined);
     setPhase('choose');
     setReaction(undefined);
@@ -105,9 +93,26 @@ export function VotingScreen({ trips, matchupName, onCancel, onComplete }: { tri
   return (
     <View>
       <Text style={styles.kicker}>{matchupName}</Text>
-      <Text style={styles.title}>{prompt.text}</Text>
-      <Text style={styles.helper}>{prompt.helper}</Text>
-      <Text style={styles.progress}>Question {step + 1} of {prompts.length}</Text>
+      {phase === 'preview' ? (
+        <>
+          <Text style={styles.title}>Watch the highlights first.</Text>
+          <Text style={styles.helper}>You are comparing the saved inspiration, not just destination names. Skim each trip, then decide what pulls you.</Text>
+          <TextInput value={voterName} onChangeText={setVoterName} placeholder="Your name, optional" placeholderTextColor="rgba(32,38,35,0.48)" style={styles.nameInput} />
+          <View style={styles.playlists}>
+            {trips.map((trip) => (
+              <TripHighlightPreview key={trip.id} trip={trip} />
+            ))}
+          </View>
+          <View style={styles.bottomActions}>
+            <Button label="Start Deciding" onPress={() => setPhase('choose')} />
+            <Button label="Cancel" variant="ghost" onPress={onCancel} />
+          </View>
+        </>
+      ) : (
+        <>
+          <Text style={styles.title}>{prompt.text}</Text>
+          <Text style={styles.helper}>{prompt.helper}</Text>
+          <Text style={styles.progress}>Question {step + 1} of {prompts.length}</Text>
 
       {phase === 'choose' ? (
         <View>
@@ -177,6 +182,33 @@ export function VotingScreen({ trips, matchupName, onCancel, onComplete }: { tri
           </View>
         </View>
       )}
+        </>
+      )}
+    </View>
+  );
+}
+
+function TripHighlightPreview({ trip }: { trip: TripDraft }) {
+  const highlights = trip.ideas.length ? trip.ideas.slice(0, 3) : [];
+  return (
+    <View style={styles.playlistCard}>
+      <ImageBackground source={{ uri: trip.heroImage }} style={styles.playlistHero} imageStyle={styles.playlistHeroImage}>
+        <View style={styles.playlistShade} />
+        <View style={styles.playlistHeroCopy}>
+          <Text style={styles.playlistCount}>{trip.ideas.length || 1} highlights</Text>
+          <Text style={styles.playlistTitle}>{trip.title}</Text>
+          <Text style={styles.playlistMeta}>{trip.tags.slice(0, 3).join(' / ')}</Text>
+        </View>
+      </ImageBackground>
+      <View style={styles.highlightRow}>
+        {(highlights.length ? highlights : [{ id: 'empty', title: 'Add saved links to make this trip easier to feel.', priority: 'Maybe' as const, tags: [], category: 'Other' as const }]).map((idea) => (
+          <View key={idea.id} style={styles.highlightCard}>
+            <SourceThumbnail link={idea.link} priority={idea.priority} />
+            <Text numberOfLines={1} style={styles.highlightTitle}>{idea.title}</Text>
+            <Text numberOfLines={1} style={styles.highlightSource}>{getSourceLabel(idea.link)}</Text>
+          </View>
+        ))}
+      </View>
     </View>
   );
 }
@@ -186,6 +218,20 @@ const styles = StyleSheet.create({
   title: { color: colors.charcoal, fontFamily: font.heading, fontWeight: '700', fontSize: 31, lineHeight: 37, marginTop: 6, letterSpacing: -0.4 },
   helper: { color: colors.muted, fontFamily: font.body, fontWeight: '400', fontSize: 15, lineHeight: 22, marginTop: 8 },
   progress: { color: colors.muted, fontFamily: font.semibold, fontWeight: '600', marginTop: 10, marginBottom: 18 },
+  nameInput: { minHeight: 52, borderRadius: 18, paddingHorizontal: 16, marginTop: 18, marginBottom: 16, backgroundColor: 'rgba(255,255,255,0.82)', borderWidth: 1, borderColor: 'rgba(32,38,35,0.08)', color: colors.charcoal, fontFamily: font.body, fontSize: 15 },
+  playlists: { gap: 16 },
+  playlistCard: { borderRadius: 26, backgroundColor: 'rgba(255,255,255,0.84)', borderWidth: 1, borderColor: 'rgba(32,38,35,0.07)', padding: 12, shadowColor: '#000', shadowOpacity: 0.07, shadowRadius: 16, shadowOffset: { width: 0, height: 6 }, elevation: 3 },
+  playlistHero: { minHeight: 170, justifyContent: 'flex-end', borderRadius: 20, overflow: 'hidden' },
+  playlistHeroImage: { borderRadius: 20 },
+  playlistShade: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.28)' },
+  playlistHeroCopy: { padding: 15 },
+  playlistCount: { color: '#A8F0D4', fontFamily: font.semibold, fontSize: 11, fontWeight: '700', textTransform: 'uppercase' },
+  playlistTitle: { color: colors.white, fontFamily: font.heading, fontWeight: '700', fontSize: 24, lineHeight: 29, marginTop: 4 },
+  playlistMeta: { color: 'rgba(255,255,255,0.86)', fontFamily: font.body, fontSize: 13, lineHeight: 18, marginTop: 4, textTransform: 'capitalize' },
+  highlightRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginTop: 12 },
+  highlightCard: { flex: 1, minWidth: '30%', borderRadius: 18, overflow: 'hidden', backgroundColor: 'rgba(255,255,255,0.86)', borderWidth: 1, borderColor: 'rgba(32,38,35,0.06)' },
+  highlightTitle: { color: colors.charcoal, fontFamily: font.semibold, fontWeight: '700', fontSize: 12, marginHorizontal: 9, marginTop: 8 },
+  highlightSource: { color: colors.tealDark, fontFamily: font.body, fontWeight: '500', fontSize: 11, marginHorizontal: 9, marginTop: 2, marginBottom: 9 },
   cards: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
   voteCard: { width: '48%', borderRadius: 24, overflow: 'hidden', backgroundColor: colors.charcoal, shadowColor: '#000', shadowOpacity: 0.10, shadowRadius: 16, shadowOffset: { width: 0, height: 7 }, elevation: 4 },
   image: { minHeight: 216, justifyContent: 'flex-end' },
@@ -208,8 +254,8 @@ const styles = StyleSheet.create({
   meterActive: { backgroundColor: colors.teal, borderColor: colors.tealDark },
   meterText: { color: colors.charcoal, fontFamily: font.semibold, fontWeight: '600' },
   meterTextActive: { color: colors.charcoal, fontWeight: '700' },
-  whyActions: { gap: 11, marginTop: 22 },
+  whyActions: { gap: 11, marginTop: 22, marginBottom: 112 },
   changePick: { minHeight: 46, borderRadius: 16, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.68)', borderWidth: 1, borderColor: 'rgba(32,38,35,0.07)' },
   changePickText: { color: colors.tealDark, fontFamily: font.semibold, fontWeight: '600', fontSize: 14 },
-  bottomActions: { marginTop: 18 },
+  bottomActions: { marginTop: 18, marginBottom: 112 },
 });

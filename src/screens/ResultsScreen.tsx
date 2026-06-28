@@ -45,6 +45,26 @@ export function ResultsScreen({ trips, votes, matchupName, onRestart, onMoveToPl
         <ResultStat label="Commitment" value={winner.commitment > 14 ? 'Strong' : 'Building'} />
       </View>
 
+      {!!votes.length && (
+        <View style={styles.detailsCard}>
+          <Text style={styles.detailsKicker}>Decision details</Text>
+          <Text style={styles.detailsTitle}>Why people picked what they picked</Text>
+          {groupVotesByPerson(votes).map((group) => (
+            <View key={group.name} style={styles.personBlock}>
+              <Text style={styles.personName}>{group.name}</Text>
+              {group.votes.slice(0, 4).map((vote, index) => {
+                const trip = trips.find((item) => item.id === vote.tripId);
+                return (
+                  <Text key={`${group.name}-${vote.prompt}-${index}`} style={styles.personVote}>
+                    {trip?.title ?? 'Trip'}: {vote.reason || vote.reaction || 'picked this one'}{vote.dealbreaker ? ` · concern: ${vote.dealbreaker}` : ''}
+                  </Text>
+                );
+              })}
+            </View>
+          ))}
+        </View>
+      )}
+
       <View style={styles.actions}>
         <Button label="Commit to This Trip" onPress={() => onMoveToPlan(winner.trip.id, { matchupName, groupMatch: decisionConfidence, summary: explanation, decidedAt: new Date().toISOString() })} />
         <Button label="Share Decision" variant="secondary" onPress={() => shareMatchupResult(matchupName, winner, decisionConfidence, explanation)} />
@@ -52,6 +72,15 @@ export function ResultsScreen({ trips, votes, matchupName, onRestart, onMoveToPl
       </View>
     </View>
   );
+}
+
+function groupVotesByPerson(votes: VoteAnswer[]) {
+  const groups = new Map<string, VoteAnswer[]>();
+  votes.forEach((vote, index) => {
+    const name = vote.voterName?.trim() || (votes.some((item) => item.voterName?.trim()) ? `Friend ${index + 1}` : 'Your picks');
+    groups.set(name, [...(groups.get(name) ?? []), vote]);
+  });
+  return Array.from(groups.entries()).map(([name, groupedVotes]) => ({ name, votes: groupedVotes }));
 }
 
 function ResultStat({ label, value }: { label: string; value: string }) {
@@ -78,4 +107,10 @@ const styles = StyleSheet.create({
   statLabel: { color: colors.tealDark, fontFamily: font.semibold, fontWeight: '600', fontSize: 10, textTransform: 'uppercase' },
   statValue: { color: colors.charcoal, fontFamily: font.heading, fontWeight: '700', fontSize: 17, marginTop: 8 },
   actions: { gap: 10, marginTop: 18 },
+  detailsCard: { borderRadius: 24, padding: 18, backgroundColor: 'rgba(255,255,255,0.84)', borderWidth: 1, borderColor: 'rgba(32,38,35,0.07)', marginTop: 16, gap: 12 },
+  detailsKicker: { color: colors.tealDark, fontFamily: font.semibold, fontWeight: '700', fontSize: 11, textTransform: 'uppercase' },
+  detailsTitle: { color: colors.charcoal, fontFamily: font.heading, fontWeight: '700', fontSize: 21, lineHeight: 26, letterSpacing: -0.2 },
+  personBlock: { borderRadius: 18, padding: 13, backgroundColor: 'rgba(168,240,212,0.22)', borderWidth: 1, borderColor: 'rgba(47,175,138,0.12)' },
+  personName: { color: colors.charcoal, fontFamily: font.heading, fontWeight: '700', fontSize: 16, marginBottom: 7 },
+  personVote: { color: colors.muted, fontFamily: font.body, fontSize: 13.5, lineHeight: 19, marginTop: 3 },
 });

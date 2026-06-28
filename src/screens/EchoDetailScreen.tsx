@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { Animated, Image, ImageBackground, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Animated, Image, ImageBackground, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Button } from '../components/Button';
 import { IdeaCard } from '../components/IdeaCard';
@@ -91,10 +91,10 @@ export function EchoDetailScreen({ trip, onBack, onAddIdea, onEditTrip, onDelete
       </LinearGradient>
 
       <View style={styles.actions}>
-        <Button label="Add Idea" onPress={onAddIdea} />
+        <Button label="Add Inspiration" onPress={onAddIdea} />
         <Button label="Edit Trip" variant="secondary" onPress={onEditTrip} />
-        <Button label="Share Trip Card" variant="secondary" onPress={() => setShowShareComposer((current) => !current)} />
-        <Button label="Compare Trips" variant="secondary" onPress={onCompare} />
+        {!!trip.ideas.length && <Button label="Share Trip Card" variant="secondary" onPress={() => setShowShareComposer(true)} />}
+        {trip.ideas.length >= 2 && <Button label="Compare Trips" variant="secondary" onPress={onCompare} />}
         <Button label={trip.finalPlan ? 'Open Plan' : 'Commit to This Trip'} variant="ghost" onPress={onMoveToPlan} />
       </View>
       {trip.latestMatchupResult && (
@@ -107,15 +107,19 @@ export function EchoDetailScreen({ trip, onBack, onAddIdea, onEditTrip, onDelete
       <TouchableOpacity style={styles.manageDeleteButton} onPress={onDeleteTrip}>
         <Text style={[styles.manageDeleteText, { fontFamily: font.semibold }]}>Delete Trip</Text>
       </TouchableOpacity>
-      {showShareComposer && (
-        <ShareTripComposer
-          trip={trip}
-          photoUri={sharePhotoUri}
-          onSelectPhoto={setSharePhotoUri}
-          onShare={() => shareTripCard(trip, sharePhotoUri)}
-          onClose={() => setShowShareComposer(false)}
-        />
-      )}
+      <Modal visible={showShareComposer} transparent animationType="fade" onRequestClose={() => setShowShareComposer(false)}>
+        <View style={styles.modalBackdrop}>
+          <View style={styles.modalSheet}>
+            <ShareTripComposer
+              trip={trip}
+              photoUri={sharePhotoUri}
+              onSelectPhoto={setSharePhotoUri}
+              onShare={() => shareTripCard(trip, sharePhotoUri)}
+              onClose={() => setShowShareComposer(false)}
+            />
+          </View>
+        </View>
+      </Modal>
 
       <View style={styles.sectionHeader}>
         <Text style={[styles.sectionTitle, { fontFamily: font.heading }]}>Top highlights</Text>
@@ -281,7 +285,7 @@ const styles = StyleSheet.create({
   paceMeterBarActive: { backgroundColor: '#6ED8B5' },
   paceMeterText: { color: 'rgba(32,38,35,0.48)', fontFamily: font.semibold, fontSize: 10, fontWeight: '600', marginTop: 6 },
   paceMeterTextActive: { color: '#137D68' },
-  actions: { gap: 12, marginVertical: 4 },
+  actions: { gap: 10, marginVertical: 2 },
   sectionHeader: { gap: 10, marginTop: 8 },
   sectionTitle: { color: '#202623', fontWeight: '800', fontSize: 25, letterSpacing: -0.25 },
   sectionDivider: { height: 1, backgroundColor: 'rgba(32,38,35,0.08)' },
@@ -292,10 +296,12 @@ const styles = StyleSheet.create({
   voteSummaryLabel: { color: '#137D68', fontSize: 11, fontWeight: '600', textTransform: 'uppercase' },
   voteSummaryTitle: { color: '#202623', fontSize: 20, fontWeight: '700', marginTop: 5, letterSpacing: -0.2 },
   voteSummaryBody: { color: 'rgba(32,38,35,0.66)', fontSize: 14, lineHeight: 20, marginTop: 6 },
-  shareComposer: { backgroundColor: 'rgba(255,255,255,0.84)', borderRadius: 26, padding: 18, borderWidth: 1, borderColor: 'rgba(32,38,35,0.06)', shadowColor: '#000', shadowOpacity: 0.10, shadowRadius: 20, shadowOffset: { width: 0, height: 8 }, elevation: 5 },
+  modalBackdrop: { flex: 1, backgroundColor: 'rgba(10,18,16,0.36)', padding: 20, justifyContent: 'center' },
+  modalSheet: { maxWidth: 520, width: '100%', alignSelf: 'center' },
+  shareComposer: { backgroundColor: 'rgba(255,255,255,0.96)', borderRadius: 26, padding: 18, borderWidth: 1, borderColor: 'rgba(32,38,35,0.06)', shadowColor: '#000', shadowOpacity: 0.14, shadowRadius: 24, shadowOffset: { width: 0, height: 10 }, elevation: 8 },
   shareComposerKicker: { color: '#137D68', fontWeight: '800', fontSize: 11, textTransform: 'uppercase' },
   shareComposerTitle: { color: '#202623', fontWeight: '800', fontSize: 20, lineHeight: 25, marginTop: 5, marginBottom: 14, letterSpacing: -0.2 },
-  sharePreview: { minHeight: 460, borderRadius: 28, overflow: 'hidden', justifyContent: 'space-between', marginBottom: 18, shadowColor: '#000', shadowOpacity: 0.14, shadowRadius: 22, shadowOffset: { width: 0, height: 10 }, elevation: 5 },
+  sharePreview: { minHeight: 390, borderRadius: 28, overflow: 'hidden', justifyContent: 'space-between', marginBottom: 18, shadowColor: '#000', shadowOpacity: 0.14, shadowRadius: 22, shadowOffset: { width: 0, height: 10 }, elevation: 5 },
   sharePreviewImage: { borderRadius: 26 },
   shareBrandPill: { alignSelf: 'flex-start', margin: 18, width: 126, height: 42, borderRadius: 999, backgroundColor: 'rgba(255,255,255,0.92)', alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOpacity: 0.10, shadowRadius: 12, shadowOffset: { width: 0, height: 4 } },
   shareBrandLogo: { width: 102, height: 24 },

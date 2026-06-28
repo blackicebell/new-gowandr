@@ -4,9 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Button } from '../components/Button';
 import { IdeaCard } from '../components/IdeaCard';
 import { starterPhotos } from '../data/starterPhotos';
-import { calculateClarityScore } from '../logic/clarityScore';
 import { getMomentumStatus } from '../logic/momentum';
-import { getEchoSummary } from '../logic/summaries';
 import { getPaceHealth, paceGuidance } from '../logic/tripPace';
 import { font, useThemeColors } from '../theme/colors';
 import { TripDraft, TripIdea } from '../types';
@@ -14,11 +12,11 @@ import { shareTripCard } from '../utils/shareCards';
 
 export function EchoDetailScreen({ trip, onBack, onAddIdea, onEditTrip, onDeleteTrip, onEditIdea, onDeleteIdea, onCompare, onMoveToPlan }: { trip: TripDraft; onBack: () => void; onAddIdea: () => void; onEditTrip: () => void; onDeleteTrip: () => void; onEditIdea: (ideaId: string) => void; onDeleteIdea: (idea: TripIdea) => void; onCompare: () => void; onMoveToPlan: () => void }) {
   const colors = useThemeColors();
-  const clarity = calculateClarityScore(trip);
   const momentumStatus = getMomentumStatus(trip);
   const paceHealth = getPaceHealth(trip);
   const mustDos = trip.ideas.filter((idea) => idea.priority === 'Must-do');
   const maybes = trip.ideas.filter((idea) => idea.priority !== 'Must-do');
+  const readyToCommit = mustDos.length >= 3 || trip.ideas.length >= 4;
   const [showShareComposer, setShowShareComposer] = useState(false);
   const [sharePhotoUri, setSharePhotoUri] = useState(trip.heroImage);
   const fade = useRef(new Animated.Value(0)).current;
@@ -41,39 +39,47 @@ export function EchoDetailScreen({ trip, onBack, onAddIdea, onEditTrip, onDelete
         <LinearGradient colors={['rgba(0,0,0,0.25)', 'rgba(0,0,0,0.65)']} style={StyleSheet.absoluteFill} />
         <View style={styles.heroCopy}>
           <Text style={[styles.title, { fontFamily: font.heading }]}>{trip.title}</Text>
-          <Text style={[styles.subtitle, { fontFamily: font.body }]}>{trip.subtitle}</Text>
+          <Text style={[styles.subtitle, { fontFamily: font.body }]}>{getHeroStory(trip)}</Text>
         </View>
       </ImageBackground>
 
-      <View style={styles.summaryCard}>
-        <View style={styles.clarityBadge}>
-          <Text style={[styles.clarityScore, { fontFamily: font.heading }]}>{momentumStatus}</Text>
-          <Text style={[styles.clarityLabel, { fontFamily: font.semibold }]}>status</Text>
+      <View style={styles.momentumCard}>
+        <View style={styles.momentumTop}>
+          <View>
+            <Text style={[styles.cardKicker, { fontFamily: font.semibold }]}>Next step</Text>
+            <Text style={[styles.momentumTitle, { fontFamily: font.heading }]}>{getNextStepTitle(trip, mustDos.length)}</Text>
+          </View>
+          <View style={styles.momentumBadge}>
+            <Text style={[styles.momentumBadgeText, { fontFamily: font.heading }]}>{getStatusIcon(momentumStatus)}</Text>
+          </View>
         </View>
-        <View style={styles.summaryCopy}>
-          <Text style={[styles.summaryLabel, { fontFamily: font.semibold }]}>Trip status</Text>
-          <Text style={[styles.summary, { fontFamily: font.semibold }]}>{getEchoSummary(trip)}</Text>
+        <Text style={[styles.momentumBody, { fontFamily: font.body }]}>{getNextStepBody(trip, mustDos.length)}</Text>
+        <View style={styles.progressTrack}>
+          <View style={[styles.progressFill, { width: `${Math.min(100, (Math.min(3, mustDos.length) / 3) * 100)}%` }]} />
+        </View>
+        <Text style={[styles.progressText, { fontFamily: font.semibold }]}>{Math.min(3, mustDos.length)} of 3 highlights chosen</Text>
+      </View>
+
+      <View style={styles.glanceCard}>
+        <Text style={[styles.cardKicker, { fontFamily: font.semibold }]}>Trip at a glance</Text>
+        <View style={styles.glanceGrid}>
+          <GlanceItem icon="01" label="Mood" value={getTripMood(trip)} />
+          <GlanceItem icon="02" label="Who" value={trip.companionType} />
+          <GlanceItem icon="03" label="Pace" value={trip.pace} />
+          <GlanceItem icon="04" label="Progress" value={getShortStatus(momentumStatus)} />
         </View>
       </View>
 
-      <View style={styles.chips}>
-        {trip.tags.map((tag) => (
-          <View key={tag} style={styles.tagPill}>
-            <Text style={[styles.tagText, { fontFamily: font.semibold }]}>{tag}</Text>
+      <View style={styles.whyCard}>
+        <Text style={[styles.cardKicker, { fontFamily: font.semibold }]}>Why this trip?</Text>
+        {getWhyThisTrip(trip).map((reason) => (
+          <View key={reason} style={styles.reasonRow}>
+            <View style={styles.reasonDot}>
+              <Text style={[styles.reasonCheck, { fontFamily: font.semibold }]}>OK</Text>
+            </View>
+            <Text style={[styles.reasonText, { fontFamily: font.body }]}>{reason}</Text>
           </View>
         ))}
-      </View>
-
-      <View style={styles.briefCard}>
-        <Text style={[styles.briefKicker, { fontFamily: font.semibold }]}>Trip brief</Text>
-        <Text style={[styles.briefTitle, { fontFamily: font.heading }]}>{getTripMood(trip)} {getPeopleLabel(trip.companionType)}</Text>
-        <View style={styles.briefGrid}>
-          <BriefStat label="Mood" value={getTripMood(trip)} />
-          <BriefStat label="Pace" value={trip.pace} />
-          <BriefStat label="Saved" value={`${trip.ideas.length} ideas`} />
-          <BriefStat label="Highlights" value={`${mustDos.length || Math.min(3, trip.ideas.length)} picked`} />
-        </View>
-        <Text style={[styles.briefBody, { fontFamily: font.body }]}>This is the version of the trip you are deciding on. Add highlights until the idea feels easy to compare.</Text>
       </View>
 
       <LinearGradient colors={['rgba(255,255,255,0.84)', 'rgba(226,248,240,0.88)']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.paceCard}>
@@ -92,10 +98,18 @@ export function EchoDetailScreen({ trip, onBack, onAddIdea, onEditTrip, onDelete
 
       <View style={styles.actions}>
         <Button label="Add Inspiration" onPress={onAddIdea} />
-        <Button label="Edit Trip" variant="secondary" onPress={onEditTrip} />
-        {!!trip.ideas.length && <Button label="Share Trip Card" variant="secondary" onPress={() => setShowShareComposer(true)} />}
+        {readyToCommit && (
+          <View style={styles.commitCard}>
+            <Text style={[styles.commitTitle, { fontFamily: font.heading }]}>Ready to make this your trip?</Text>
+            <Text style={[styles.commitBody, { fontFamily: font.body }]}>You have enough inspiration to move from maybe to momentum.</Text>
+            <Button label={`Commit to ${trip.title}`} variant="secondary" onPress={onMoveToPlan} />
+          </View>
+        )}
         {trip.ideas.length >= 2 && <Button label="Compare Trips" variant="secondary" onPress={onCompare} />}
-        <Button label={trip.finalPlan ? 'Open Plan' : 'Commit to This Trip'} variant="ghost" onPress={onMoveToPlan} />
+        {!!trip.ideas.length && <Button label="Share Trip Card" variant="secondary" onPress={() => setShowShareComposer(true)} />}
+        <TouchableOpacity style={styles.editTripLink} onPress={onEditTrip}>
+          <Text style={[styles.editTripText, { fontFamily: font.semibold }]}>Edit trip details</Text>
+        </TouchableOpacity>
       </View>
       {trip.latestMatchupResult && (
         <View style={styles.voteSummaryCard}>
@@ -123,16 +137,22 @@ export function EchoDetailScreen({ trip, onBack, onAddIdea, onEditTrip, onDelete
 
       <View style={styles.sectionHeader}>
         <Text style={[styles.sectionTitle, { fontFamily: font.heading }]}>Top highlights</Text>
+        <Text style={[styles.sectionHint, { fontFamily: font.body }]}>Pick 3 experiences that define this trip.</Text>
         <View style={styles.sectionDivider} />
       </View>
-      <View style={styles.grid}>
-        {mustDos.map((idea) => (
-          <IdeaCard key={idea.id} idea={idea} onEdit={() => onEditIdea(idea.id)} onDelete={() => onDeleteIdea(idea)} />
-        ))}
-      </View>
+      {mustDos.length ? (
+        <View style={styles.grid}>
+          {mustDos.map((idea) => (
+            <IdeaCard key={idea.id} idea={idea} onEdit={() => onEditIdea(idea.id)} onDelete={() => onDeleteIdea(idea)} />
+          ))}
+        </View>
+      ) : (
+        <EmptyHighlights onAddIdea={onAddIdea} />
+      )}
 
       <View style={styles.sectionHeader}>
-        <Text style={[styles.sectionTitle, { fontFamily: font.heading }]}>Still considering</Text>
+        <Text style={[styles.sectionTitle, { fontFamily: font.heading }]}>More inspiration</Text>
+        <Text style={[styles.sectionHint, { fontFamily: font.body }]}>Ideas you saved but have not made anchors yet.</Text>
         <View style={styles.sectionDivider} />
       </View>
       <View style={styles.grid}>
@@ -144,11 +164,35 @@ export function EchoDetailScreen({ trip, onBack, onAddIdea, onEditTrip, onDelete
   );
 }
 
-function BriefStat({ label, value }: { label: string; value: string }) {
+function GlanceItem({ icon, label, value }: { icon: string; label: string; value: string }) {
   return (
-    <View style={styles.briefStat}>
-      <Text style={[styles.briefStatLabel, { fontFamily: font.semibold }]}>{label}</Text>
-      <Text style={[styles.briefStatValue, { fontFamily: font.heading }]}>{value}</Text>
+    <View style={styles.glanceItem}>
+      <View style={styles.glanceIcon}>
+        <Text style={[styles.glanceIconText, { fontFamily: font.semibold }]}>{icon}</Text>
+      </View>
+      <View style={styles.glanceCopy}>
+        <Text style={[styles.glanceLabel, { fontFamily: font.semibold }]}>{label}</Text>
+        <Text numberOfLines={1} style={[styles.glanceValue, { fontFamily: font.heading }]}>{value}</Text>
+      </View>
+    </View>
+  );
+}
+
+function EmptyHighlights({ onAddIdea }: { onAddIdea: () => void }) {
+  return (
+    <View style={styles.emptyHighlights}>
+      <Text style={[styles.emptyHighlightsTitle, { fontFamily: font.heading }]}>Choose the moments that define this trip.</Text>
+      <Text style={[styles.emptyHighlightsBody, { fontFamily: font.body }]}>Favorites become the evidence you compare later. Start with a restaurant, view, activity, stay, or saved video.</Text>
+      <View style={styles.exampleRow}>
+        {['Restaurant', 'View', 'Boat tour', 'Coffee'].map((item) => (
+          <View key={item} style={styles.examplePill}>
+            <Text style={[styles.exampleText, { fontFamily: font.semibold }]}>{item}</Text>
+          </View>
+        ))}
+      </View>
+      <TouchableOpacity style={styles.emptyAction} onPress={onAddIdea}>
+        <Text style={[styles.emptyActionText, { fontFamily: font.semibold }]}>Add first highlight</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -236,12 +280,63 @@ function getTripMood(trip: TripDraft) {
   return 'Travel';
 }
 
-function getPeopleLabel(companionType: TripDraft['companionType']) {
-  if (companionType === 'Solo') return 'solo trip';
-  if (companionType === 'Couple') return 'couple trip';
-  if (companionType === 'Friends') return 'friends trip';
-  if (companionType === 'Family') return 'family trip';
-  return 'group trip';
+function getHeroStory(trip: TripDraft) {
+  const mood = getTripMood(trip).toLowerCase();
+  const pace = trip.pace.toLowerCase();
+  const who = trip.companionType.toLowerCase();
+  if (trip.ideas.length) {
+    const anchors = trip.ideas
+      .filter((idea) => idea.priority === 'Must-do')
+      .slice(0, 2)
+      .map((idea) => idea.title.toLowerCase());
+    if (anchors.length) return `Built around ${anchors.join(' and ')}, with a ${pace} pace for ${who}.`;
+  }
+  return `A ${pace}, ${mood}-focused idea for ${who}, ready for the moments that make it worth choosing.`;
+}
+
+function getNextStepTitle(trip: TripDraft, highlightCount: number) {
+  if (highlightCount <= 0) return 'Add your first highlight.';
+  if (highlightCount < 3) return `Add ${3 - highlightCount} more ${3 - highlightCount === 1 ? 'highlight' : 'highlights'}.`;
+  if (trip.ideas.length < 4) return 'This trip is taking shape.';
+  return 'Ready to compare or commit.';
+}
+
+function getNextStepBody(trip: TripDraft, highlightCount: number) {
+  if (highlightCount <= 0) return 'This trip becomes easier to compare once you choose the moments that actually define it.';
+  if (highlightCount < 3) return 'Pick the places, saves, or notes that make this trip feel different from the others.';
+  if (trip.ideas.length < 4) return 'You have enough anchors to remember why this trip matters. A few more supporting ideas can make the decision easier.';
+  return 'You have enough inspiration to compare it against other trip notebooks or move it into the plan.';
+}
+
+function getStatusIcon(status: string) {
+  if (status.includes('Committed') || status.includes('Preparing')) return 'Go';
+  if (status.includes('Ready') || status.includes('Strong')) return 'Ready';
+  if (status.includes('Taking')) return 'Shape';
+  return 'Start';
+}
+
+function getShortStatus(status: string) {
+  if (status.includes('Committed')) return 'Committed';
+  if (status.includes('Ready') || status.includes('Strong')) return 'Ready';
+  if (status.includes('Taking')) return 'Shaping';
+  if (status.includes('Started')) return 'Started';
+  return status;
+}
+
+function getWhyThisTrip(trip: TripDraft) {
+  const reasons = [];
+  const mood = getTripMood(trip).toLowerCase();
+  reasons.push(`${capitalize(mood)} is the mood you chose.`);
+  reasons.push(`${trip.pace} pace fits how this trip should feel.`);
+  if (trip.companionType === 'Solo') reasons.push('It starts as your own decision, with room to share later.');
+  else reasons.push(`${trip.companionType} can weigh in before the plan gets serious.`);
+  if (trip.ideas.length) reasons.push(`${trip.ideas.length} saved ${trip.ideas.length === 1 ? 'idea' : 'ideas'} already point toward why this could work.`);
+  else reasons.push('The next saved link or note will make the trip feel more real.');
+  return reasons.slice(0, 4);
+}
+
+function capitalize(value: string) {
+  return value.charAt(0).toUpperCase() + value.slice(1);
 }
 
 const styles = StyleSheet.create({
@@ -253,45 +348,64 @@ const styles = StyleSheet.create({
   heroCopy: { padding: 24 },
   title: { color: '#F8F8F6', fontWeight: '700', fontSize: 41, lineHeight: 49, letterSpacing: -0.41, textShadowColor: 'rgba(0,0,0,0.35)', textShadowRadius: 4, textShadowOffset: { width: 0, height: 2 } },
   subtitle: { color: 'rgba(255,255,255,0.75)', fontSize: 16, lineHeight: 23, marginTop: 8, fontWeight: '500' },
-  summaryCard: { flexDirection: 'row', gap: 18, alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.82)', borderRadius: 26, padding: 22, borderWidth: 1, borderColor: 'rgba(32,38,35,0.06)', shadowColor: '#000', shadowOpacity: 0.10, shadowRadius: 22, shadowOffset: { width: 0, height: 8 }, elevation: 5 },
-  clarityBadge: { width: 104, minHeight: 88, alignItems: 'center', justifyContent: 'center', borderRadius: 18, backgroundColor: '#2FAF8A', borderWidth: 2, borderColor: '#A8F0D4', paddingHorizontal: 12, paddingVertical: 8, shadowColor: '#2FAF8A', shadowOpacity: 0.28, shadowRadius: 16, shadowOffset: { width: 0, height: 6 }, elevation: 5 },
-  clarityScore: { color: '#FFFFFF', fontSize: 17, lineHeight: 20, textAlign: 'center', fontWeight: '700', letterSpacing: -0.17 },
-  clarityLabel: { color: 'rgba(255,255,255,0.82)', fontSize: 11, fontWeight: '600', marginTop: 2 },
-  summaryCopy: { flex: 1 },
-  summaryLabel: { color: '#137D68', fontWeight: '800', fontSize: 11, textTransform: 'uppercase' },
-  summary: { color: '#202623', fontSize: 17, lineHeight: 25, marginTop: 7, fontWeight: '700' },
-  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  tagPill: { backgroundColor: 'rgba(255,255,255,0.72)', borderRadius: 12, paddingHorizontal: 12, paddingVertical: 7, borderWidth: 1, borderColor: 'rgba(32,38,35,0.06)' },
-  tagText: { color: '#202623', fontSize: 12, fontWeight: '700', textTransform: 'capitalize' },
-  briefCard: { borderRadius: 26, padding: 20, backgroundColor: 'rgba(255,255,255,0.82)', borderWidth: 1, borderColor: 'rgba(32,38,35,0.06)', shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 18, shadowOffset: { width: 0, height: 7 }, elevation: 4 },
-  briefKicker: { color: '#137D68', fontWeight: '800', fontSize: 11, textTransform: 'uppercase' },
-  briefTitle: { color: '#202623', fontWeight: '800', fontSize: 22, lineHeight: 27, marginTop: 6, letterSpacing: -0.22 },
-  briefGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginTop: 14 },
-  briefStat: { width: '48%', borderRadius: 18, padding: 12, backgroundColor: 'rgba(168,240,212,0.26)', borderWidth: 1, borderColor: 'rgba(47,175,138,0.12)' },
-  briefStatLabel: { color: '#137D68', fontWeight: '700', fontSize: 10, textTransform: 'uppercase' },
-  briefStatValue: { color: '#202623', fontWeight: '800', fontSize: 15, marginTop: 5 },
-  briefBody: { color: 'rgba(32,38,35,0.66)', fontSize: 14, lineHeight: 20, marginTop: 13 },
-  paceCard: { borderRadius: 26, padding: 22, borderWidth: 1, borderColor: 'rgba(32,38,35,0.07)', shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 18, shadowOffset: { width: 0, height: 7 }, elevation: 4 },
+  momentumCard: { gap: 13, backgroundColor: 'rgba(255,255,255,0.86)', borderRadius: 26, padding: 22, borderWidth: 1, borderColor: 'rgba(32,38,35,0.06)', shadowColor: '#000', shadowOpacity: 0.10, shadowRadius: 22, shadowOffset: { width: 0, height: 8 }, elevation: 5 },
+  momentumTop: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 14 },
+  cardKicker: { color: '#137D68', fontWeight: '800', fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.2 },
+  momentumTitle: { color: '#202623', fontWeight: '800', fontSize: 22, lineHeight: 27, marginTop: 6, letterSpacing: -0.22 },
+  momentumBadge: { minWidth: 74, minHeight: 44, borderRadius: 16, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 12, backgroundColor: '#2FAF8A', shadowColor: '#2FAF8A', shadowOpacity: 0.24, shadowRadius: 14, shadowOffset: { width: 0, height: 6 }, elevation: 4 },
+  momentumBadgeText: { color: '#FFFFFF', fontWeight: '800', fontSize: 13 },
+  momentumBody: { color: 'rgba(32,38,35,0.68)', fontSize: 15, lineHeight: 22, fontWeight: '500' },
+  progressTrack: { height: 8, borderRadius: 999, backgroundColor: 'rgba(32,38,35,0.07)', overflow: 'hidden' },
+  progressFill: { height: '100%', borderRadius: 999, backgroundColor: '#2FAF8A' },
+  progressText: { color: '#137D68', fontSize: 12, fontWeight: '700' },
+  glanceCard: { borderRadius: 26, padding: 20, backgroundColor: 'rgba(255,255,255,0.82)', borderWidth: 1, borderColor: 'rgba(32,38,35,0.06)', shadowColor: '#000', shadowOpacity: 0.07, shadowRadius: 18, shadowOffset: { width: 0, height: 7 }, elevation: 4 },
+  glanceGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginTop: 14 },
+  glanceItem: { width: '48%', minHeight: 78, borderRadius: 18, padding: 12, flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: 'rgba(168,240,212,0.24)', borderWidth: 1, borderColor: 'rgba(47,175,138,0.14)' },
+  glanceIcon: { width: 34, height: 34, borderRadius: 13, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(47,175,138,0.14)' },
+  glanceIconText: { color: '#137D68', fontSize: 9, fontWeight: '800' },
+  glanceCopy: { flex: 1 },
+  glanceLabel: { color: '#137D68', fontWeight: '800', fontSize: 10, textTransform: 'uppercase' },
+  glanceValue: { color: '#202623', fontWeight: '800', fontSize: 15, marginTop: 4, letterSpacing: -0.15 },
+  whyCard: { gap: 12, borderRadius: 26, padding: 20, backgroundColor: 'rgba(255,255,255,0.78)', borderWidth: 1, borderColor: 'rgba(32,38,35,0.06)', shadowColor: '#000', shadowOpacity: 0.07, shadowRadius: 18, shadowOffset: { width: 0, height: 7 }, elevation: 4 },
+  reasonRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  reasonDot: { width: 36, height: 36, borderRadius: 15, alignItems: 'center', justifyContent: 'center', backgroundColor: '#A8F0D4' },
+  reasonCheck: { color: '#137D68', fontSize: 11, fontWeight: '800' },
+  reasonText: { flex: 1, color: 'rgba(32,38,35,0.72)', fontSize: 15, lineHeight: 21, fontWeight: '500' },
+  paceCard: { borderRadius: 24, padding: 18, borderWidth: 1, borderColor: 'rgba(32,38,35,0.07)', shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 14, shadowOffset: { width: 0, height: 6 }, elevation: 3 },
   paceHeader: { flexDirection: 'row', alignItems: 'center', gap: 14 },
   paceIcon: { width: 42, height: 42, borderRadius: 16, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(32,38,35,0.62)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.52)' },
   paceIconText: { color: '#FFFFFF', fontFamily: font.semibold, fontWeight: '600', fontSize: 18 },
   paceCopy: { flex: 1 },
   paceLabel: { color: '#137D68', fontWeight: '800', fontSize: 11, textTransform: 'uppercase' },
-  paceTitle: { color: '#202623', fontWeight: '700', fontSize: 18, marginTop: 5, letterSpacing: -0.18 },
-  paceBody: { color: 'rgba(32,38,35,0.66)', fontSize: 15, lineHeight: 22, marginTop: 14 },
-  paceMeter: { flexDirection: 'row', gap: 8, marginTop: 18 },
+  paceTitle: { color: '#202623', fontWeight: '700', fontSize: 17, lineHeight: 22, marginTop: 4, letterSpacing: -0.17 },
+  paceBody: { color: 'rgba(32,38,35,0.66)', fontSize: 14, lineHeight: 20, marginTop: 12 },
+  paceMeter: { flexDirection: 'row', gap: 8, marginTop: 14 },
   paceMeterItem: { flex: 1 },
   paceMeterBar: { height: 5, borderRadius: 999, backgroundColor: 'rgba(32,38,35,0.08)' },
   paceMeterBarActive: { backgroundColor: '#6ED8B5' },
   paceMeterText: { color: 'rgba(32,38,35,0.48)', fontFamily: font.semibold, fontSize: 10, fontWeight: '600', marginTop: 6 },
   paceMeterTextActive: { color: '#137D68' },
   actions: { gap: 10, marginVertical: 2 },
+  commitCard: { gap: 10, borderRadius: 24, padding: 18, backgroundColor: 'rgba(255,255,255,0.82)', borderWidth: 1, borderColor: 'rgba(47,175,138,0.16)', shadowColor: '#000', shadowOpacity: 0.07, shadowRadius: 18, shadowOffset: { width: 0, height: 7 }, elevation: 3 },
+  commitTitle: { color: '#202623', fontWeight: '800', fontSize: 20, lineHeight: 25, letterSpacing: -0.2 },
+  commitBody: { color: 'rgba(32,38,35,0.66)', fontSize: 14, lineHeight: 20, fontWeight: '500' },
+  editTripLink: { minHeight: 42, alignItems: 'center', justifyContent: 'center', marginTop: 2 },
+  editTripText: { color: '#137D68', fontSize: 14, fontWeight: '700' },
   sectionHeader: { gap: 10, marginTop: 8 },
   sectionTitle: { color: '#202623', fontWeight: '800', fontSize: 25, letterSpacing: -0.25 },
+  sectionHint: { color: 'rgba(32,38,35,0.62)', fontSize: 14, lineHeight: 20, fontWeight: '500' },
   sectionDivider: { height: 1, backgroundColor: 'rgba(32,38,35,0.08)' },
   grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', marginBottom: 8 },
-  manageDeleteButton: { minHeight: 46, borderRadius: 16, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(217,94,79,0.08)', borderWidth: 1, borderColor: 'rgba(217,94,79,0.18)', marginTop: -2, marginBottom: 6 },
-  manageDeleteText: { color: '#B84A3F', fontSize: 14, fontWeight: '600' },
+  emptyHighlights: { gap: 13, borderRadius: 26, padding: 20, marginBottom: 6, backgroundColor: 'rgba(255,255,255,0.78)', borderWidth: 1, borderColor: 'rgba(32,38,35,0.06)', shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 16, shadowOffset: { width: 0, height: 6 }, elevation: 3 },
+  emptyHighlightsTitle: { color: '#202623', fontSize: 20, lineHeight: 25, fontWeight: '800', letterSpacing: -0.2 },
+  emptyHighlightsBody: { color: 'rgba(32,38,35,0.66)', fontSize: 14, lineHeight: 21, fontWeight: '500' },
+  exampleRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  examplePill: { borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: 'rgba(168,240,212,0.34)', borderWidth: 1, borderColor: 'rgba(47,175,138,0.14)' },
+  exampleText: { color: '#137D68', fontSize: 12, fontWeight: '700' },
+  emptyAction: { minHeight: 46, borderRadius: 16, alignItems: 'center', justifyContent: 'center', backgroundColor: '#A8F0D4', borderWidth: 1, borderColor: 'rgba(47,175,138,0.18)' },
+  emptyActionText: { color: '#173A33', fontSize: 14, fontWeight: '800' },
+  manageDeleteButton: { alignSelf: 'center', minHeight: 34, paddingHorizontal: 14, alignItems: 'center', justifyContent: 'center', marginTop: -2, marginBottom: 4 },
+  manageDeleteText: { color: '#B84A3F', fontSize: 13, fontWeight: '600' },
   voteSummaryCard: { borderRadius: 22, padding: 16, backgroundColor: 'rgba(255,255,255,0.78)', borderWidth: 1, borderColor: 'rgba(32,38,35,0.07)' },
   voteSummaryLabel: { color: '#137D68', fontSize: 11, fontWeight: '600', textTransform: 'uppercase' },
   voteSummaryTitle: { color: '#202623', fontSize: 20, fontWeight: '700', marginTop: 5, letterSpacing: -0.2 },

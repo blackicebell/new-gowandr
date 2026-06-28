@@ -9,7 +9,7 @@ import { PressableScale } from './PressableScale';
 export function EchoCard({ trip, onPress }: { trip: TripDraft; onPress: () => void }) {
   const colors = useThemeColors();
   const decisionLabel = getMomentumStatus(trip);
-  const chips = getCardChips(trip);
+  const themeLine = getThemeLine(trip);
   const imageOpacity = useRef(new Animated.Value(0)).current;
 
   const fadeInImage = () => {
@@ -29,15 +29,8 @@ export function EchoCard({ trip, onPress }: { trip: TripDraft; onPress: () => vo
           <Text style={[styles.scoreText, { color: '#F8F8F6', fontFamily: font.semibold }]}>{decisionLabel}</Text>
         </View>
         <View style={styles.copy}>
-          <View style={styles.chipRow}>
-            {chips.map((chip) => (
-              <View key={chip} style={styles.metaChip}>
-                <Text style={[styles.metaChipText, { fontFamily: font.semibold }]}>{chip}</Text>
-              </View>
-            ))}
-          </View>
+          <Text style={[styles.themeLine, { fontFamily: font.semibold }]}>{themeLine}</Text>
           <Text style={[styles.title, { fontFamily: font.heading }]}>{trip.title}</Text>
-          <Text numberOfLines={1} style={[styles.subtitle, { fontFamily: font.medium }]}>{trip.subtitle}</Text>
         </View>
       </ImageBackground>
       </Animated.View>
@@ -45,10 +38,10 @@ export function EchoCard({ trip, onPress }: { trip: TripDraft; onPress: () => vo
   );
 }
 
-function getCardChips(trip: TripDraft) {
+function getThemeLine(trip: TripDraft) {
   const people = trip.companionType === 'Solo' ? 'Solo' : 'Group';
   const mood = getMoodChip(trip);
-  return [people, mood, trip.pace].filter(Boolean).slice(0, 3);
+  return [people, mood, trip.pace].filter(Boolean).slice(0, 3).join(' / ');
 }
 
 function getMoodChip(trip: TripDraft) {
@@ -68,14 +61,11 @@ function capitalize(value: string) {
 
 const styles = StyleSheet.create({
   card: { marginBottom: 18, borderRadius: 24, overflow: 'hidden', borderWidth: 1, shadowColor: '#000', shadowOpacity: 0.12, shadowRadius: 22, shadowOffset: { width: 0, height: 8 }, elevation: 6 },
-  image: { height: 204, justifyContent: 'space-between' },
+  image: { height: 174, justifyContent: 'space-between' },
   imageRadius: { borderRadius: 24 },
   scorePill: { alignSelf: 'flex-end', margin: 13, paddingHorizontal: 11, paddingVertical: 7, borderRadius: 999, backgroundColor: 'rgba(9,20,17,0.58)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.14)' },
   scoreText: { fontSize: 11.5, fontWeight: '700', letterSpacing: 0 },
-  copy: { padding: 18 },
-  chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 7, marginBottom: 9 },
-  metaChip: { borderRadius: 999, paddingHorizontal: 9, paddingVertical: 5, backgroundColor: 'rgba(255,255,255,0.18)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.14)' },
-  metaChipText: { color: '#F8F8F6', fontSize: 10.5, fontWeight: '700' },
-  title: { color: '#F8F8F6', fontSize: 28, lineHeight: 32, fontWeight: '700', letterSpacing: -0.28, textShadowColor: 'rgba(0,0,0,0.38)', textShadowRadius: 5, textShadowOffset: { width: 0, height: 2 } },
-  subtitle: { color: '#F8F8F6', opacity: 0.9, marginTop: 4, fontSize: 14, fontWeight: '500', letterSpacing: 0, lineHeight: 20 },
+  copy: { padding: 16 },
+  themeLine: { color: 'rgba(248,248,246,0.88)', fontSize: 12, lineHeight: 16, fontWeight: '700', marginBottom: 6, textShadowColor: 'rgba(0,0,0,0.32)', textShadowRadius: 3, textShadowOffset: { width: 0, height: 1 } },
+  title: { color: '#F8F8F6', fontSize: 26, lineHeight: 30, fontWeight: '700', letterSpacing: -0.26, textShadowColor: 'rgba(0,0,0,0.38)', textShadowRadius: 5, textShadowOffset: { width: 0, height: 2 } },
 });

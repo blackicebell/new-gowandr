@@ -1,7 +1,6 @@
 import React from 'react';
 import { ImageBackground, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Button } from '../components/Button';
 import { EchoCard } from '../components/EchoCard';
 import { PressableScale } from '../components/PressableScale';
 import { starterImageUris } from '../data/imageAssets';
@@ -75,17 +74,9 @@ export function HomeScreen({
         </View>
       </PressableScale>
 
-      <View style={[styles.matchupBox, { backgroundColor: theme.paper, borderColor: theme.line }]}>
-        <View style={styles.matchupCopy}>
-          <Text style={[styles.boxTitle, { color: theme.charcoal, fontFamily: font.heading }]}>Compare trip ideas</Text>
-          <Text style={[styles.boxBody, { color: theme.muted, fontFamily: font.body }]}>Compare your trip ideas and see which one feels most worth planning.</Text>
-        </View>
-        <Button label="Start Compare" onPress={onStartMatchup} />
-      </View>
-
       <View style={styles.sectionHeader}>
         <View style={styles.sectionCopy}>
-          <Text style={[styles.sectionTitle, { color: theme.charcoal, fontFamily: font.heading }]}>Trip Drafts</Text>
+          <Text style={[styles.sectionTitle, { color: theme.charcoal, fontFamily: font.heading }]}>Your Trip Ideas</Text>
           <Text style={[styles.sectionHint, { color: theme.muted, fontFamily: font.body }]}>Planning alone or with people, GoWandr helps you choose what’s worth doing.</Text>
         </View>
         <Text style={[styles.sectionMeta, { color: theme.muted, fontFamily: font.semibold }]}>{trips.length} drafts</Text>

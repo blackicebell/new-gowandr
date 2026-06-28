@@ -56,12 +56,50 @@ export type VoteAnswer = {
   voterName?: string;
 };
 
+export type ComparisonStatus = 'open' | 'closed';
+
+export type ComparisonHighlight = {
+  id: string;
+  title: string;
+  note?: string;
+  link?: string;
+  category: IdeaCategory;
+  priority: IdeaPriority;
+};
+
+export type ComparisonTrip = {
+  id: string;
+  title: string;
+  subtitle: string;
+  coverImageUrl?: string;
+  mood: string;
+  pace: TripDraft['pace'];
+  companionType: TripDraft['companionType'];
+  highlights: ComparisonHighlight[];
+};
+
+export type ComparisonResponse = {
+  id: string;
+  voterName: string;
+  selectedTripId: string;
+  reason?: string;
+  concernChips: string[];
+  likedHighlightIds: string[];
+  createdAt: string;
+  updatedAt?: string;
+  browserId: string;
+};
+
 export type MatchupSession = {
   id: string;
   matchupName: string;
   trips: TripDraft[];
+  comparisonTrips?: ComparisonTrip[];
   createdAt: string;
   updatedAt: string;
+  expiresAt?: string;
+  status?: ComparisonStatus;
   ownerDeviceId?: string;
   votes: VoteAnswer[][];
+  responses?: ComparisonResponse[];
 };

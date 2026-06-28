@@ -3,7 +3,7 @@ import { Alert, Animated, Image, Platform, SafeAreaView, ScrollView, StatusBar, 
 import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
 import { useFonts, InterTight_400Regular, InterTight_500Medium, InterTight_600SemiBold, InterTight_700Bold } from '@expo-google-fonts/inter-tight';
 import { font, ThemeProvider, themes, useThemeColors } from './src/theme/colors';
-import { MatchupResultSummary, MatchupSession, PlanChecklistItem, TripDraft, TripIdea, VoteAnswer } from './src/types';
+import { ComparisonResponse, MatchupResultSummary, MatchupSession, PlanChecklistItem, TripDraft, TripIdea, VoteAnswer } from './src/types';
 import { demoTrips } from './src/data/demoTrips';
 import { HomeScreen } from './src/screens/HomeScreen';
 import { EchoScreen } from './src/screens/EchoScreen';
@@ -12,12 +12,14 @@ import { AddIdeaScreen } from './src/screens/AddIdeaScreen';
 import { CreateMatchupScreen } from './src/screens/CreateMatchupScreen';
 import { VotingScreen } from './src/screens/VotingScreen';
 import { ResultsScreen } from './src/screens/ResultsScreen';
+import { SharedComparisonScreen } from './src/screens/SharedComparisonScreen';
+import { ComparisonResultsScreen } from './src/screens/ComparisonResultsScreen';
 import { TripLabScreen } from './src/screens/TripLabScreen';
 import { OnboardingScreen } from './src/screens/OnboardingScreen';
 import { NewTripScreen } from './src/screens/NewTripScreen';
 import { loadTrips, saveTrips } from './src/storage/tripsStorage';
 import { loadHasSeenOnboarding, saveHasSeenOnboarding } from './src/storage/onboardingStorage';
-import { deleteMatchupSession, loadMatchupSession, submitMatchupVotes } from './src/backend/matchupSessions';
+import { closeMatchupSession, deleteComparisonResponse, deleteMatchupSession, loadMatchupSession, submitComparisonResponse } from './src/backend/matchupSessions';
 import { loadOwnedMatchupSessionIds, saveOwnedMatchupSessionIds } from './src/storage/matchupSessionStorage';
 import { PremiumBackground } from './src/components/PremiumBackground';
 import { PressableScale } from './src/components/PressableScale';
@@ -163,11 +165,19 @@ export default function App() {
     async function loadSession() {
       setSharedSessionLoading(true);
       setSharedSessionMessage(undefined);
-      const session = await loadMatchupSession(sessionId);
+      let session: MatchupSession | undefined;
+      try {
+        session = await Promise.race([
+          loadMatchupSession(sessionId),
+          new Promise<undefined>((resolve) => setTimeout(() => resolve(undefined), 8000)),
+        ]);
+      } catch (error) {
+        session = undefined;
+      }
       if (!isMounted) return;
       setSharedSession(session);
       setSharedSessionLoading(false);
-      if (!session) setSharedSessionMessage('This voting link could not be found. Ask the trip owner to send a fresh link.');
+      if (!session) setSharedSessionMessage('This shared comparison link could not be found. Ask the trip owner to send a fresh link.');
     }
 
     loadSession();
@@ -320,6 +330,35 @@ export default function App() {
     deleteMatchupSession(sessionId).catch(() => undefined);
   };
 
+  const submitSharedInput = async (sessionId: string, response: ComparisonResponse) => {
+    const saved = await submitComparisonResponse(sessionId, response);
+    if (!saved) return false;
+    setSharedSession((current) =>
+      current?.id === sessionId
+        ? { ...current, responses: [response, ...(current.responses ?? []).filter((item) => item.browserId !== response.browserId)] }
+        : current,
+    );
+    return true;
+  };
+
+  const deleteOwnedResponse = async (sessionId: string, responseId: string) => {
+    setOwnedSessions((current) =>
+      current.map((session) =>
+        session.id === sessionId ? { ...session, responses: (session.responses ?? []).filter((response) => response.id !== responseId) } : session,
+      ),
+    );
+    deleteComparisonResponse(sessionId, responseId).catch(() => refreshOwnedSessions());
+  };
+
+  const closeOwnedSession = async (sessionId: string) => {
+    setOwnedSessions((current) =>
+      current.map((session) =>
+        session.id === sessionId ? { ...session, status: 'closed', updatedAt: new Date().toISOString() } : session,
+      ),
+    );
+    closeMatchupSession(sessionId).catch(() => refreshOwnedSessions());
+  };
+
   const renderRoute = () => {
     if (route.name === 'home') {
       return <HomeScreen trips={trips} onOpenTrip={(tripId) => setRoute({ name: 'detail', tripId })} onStartDraft={() => setRoute({ name: 'newTrip' })} onStartMatchup={() => setRoute({ name: 'createMatchup' })} onAddIdea={openFastAdd} onOpenPlan={() => setRoute({ name: 'lab' })} />;
@@ -370,18 +409,10 @@ export default function App() {
     }
 
     if (route.name === 'sharedVoting') {
-      if (sharedSessionLoading) return <SharedVotingStatus title="Loading voting link" body="Opening the trip comparison..." />;
-      if (sharedSessionMessage || !sharedSession) return <SharedVotingStatus title="Voting link unavailable" body={sharedSessionMessage ?? 'This comparison is not available right now.'} />;
+      if (sharedSessionLoading) return <SharedVotingStatus title="Loading shared link" body="Opening the trip comparison..." />;
+      if (sharedSessionMessage || !sharedSession) return <SharedVotingStatus title="Shared link unavailable" body={sharedSessionMessage ?? 'This comparison is not available right now.'} />;
       return (
-        <VotingScreen
-          trips={sharedSession.trips}
-          matchupName={sharedSession.matchupName}
-          onCancel={() => setSharedSessionMessage('You can close this tab. Your vote was not submitted.')}
-          onComplete={async (votes) => {
-            const saved = await submitMatchupVotes(sharedSession.id, votes);
-            setSharedSessionMessage(saved ? 'Thanks. Your vote was saved and sent back to the trip owner.' : 'Your vote could not be saved. Please try the link again.');
-          }}
-        />
+        <SharedComparisonScreen session={sharedSession} onSubmit={(response) => submitSharedInput(sharedSession.id, response)} />
       );
     }
 
@@ -392,7 +423,15 @@ export default function App() {
     if (route.name === 'sessionResults') {
       const session = ownedSessions.find((item) => item.id === route.sessionId);
       if (!session) return <SharedVotingStatus title="Results not loaded" body="Refresh the voting inbox and try again." />;
-      return <ResultsScreen trips={session.trips} votes={session.votes.flat()} matchupName={session.matchupName} onRestart={() => setRoute({ name: 'createMatchup' })} onMoveToPlan={moveTripToPlan} />;
+      return (
+        <ComparisonResultsScreen
+          session={session}
+          onBack={() => setRoute({ name: 'createMatchup' })}
+          onDeleteResponse={(responseId) => deleteOwnedResponse(session.id, responseId)}
+          onCloseComparison={() => closeOwnedSession(session.id)}
+          onCommitTrip={moveTripToPlan}
+        />
+      );
     }
 
     if (route.name === 'lab') {
@@ -428,6 +467,8 @@ export default function App() {
     );
   }
 
+  const isPublicSharedRoute = route.name === 'sharedVoting';
+
   return (
     <ThemeProvider value={theme}>
     <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.canvasDeep }]}>
@@ -446,17 +487,19 @@ export default function App() {
             <Text style={styles.momentumBannerText}>{momentumMessage}</Text>
           </View>
         )}
-        <ScrollView style={styles.content} contentContainerStyle={styles.contentInner} showsVerticalScrollIndicator={false}>
+        <ScrollView style={styles.content} contentContainerStyle={[styles.contentInner, isPublicSharedRoute && styles.publicContentInner]} showsVerticalScrollIndicator={false}>
           <Animated.View style={{ opacity: routeProgress, transform: [{ translateY: routeProgress.interpolate({ inputRange: [0, 1], outputRange: [8, 0] }) }] }}>
           {renderRoute()}
           </Animated.View>
         </ScrollView>
-        <View style={[styles.bottomNav, { backgroundColor: 'rgba(255,255,255,0.88)', borderColor: 'rgba(32,38,35,0.06)' }]}>
-          <NavItem label="Home" active={route.name === 'home'} onPress={() => setRoute({ name: 'home' })} />
-          <NavItem label="Trips" active={route.name === 'echo' || route.name === 'detail' || route.name === 'addIdea' || route.name === 'editIdea' || route.name === 'newTrip' || route.name === 'editTrip'} onPress={() => setRoute({ name: 'echo' })} />
-          <NavItem label="Compare" active={route.name === 'createMatchup' || route.name === 'voting' || route.name === 'sharedVoting' || route.name === 'sessionResults' || route.name === 'results'} onPress={() => setRoute({ name: 'createMatchup' })} />
-          <NavItem label="Plan" active={route.name === 'lab'} onPress={() => setRoute({ name: 'lab' })} />
-        </View>
+        {!isPublicSharedRoute && (
+          <View style={[styles.bottomNav, { backgroundColor: 'rgba(255,255,255,0.88)', borderColor: 'rgba(32,38,35,0.06)' }]}>
+            <NavItem label="Home" active={route.name === 'home'} onPress={() => setRoute({ name: 'home' })} />
+            <NavItem label="Trips" active={route.name === 'echo' || route.name === 'detail' || route.name === 'addIdea' || route.name === 'editIdea' || route.name === 'newTrip' || route.name === 'editTrip'} onPress={() => setRoute({ name: 'echo' })} />
+            <NavItem label="Compare" active={route.name === 'createMatchup' || route.name === 'voting' || route.name === 'sessionResults' || route.name === 'results'} onPress={() => setRoute({ name: 'createMatchup' })} />
+            <NavItem label="Plan" active={route.name === 'lab'} onPress={() => setRoute({ name: 'lab' })} />
+          </View>
+        )}
       </View>
     </SafeAreaView>
     </ThemeProvider>
@@ -493,6 +536,8 @@ function getTodayDateString() {
 
 function getWebMatchupId() {
   if (typeof window === 'undefined') return undefined;
+  const routeMatch = window.location.pathname.match(/^\/c\/([^/?#]+)/);
+  if (routeMatch?.[1]) return decodeURIComponent(routeMatch[1]);
   const params = new URLSearchParams(window.location.search);
   return params.get('matchup') ?? undefined;
 }
@@ -562,6 +607,7 @@ const styles = StyleSheet.create({
   sharedStatusBody: { color: 'rgba(32,38,35,0.66)', fontFamily: font.body, fontWeight: '400', fontSize: 15, lineHeight: 22, marginTop: 8 },
   content: { flex: 1 },
   contentInner: { paddingHorizontal: 28, paddingBottom: 220 },
+  publicContentInner: { paddingBottom: 64 },
   bottomNav: { position: 'absolute', width: '78%', maxWidth: 350, alignSelf: 'center', bottom: 12, minHeight: 58, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 12, paddingVertical: 7, borderRadius: 24, borderWidth: 1, shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 16, shadowOffset: { width: 0, height: 7 }, elevation: 8 },
   navItemShell: { flex: 1, alignItems: 'center' },
   navItem: { width: 62, minHeight: 44, alignItems: 'center', justifyContent: 'center', borderRadius: 16, paddingHorizontal: 4 },

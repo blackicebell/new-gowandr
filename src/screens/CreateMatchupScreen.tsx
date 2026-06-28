@@ -86,7 +86,7 @@ export function CreateMatchupScreen({
     <View>
       <Text style={styles.back} onPress={onBack}>Back home</Text>
       <Text style={styles.title}>Choose Your Trip</Text>
-      <Text style={styles.body}>Pick 2 to 4 trip drafts. You will see the highlights first, then answer four quick questions.</Text>
+      <Text style={styles.body}>Pick 2 to 4 trip drafts, then create a lightweight link so friends can share what pulls them.</Text>
 
       <VotingInbox sessions={ownedSessions} loading={ownedSessionsLoading} onRefresh={onRefreshSessions} onOpenResults={onOpenSessionResults} onDeleteSession={onDeleteSession} />
 
@@ -115,17 +115,17 @@ export function CreateMatchupScreen({
       )}
 
       <View style={styles.sharePreview}>
-        <Text style={styles.previewLabel}>Shareable vote</Text>
-        <Text style={styles.previewTitle}>Want friends to weigh in?</Text>
-        <Text style={styles.previewBody}>Send them the same highlight-first voting link. No login needed, and their answers come back here.</Text>
+        <Text style={styles.previewLabel}>Get a read</Text>
+        <Text style={styles.previewTitle}>Want another perspective?</Text>
+        <Text style={styles.previewBody}>Send a highlight-first link. Friends choose the trip that pulls them most, leave a quick reason, and skip the login.</Text>
       </View>
       <Text style={styles.compareHint}>{selected.length < 2 ? 'Choose at least 2 trips to compare.' : `Comparing ${selected.length} of 4 possible trips.`}</Text>
       {shareState === 'missingConfig' && (
         <Text style={styles.shareConfigHint}>Shared voting is not ready yet, so this sends a manual prompt for now.</Text>
       )}
       <View style={styles.actions}>
-        <Button label="Start Deciding" disabled={selected.length < 2} onPress={() => onStart(selected, 'Weekend Escape')} />
-        <Button label={shareState === 'creating' ? 'Creating Link...' : 'Share with Friends'} variant="secondary" disabled={selected.length < 2 || shareState === 'creating'} onPress={inviteFriends} />
+        <Button label={shareState === 'creating' ? 'Creating Link...' : 'Create Share Link'} disabled={selected.length < 2 || shareState === 'creating'} onPress={inviteFriends} />
+        <Button label="Preview Yourself" variant="secondary" disabled={selected.length < 2} onPress={() => onStart(selected, 'Weekend Escape')} />
       </View>
     </View>
   );
@@ -149,11 +149,11 @@ function VotingInbox({
       <View style={styles.inboxEmpty}>
         <View style={styles.inboxHeader}>
           <View>
-            <Text style={styles.inboxLabel}>Voting inbox</Text>
-            <Text style={styles.inboxTitle}>No shared votes yet</Text>
+            <Text style={styles.inboxLabel}>Input inbox</Text>
+            <Text style={styles.inboxTitle}>No shared input yet</Text>
           </View>
         </View>
-        <Text style={styles.inboxBody}>When you invite people, their responses will show here so you can decide with the full picture.</Text>
+        <Text style={styles.inboxBody}>When friends answer a shared link, their input will show here so you can see what has momentum.</Text>
       </View>
     );
   }
@@ -162,8 +162,8 @@ function VotingInbox({
     <View style={styles.inbox}>
       <View style={styles.inboxHeader}>
         <View>
-          <Text style={styles.inboxLabel}>Voting inbox</Text>
-          <Text style={styles.inboxTitle}>{loading ? 'Checking for responses...' : `${sessions.length} shared ${sessions.length === 1 ? 'matchup' : 'matchups'}`}</Text>
+          <Text style={styles.inboxLabel}>Input inbox</Text>
+          <Text style={styles.inboxTitle}>{loading ? 'Checking for input...' : `${sessions.length} shared ${sessions.length === 1 ? 'read' : 'reads'}`}</Text>
         </View>
         <TouchableOpacity onPress={onRefresh} style={styles.refreshPill}>
           <Text style={styles.refreshText}>Refresh</Text>
@@ -180,15 +180,18 @@ function VotingInbox({
 
 function VotingInboxCard({ session, onOpenResults, onDelete }: { session: MatchupSession; onOpenResults: () => void; onDelete: () => void }) {
   const voteBatches = session.votes ?? [];
+  const responses = session.responses ?? [];
   const votes = voteBatches.flat();
-  const hasVotes = votes.length > 0;
+  const hasVotes = votes.length > 0 || responses.length > 0;
   const results = hasVotes ? scoreMatchup(session.trips, votes) : [];
-  const leader = results[0];
+  const responseLeader = getResponseLeader(session);
+  const leader = responseLeader ?? results[0];
   const updated = formatSessionDate(session.updatedAt);
-  const confidence = leader ? Math.max(62, Math.min(94, Math.round(72 + leader.score / 8))) : 0;
+  const confidence = leader ? Math.max(62, Math.min(94, Math.round(72 + ('score' in leader ? leader.score / 8 : 10)))) : 0;
   const shareResults = () => {
     if (!leader) return;
-    shareMatchupResult(session.matchupName, leader, confidence, explainResult(results));
+    if ('score' in leader) shareMatchupResult(session.matchupName, leader, confidence, explainResult(results));
+    else shareMatchupResult(session.matchupName, { trip: leader.trip, score: leader.count, excitement: leader.count, easyYes: leader.count, commitment: leader.count, dealbreakers: 0 }, confidence, `${leader.trip.title} has the strongest momentum right now.`);
   };
   const confirmDelete = () => {
     Alert.alert('Delete comparison?', 'This removes the saved comparison and its responses from your inbox.', [
@@ -202,16 +205,16 @@ function VotingInboxCard({ session, onOpenResults, onDelete }: { session: Matchu
       <View style={styles.inboxCardTop}>
         <View style={styles.inboxCardCopy}>
           <Text style={styles.inboxCardTitle}>{session.matchupName}</Text>
-          <Text style={styles.inboxCardMeta}>{voteBatches.length} {voteBatches.length === 1 ? 'response' : 'responses'} / updated {updated}</Text>
+          <Text style={styles.inboxCardMeta}>{responses.length || voteBatches.length} {(responses.length || voteBatches.length) === 1 ? 'response' : 'responses'} / updated {updated}</Text>
         </View>
         <View style={[styles.responseBadge, hasVotes && styles.responseBadgeActive]}>
-          <Text style={styles.responseBadgeText}>{voteBatches.length}</Text>
+          <Text style={styles.responseBadgeText}>{responses.length || voteBatches.length}</Text>
         </View>
       </View>
-      <Text style={styles.inboxCardBody}>{leader ? `${leader.trip.title} is leading right now.` : 'Waiting for the first response.'}</Text>
+      <Text style={styles.inboxCardBody}>{leader ? `${leader.trip.title} has the strongest momentum right now.` : 'Waiting for the first response.'}</Text>
       <View style={styles.inboxActions}>
         <TouchableOpacity onPress={onOpenResults} style={styles.resultsButton}>
-          <Text style={styles.resultsButtonText}>{hasVotes ? 'Review results' : 'Open details'}</Text>
+          <Text style={styles.resultsButtonText}>{hasVotes ? 'Review input' : 'Open details'}</Text>
         </TouchableOpacity>
         {hasVotes && (
           <TouchableOpacity onPress={shareResults} style={styles.secondaryInboxButton}>
@@ -224,6 +227,18 @@ function VotingInboxCard({ session, onOpenResults, onDelete }: { session: Matchu
       </View>
     </View>
   );
+}
+
+function getResponseLeader(session: MatchupSession) {
+  const responses = session.responses ?? [];
+  if (!responses.length) return undefined;
+  const trips = session.trips;
+  const counts = new Map<string, number>();
+  responses.forEach((response) => counts.set(response.selectedTripId, (counts.get(response.selectedTripId) ?? 0) + 1));
+  const sorted = trips
+    .map((trip) => ({ trip, count: counts.get(trip.id) ?? 0 }))
+    .sort((a, b) => b.count - a.count);
+  return sorted[0]?.count ? sorted[0] : undefined;
 }
 
 function TripCompareCard({ trip, active, disabled, onPress }: { trip: TripDraft; active: boolean; disabled?: boolean; onPress: () => void }) {

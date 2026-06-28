@@ -2,27 +2,39 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /matchupSessions/{sessionId} {
+    match /comparisons/{comparisonId} {
       allow read: if true;
+      allow create: if isValidComparison();
 
-      allow create: if request.resource.data.keys().hasAll([
-        'matchupName',
-        'trips',
-        'createdAt',
-        'updatedAt',
-        'votes'
-      ])
-      && request.resource.data.matchupName is string
-      && request.resource.data.trips is list
-      && request.resource.data.votes is list;
+      // MVP note: owner actions are device-local for now, not auth-backed.
+      // Tighten this before public launch with anonymous auth or owner tokens.
+      allow update, delete: if true;
 
-      allow update: if request.resource.data.diff(resource.data).changedKeys().hasOnly([
-        'votes',
-        'updatedAt'
-      ])
-      && request.resource.data.votes is list;
+      match /responses/{responseId} {
+        allow read: if true;
+        allow create, update: if isValidResponse(responseId);
+        allow delete: if true;
+      }
+    }
 
-      allow delete: if false;
+    function isValidComparison() {
+      return request.resource.data.keys().hasAll(['matchupName', 'trips', 'createdAt', 'updatedAt', 'expiresAt', 'status', 'ownerId'])
+        && request.resource.data.status == 'open'
+        && request.resource.data.trips is list
+        && request.resource.data.trips.size() >= 2
+        && request.resource.data.trips.size() <= 4;
+    }
+
+    function isValidResponse(responseId) {
+      return request.resource.data.keys().hasAll(['voterName', 'selectedTripId', 'concernChips', 'likedHighlightIds', 'createdAt', 'browserId'])
+        && request.resource.data.browserId == responseId
+        && request.resource.data.voterName is string
+        && request.resource.data.voterName.size() > 0
+        && request.resource.data.voterName.size() <= 40
+        && request.resource.data.concernChips is list
+        && request.resource.data.concernChips.size() <= 7
+        && request.resource.data.likedHighlightIds is list
+        && request.resource.data.likedHighlightIds.size() <= 20;
     }
   }
 }

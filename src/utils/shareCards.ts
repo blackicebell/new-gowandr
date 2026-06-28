@@ -26,8 +26,8 @@ export function shareMatchupInvite(matchupName: string, trips: TripDraft[], shar
   return Share.share({
     url: shareUrl,
     message: shareUrl
-      ? `Help me choose between these GoWandr trip ideas for ${matchupName}.\n\n${tripList}\n\nOpen the link, skim the highlights, and vote:\n${shareUrl}\n\nNo login needed.`
-      : `Help me choose between these GoWandr trip ideas for ${matchupName}.\n\n${tripList}\n\nReply with your pick, why it feels right, and any concern. No login needed.`,
+      ? `Help me get a read on these GoWandr trip ideas for ${matchupName}.\n\n${tripList}\n\nOpen the link, skim the highlights, and share which trip pulls you most:\n${shareUrl}\n\nNo login needed.`
+      : `Help me get a read on these GoWandr trip ideas for ${matchupName}.\n\n${tripList}\n\nReply with the trip that pulls you most, why it feels right, and any concern. No login needed.`,
   }).catch(() => undefined);
 }
 

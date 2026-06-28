@@ -1,5 +1,5 @@
-import { FirebaseApp, getApp, getApps, initializeApp } from 'firebase/app';
-import { Firestore, getFirestore } from 'firebase/firestore';
+import { FirebaseApp, getApp, getApps, initializeApp } from '@firebase/app';
+import { Firestore, getFirestore } from '@firebase/firestore';
 
 type FirebaseRuntime = {
   app: FirebaseApp;

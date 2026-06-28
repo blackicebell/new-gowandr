@@ -1,4 +1,4 @@
-import { addDoc, arrayUnion, collection, doc, getDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
+import { addDoc, arrayUnion, collection, doc, getDoc, serverTimestamp, updateDoc } from '@firebase/firestore';
 import { getFirebaseRuntime, hasFirebaseConfig } from './firebase';
 import { MatchupSession, TripDraft, VoteAnswer } from '../types';
 

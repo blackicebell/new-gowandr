@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { Animated, Image, ImageBackground, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Animated, Image, ImageBackground, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Button } from '../components/Button';
 import { IdeaCard } from '../components/IdeaCard';
@@ -10,6 +10,13 @@ import { font, useThemeColors } from '../theme/colors';
 import { TripDraft, TripIdea } from '../types';
 import { shareTripCard } from '../utils/shareCards';
 
+const sharePromptOptions = [
+  'Would you make this the move?',
+  'Help me decide: is this trip worth planning?',
+  'Would you pick this trip?',
+  'Should this be the next getaway?',
+];
+
 export function EchoDetailScreen({ trip, onBack, onAddIdea, onEditTrip, onDeleteTrip, onEditIdea, onDeleteIdea, onCompare, onMoveToPlan }: { trip: TripDraft; onBack: () => void; onAddIdea: () => void; onEditTrip: () => void; onDeleteTrip: () => void; onEditIdea: (ideaId: string) => void; onDeleteIdea: (idea: TripIdea) => void; onCompare: () => void; onMoveToPlan: () => void }) {
   const colors = useThemeColors();
   const momentumStatus = getMomentumStatus(trip);
@@ -19,6 +26,7 @@ export function EchoDetailScreen({ trip, onBack, onAddIdea, onEditTrip, onDelete
   const readyToCommit = mustDos.length >= 3 || trip.ideas.length >= 4;
   const [showShareComposer, setShowShareComposer] = useState(false);
   const [sharePhotoUri, setSharePhotoUri] = useState(trip.heroImage);
+  const [sharePrompt, setSharePrompt] = useState(sharePromptOptions[0]);
   const fade = useRef(new Animated.Value(0)).current;
 
   React.useEffect(() => {
@@ -123,15 +131,19 @@ export function EchoDetailScreen({ trip, onBack, onAddIdea, onEditTrip, onDelete
       </TouchableOpacity>
       <Modal visible={showShareComposer} transparent animationType="fade" onRequestClose={() => setShowShareComposer(false)}>
         <View style={styles.modalBackdrop}>
-          <View style={styles.modalSheet}>
-            <ShareTripComposer
-              trip={trip}
-              photoUri={sharePhotoUri}
-              onSelectPhoto={setSharePhotoUri}
-              onShare={() => shareTripCard(trip, sharePhotoUri)}
-              onClose={() => setShowShareComposer(false)}
-            />
-          </View>
+          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.modalScrollContent}>
+            <View style={styles.modalSheet}>
+              <ShareTripComposer
+                trip={trip}
+                photoUri={sharePhotoUri}
+                prompt={sharePrompt}
+                onSelectPhoto={setSharePhotoUri}
+                onSelectPrompt={setSharePrompt}
+                onShare={() => shareTripCard(trip, sharePhotoUri, sharePrompt)}
+                onClose={() => setShowShareComposer(false)}
+              />
+            </View>
+          </ScrollView>
         </View>
       </Modal>
 
@@ -197,7 +209,23 @@ function EmptyHighlights({ onAddIdea }: { onAddIdea: () => void }) {
   );
 }
 
-function ShareTripComposer({ trip, photoUri, onSelectPhoto, onShare, onClose }: { trip: TripDraft; photoUri: string; onSelectPhoto: (uri: string) => void; onShare: () => void; onClose: () => void }) {
+function ShareTripComposer({
+  trip,
+  photoUri,
+  prompt,
+  onSelectPhoto,
+  onSelectPrompt,
+  onShare,
+  onClose,
+}: {
+  trip: TripDraft;
+  photoUri: string;
+  prompt: string;
+  onSelectPhoto: (uri: string) => void;
+  onSelectPrompt: (prompt: string) => void;
+  onShare: () => void;
+  onClose: () => void;
+}) {
   const photoOptions = uniquePhotoOptions([{ id: 'current', uri: trip.heroImage }, ...starterPhotos.map((photo) => ({ id: photo.id, uri: photo.uri }))]);
   const topIdeas = trip.ideas.filter((idea) => idea.priority === 'Must-do').slice(0, 3);
 
@@ -220,10 +248,24 @@ function ShareTripComposer({ trip, photoUri, onSelectPhoto, onShare, onClose }: 
             ))}
           </View>
           <View style={styles.sharePreviewCta}>
-            <Text style={[styles.sharePreviewCtaText, { fontFamily: font.semibold }]}>Compare this trip with GoWandr</Text>
+            <Text style={[styles.sharePreviewCtaText, { fontFamily: font.semibold }]}>{prompt}</Text>
           </View>
         </View>
       </ImageBackground>
+      <View style={styles.sharePromptSection}>
+        <Text style={[styles.sharePhotoTitle, { fontFamily: font.heading }]}>Choose the prompt</Text>
+        <Text style={[styles.sharePhotoHint, { fontFamily: font.body }]}>This is the line people react to when they see the card.</Text>
+        <View style={styles.sharePromptGrid}>
+          {sharePromptOptions.map((option) => {
+            const active = option === prompt;
+            return (
+              <TouchableOpacity key={option} onPress={() => onSelectPrompt(option)} style={[styles.sharePromptOption, active && styles.sharePromptOptionActive]}>
+                <Text style={[styles.sharePromptOptionText, active && styles.sharePromptOptionTextActive, { fontFamily: font.semibold }]}>{option}</Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      </View>
       <View style={styles.sharePhotoHeader}>
         <Text style={[styles.sharePhotoTitle, { fontFamily: font.heading }]}>Choose share photo</Text>
         <Text style={[styles.sharePhotoHint, { fontFamily: font.body }]}>This only changes the card you share.</Text>
@@ -419,7 +461,8 @@ const styles = StyleSheet.create({
   voteSummaryLabel: { color: '#137D68', fontSize: 11, fontWeight: '600', textTransform: 'uppercase' },
   voteSummaryTitle: { color: '#202623', fontSize: 20, fontWeight: '700', marginTop: 5, letterSpacing: -0.2 },
   voteSummaryBody: { color: 'rgba(32,38,35,0.66)', fontSize: 14, lineHeight: 20, marginTop: 6 },
-  modalBackdrop: { flex: 1, backgroundColor: 'rgba(10,18,16,0.36)', paddingHorizontal: 20, paddingTop: 72, paddingBottom: 28, justifyContent: 'center' },
+  modalBackdrop: { flex: 1, backgroundColor: 'rgba(10,18,16,0.36)', paddingHorizontal: 20, paddingTop: 84, paddingBottom: 24 },
+  modalScrollContent: { flexGrow: 1, justifyContent: 'center', paddingVertical: 8 },
   modalSheet: { maxWidth: 520, width: '100%', alignSelf: 'center' },
   shareComposer: { backgroundColor: 'rgba(255,255,255,0.96)', borderRadius: 26, padding: 18, borderWidth: 1, borderColor: 'rgba(32,38,35,0.06)', shadowColor: '#000', shadowOpacity: 0.14, shadowRadius: 24, shadowOffset: { width: 0, height: 10 }, elevation: 8 },
   shareComposerKicker: { color: '#137D68', fontWeight: '800', fontSize: 11, textTransform: 'uppercase' },
@@ -436,6 +479,12 @@ const styles = StyleSheet.create({
   shareIdeaText: { color: '#F8F8F6', fontSize: 13, lineHeight: 18, fontWeight: '700' },
   sharePreviewCta: { minHeight: 48, borderRadius: 999, backgroundColor: '#A8F0D4', alignItems: 'center', justifyContent: 'center', marginTop: 4, paddingHorizontal: 14, shadowColor: '#000', shadowOpacity: 0.12, shadowRadius: 12, shadowOffset: { width: 0, height: 4 } },
   sharePreviewCtaText: { color: '#173A33', fontWeight: '800', fontSize: 13, textAlign: 'center' },
+  sharePromptSection: { marginBottom: 14 },
+  sharePromptGrid: { gap: 8, marginTop: 10 },
+  sharePromptOption: { minHeight: 44, borderRadius: 16, paddingHorizontal: 13, paddingVertical: 10, justifyContent: 'center', backgroundColor: 'rgba(248,250,249,0.78)', borderWidth: 1, borderColor: 'rgba(32,38,35,0.07)' },
+  sharePromptOptionActive: { backgroundColor: 'rgba(168,240,212,0.42)', borderColor: 'rgba(47,175,138,0.34)' },
+  sharePromptOptionText: { color: 'rgba(32,38,35,0.74)', fontSize: 12.5, lineHeight: 17, fontWeight: '700' },
+  sharePromptOptionTextActive: { color: '#137D68' },
   sharePhotoHeader: { marginBottom: 10 },
   sharePhotoTitle: { color: '#202623', fontSize: 15, fontWeight: '800', letterSpacing: -0.15 },
   sharePhotoHint: { color: 'rgba(32,38,35,0.62)', fontSize: 13, lineHeight: 18, marginTop: 3, fontWeight: '500' },

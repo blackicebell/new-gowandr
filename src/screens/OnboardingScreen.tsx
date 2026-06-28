@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Animated, Image, ImageBackground, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Animated, Image, ImageBackground, Platform, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Button } from '../components/Button';
 import { onboardingImageUris } from '../data/imageAssets';
@@ -58,7 +58,9 @@ export function OnboardingScreen({ onFinish }: { onFinish: () => void }) {
   return (
     <SafeAreaView style={[styles.screen, { backgroundColor: theme.canvas }]}>
       <View style={styles.brandRow}>
-        <Image source={require('../../assets/brand/gowandr-logo-full-color.png')} style={styles.logo} resizeMode="contain" />
+        <View style={styles.logoPill}>
+          <Image source={require('../../assets/brand/gowandr-logo-full-color.png')} style={styles.logo} resizeMode="contain" />
+        </View>
         <TouchableOpacity onPress={onFinish} style={styles.skipButton}>
           <Text style={[styles.skipText, { fontFamily: font.semibold }]}>Skip</Text>
         </TouchableOpacity>
@@ -89,20 +91,21 @@ export function OnboardingScreen({ onFinish }: { onFinish: () => void }) {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, paddingHorizontal: 24, paddingTop: 10, paddingBottom: 24 },
-  brandRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 },
-  logo: { width: 142, height: 36 },
-  skipButton: { minHeight: 40, minWidth: 58, borderRadius: 999, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.64)', borderWidth: 1, borderColor: 'rgba(32,38,35,0.06)' },
+  screen: { flex: 1, paddingHorizontal: 16, paddingTop: Platform.OS === 'ios' ? 22 : 10, paddingBottom: Platform.OS === 'ios' ? 18 : 24 },
+  brandRow: { minHeight: 54, alignItems: 'center', justifyContent: 'center', marginBottom: 12 },
+  logoPill: { height: 50, minWidth: 170, borderRadius: 25, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.72)', borderWidth: 1, borderColor: 'rgba(32,38,35,0.05)', shadowColor: '#6ED8B5', shadowOpacity: 0.14, shadowRadius: 14, shadowOffset: { width: 0, height: 4 } },
+  logo: { width: 136, height: 34 },
+  skipButton: { position: 'absolute', right: 0, minHeight: 42, minWidth: 64, borderRadius: 999, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.72)', borderWidth: 1, borderColor: 'rgba(32,38,35,0.06)' },
   skipText: { color: '#137D68', fontWeight: '700', fontSize: 13 },
-  hero: { flex: 1, minHeight: 518, borderRadius: 34, overflow: 'hidden', justifyContent: 'flex-end', shadowColor: '#000', shadowOpacity: 0.18, shadowRadius: 28, shadowOffset: { width: 0, height: 10 }, elevation: 8 },
+  hero: { flex: 1, minHeight: 500, borderRadius: 32, overflow: 'hidden', justifyContent: 'flex-end', shadowColor: '#000', shadowOpacity: 0.18, shadowRadius: 28, shadowOffset: { width: 0, height: 10 }, elevation: 8 },
   heroImage: { borderRadius: 32 },
   edgeShade: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.10)' },
-  copy: { padding: 24 },
+  copy: { padding: 22 },
   dots: { flexDirection: 'row', gap: 7, marginBottom: 16 },
   dot: { width: 24, height: 6, borderRadius: 999, backgroundColor: 'rgba(255,255,255,0.45)' },
   eyebrow: { fontWeight: '800', fontSize: 12, lineHeight: 16, textTransform: 'uppercase', letterSpacing: 0.7, marginBottom: 9, textShadowColor: 'rgba(0,0,0,0.42)', textShadowRadius: 5, textShadowOffset: { width: 0, height: 2 } },
-  title: { color: '#F8F8F6', fontSize: 34, lineHeight: 40, fontWeight: '700', letterSpacing: -0.34, textShadowColor: 'rgba(0,0,0,0.50)', textShadowRadius: 8, textShadowOffset: { width: 0, height: 3 } },
-  body: { color: '#F8F8F6', fontSize: 15.5, lineHeight: 23, marginTop: 12, opacity: 0.98, fontWeight: '400', textShadowColor: 'rgba(0,0,0,0.46)', textShadowRadius: 5, textShadowOffset: { width: 0, height: 2 } },
+  title: { color: '#F8F8F6', fontSize: 32, lineHeight: 38, fontWeight: '700', letterSpacing: -0.32, textShadowColor: 'rgba(0,0,0,0.50)', textShadowRadius: 8, textShadowOffset: { width: 0, height: 3 } },
+  body: { color: '#F8F8F6', fontSize: 15, lineHeight: 22, marginTop: 12, opacity: 0.98, fontWeight: '400', textShadowColor: 'rgba(0,0,0,0.46)', textShadowRadius: 5, textShadowOffset: { width: 0, height: 2 } },
   proofPill: { alignSelf: 'flex-start', borderRadius: 999, paddingHorizontal: 13, paddingVertical: 8, marginTop: 18, backgroundColor: 'rgba(255,255,255,0.18)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.28)' },
   proofText: { color: '#F8F8F6', fontSize: 11.5, fontWeight: '700' },
   actions: { gap: 10, paddingTop: 16 },

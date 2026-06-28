@@ -8,10 +8,10 @@ function topIdeaLines(ideas: TripIdea[], fallback = 'Save a few must-dos first.'
   return topIdeas.map((idea, index) => `${index + 1}. ${idea.title}`).join('\n');
 }
 
-export function shareTripCard(trip: TripDraft, photoUri?: string) {
+export function shareTripCard(trip: TripDraft, photoUri?: string, prompt = 'Would you make this the move?') {
   return Share.share({
     url: photoUri ?? trip.heroImage,
-    message: `I'm shaping this GoWandr trip: ${trip.title}\n\n${trip.subtitle}\n\nTop highlights:\n${topIdeaLines(trip.ideas, 'Save a few highlights first.')}`,
+    message: `${prompt}\n\nI'm shaping this GoWandr trip: ${trip.title}\n\n${trip.subtitle}\n\nTop highlights:\n${topIdeaLines(trip.ideas, 'Save a few highlights first.')}`,
   }).catch(() => undefined);
 }
 

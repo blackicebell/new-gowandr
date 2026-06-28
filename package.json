@@ -10,6 +10,7 @@
     "android": "expo start --android",
     "export:web": "expo export --platform web --output-dir dist",
     "deploy:firebase": "npm run export:web && firebase deploy",
+    "check:firebase": "node scripts/check-firebase-env.js",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

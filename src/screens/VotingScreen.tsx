@@ -50,7 +50,6 @@ export function VotingScreen({ trips, matchupName, onCancel, onComplete }: { tri
   const [votes, setVotes] = useState<VoteAnswer[]>([]);
   const [selectedTripId, setSelectedTripId] = useState<string | undefined>();
   const [phase, setPhase] = useState<'preview' | 'choose' | 'explain'>('preview');
-  const [voterName, setVoterName] = useState('');
   const [reaction, setReaction] = useState<string | undefined>();
   const [dealbreaker, setDealbreaker] = useState<string | undefined>();
   const [reason, setReason] = useState('');
@@ -73,7 +72,7 @@ export function VotingScreen({ trips, matchupName, onCancel, onComplete }: { tri
   const submitWhy = () => {
     if (!selectedTripId) return;
     const commitment = dealbreaker ? 2 : reaction ? 4 : 3;
-    const nextVotes = [...votes, { prompt: prompt.id, tripId: selectedTripId, reaction, dealbreaker, commitment, reason: reason.trim() || reaction, voterName: voterName.trim() }];
+    const nextVotes = [...votes, { prompt: prompt.id, tripId: selectedTripId, reaction, dealbreaker, commitment, reason: reason.trim() || reaction }];
     setSelectedTripId(undefined);
     setPhase('choose');
     setReaction(undefined);
@@ -93,7 +92,6 @@ export function VotingScreen({ trips, matchupName, onCancel, onComplete }: { tri
         <>
           <Text style={styles.title}>Watch the highlights first.</Text>
           <Text style={styles.helper}>You are comparing the saved inspiration, not just destination names. Skim each trip, then decide what pulls you.</Text>
-          <TextInput value={voterName} onChangeText={setVoterName} placeholder="Your name, optional" placeholderTextColor="rgba(32,38,35,0.48)" style={styles.nameInput} />
           <View style={styles.playlists}>
             {trips.map((trip) => (
               <TripHighlightPreview key={trip.id} trip={trip} />
@@ -222,7 +220,6 @@ const styles = StyleSheet.create({
   title: { color: colors.charcoal, fontFamily: font.heading, fontWeight: '700', fontSize: 31, lineHeight: 37, marginTop: 6, letterSpacing: -0.4 },
   helper: { color: colors.muted, fontFamily: font.body, fontWeight: '400', fontSize: 15, lineHeight: 22, marginTop: 8 },
   progress: { color: colors.muted, fontFamily: font.semibold, fontWeight: '600', marginTop: 10, marginBottom: 18 },
-  nameInput: { minHeight: 52, borderRadius: 18, paddingHorizontal: 16, marginTop: 18, marginBottom: 16, backgroundColor: 'rgba(255,255,255,0.82)', borderWidth: 1, borderColor: 'rgba(32,38,35,0.08)', color: colors.charcoal, fontFamily: font.body, fontSize: 15 },
   playlists: { gap: 16 },
   playlistCard: { borderRadius: 26, backgroundColor: 'rgba(255,255,255,0.84)', borderWidth: 1, borderColor: 'rgba(32,38,35,0.07)', padding: 12, shadowColor: '#000', shadowOpacity: 0.07, shadowRadius: 16, shadowOffset: { width: 0, height: 6 }, elevation: 3 },
   playlistHero: { minHeight: 170, justifyContent: 'flex-end', borderRadius: 20, overflow: 'hidden' },

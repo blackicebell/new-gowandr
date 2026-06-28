@@ -100,9 +100,15 @@ npm run export:web
 npx firebase-tools deploy --only firestore:rules,hosting
 ```
 
-## EAS Preview Builds
+## EAS Builds
 
-EAS cloud builds do not automatically use the local `.env` on your computer. Add the Firebase values to the EAS `preview` environment:
+EAS cloud builds do not automatically use the local `.env` on your computer. The app now tells EAS which environment bucket to use:
+
+- `development` profile -> EAS `development` environment
+- `preview` profile -> EAS `preview` environment
+- `production` profile -> EAS `production` environment
+
+Add the Firebase values to every environment you plan to build from. For internal Android testing, use `preview`. For TestFlight or App Store builds, use `production`.
 
 ```bash
 npx eas-cli@latest env:create --environment preview --name EXPO_PUBLIC_FIREBASE_API_KEY --value "<firebase api key>"
@@ -114,7 +120,15 @@ npx eas-cli@latest env:create --environment preview --name EXPO_PUBLIC_FIREBASE_
 npx eas-cli@latest env:create --environment preview --name EXPO_PUBLIC_PUBLIC_APP_URL --value "https://gowandr2.web.app"
 ```
 
-Use `Plain text` visibility for `EXPO_PUBLIC_` values.
+Repeat the same commands with `--environment production` before making a TestFlight build.
+
+Use `Plain text` visibility for `EXPO_PUBLIC_` values. These are public client config values, but they still should not be committed to source files.
+
+To check local setup before building:
+
+```bash
+npm run check:firebase
+```
 
 ## Important Next Backend Step
 

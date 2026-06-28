@@ -362,7 +362,17 @@ function DecisionChoiceCard({
   return (
     <TouchableOpacity disabled={disabled} onPress={onPress} style={[styles.decisionCard, tone === 'social' && styles.decisionCardSocial, disabled && styles.decisionCardDisabled]}>
       <View style={[styles.decisionIcon, tone === 'social' && styles.decisionIconSocial]}>
-        <Text style={[styles.decisionIconText, tone === 'social' && styles.decisionIconTextSocial]}>{icon}</Text>
+        {tone === 'social' ? (
+          <View style={styles.peopleGlyph}>
+            <View style={styles.peopleHeads}>
+              <View style={styles.peopleHead} />
+              <View style={[styles.peopleHead, styles.peopleHeadSmall]} />
+            </View>
+            <View style={styles.peopleBase} />
+          </View>
+        ) : (
+          <Text style={styles.decisionIconText}>{icon}</Text>
+        )}
       </View>
       <View style={styles.decisionCopy}>
         <Text style={styles.decisionBadge}>{badge}</Text>
@@ -719,7 +729,11 @@ const styles = StyleSheet.create({
   decisionIcon: { width: 42, height: 42, borderRadius: 16, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(168,240,212,0.52)', borderWidth: 1, borderColor: 'rgba(47,175,138,0.14)' },
   decisionIconSocial: { backgroundColor: colors.charcoal, borderColor: colors.charcoal },
   decisionIconText: { color: colors.tealDark, fontFamily: font.semibold, fontWeight: '800', fontSize: 12, backgroundColor: 'transparent', includeFontPadding: false },
-  decisionIconTextSocial: { color: colors.white },
+  peopleGlyph: { width: 24, height: 24, alignItems: 'center', justifyContent: 'center' },
+  peopleHeads: { width: 24, height: 12, flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'center' },
+  peopleHead: { width: 10, height: 10, borderRadius: 5, backgroundColor: colors.white },
+  peopleHeadSmall: { width: 8, height: 8, borderRadius: 4, marginLeft: -2, opacity: 0.82 },
+  peopleBase: { width: 23, height: 9, borderRadius: 9, backgroundColor: colors.white, marginTop: 1, opacity: 0.92 },
   decisionCopy: { flex: 1 },
   decisionBadge: { color: colors.tealDark, fontFamily: font.semibold, fontWeight: '800', fontSize: 10.5, textTransform: 'uppercase', marginBottom: 5, backgroundColor: 'transparent', includeFontPadding: false },
   decisionTitle: { color: colors.charcoal, fontFamily: font.heading, fontWeight: '700', fontSize: 19, lineHeight: 23, letterSpacing: -0.16, backgroundColor: 'transparent', includeFontPadding: false },

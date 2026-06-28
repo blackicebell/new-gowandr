@@ -9,7 +9,7 @@ export function Button({ label, onPress, variant = 'primary', disabled = false }
   const isPrimary = variant === 'primary';
 
   return (
-    <PressableScale disabled={disabled} onPress={onPress} style={[styles.pressShell, disabled && styles.disabled]}>
+    <PressableScale disabled={disabled} onPress={onPress} containerStyle={styles.pressContainer} style={[styles.pressShell, disabled && styles.disabled]}>
       {isPrimary ? (
         <LinearGradient colors={['#A8F0D4', '#6ED8B5', '#2FAF8A']} locations={[0, 0.4, 1]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.button}>
           <Text style={[styles.label, { color: colors.charcoal, fontFamily: font.semibold }]}>{label}</Text>
@@ -37,9 +37,10 @@ function variantStyle(variant: 'primary' | 'secondary' | 'ghost', colors: Return
 }
 
 const styles = StyleSheet.create({
-  pressShell: { borderRadius: 18 },
+  pressContainer: { borderRadius: 18, overflow: 'hidden' },
+  pressShell: { borderRadius: 18, overflow: 'hidden' },
   button: { minHeight: 54, alignItems: 'center', justifyContent: 'center', borderRadius: 18, paddingHorizontal: 22, overflow: 'hidden', shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 16, shadowOffset: { width: 0, height: 5 }, elevation: 3 },
   disabled: { opacity: 0.45 },
-  label: { color: '#202623', fontSize: 15, letterSpacing: 0, textAlign: 'center', backgroundColor: 'transparent', includeFontPadding: false },
+  label: { color: '#202623', fontSize: 15, letterSpacing: 0, textAlign: 'center', includeFontPadding: false },
   secondaryLabel: {},
 });

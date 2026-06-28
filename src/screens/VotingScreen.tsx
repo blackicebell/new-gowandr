@@ -45,8 +45,6 @@ const prompts: PromptConfig[] = [
   },
 ];
 
-const commitments = ['Browsing', 'Interested', 'Dates work', 'Ready to plan', 'Ready elsewhere'];
-
 export function VotingScreen({ trips, matchupName, onCancel, onComplete }: { trips: TripDraft[]; matchupName: string; onCancel: () => void; onComplete: (votes: VoteAnswer[]) => void }) {
   const [step, setStep] = useState(0);
   const [votes, setVotes] = useState<VoteAnswer[]>([]);
@@ -55,7 +53,6 @@ export function VotingScreen({ trips, matchupName, onCancel, onComplete }: { tri
   const [voterName, setVoterName] = useState('');
   const [reaction, setReaction] = useState<string | undefined>();
   const [dealbreaker, setDealbreaker] = useState<string | undefined>();
-  const [commitment, setCommitment] = useState(3);
   const [reason, setReason] = useState('');
   const prompt = prompts[step];
   const selectedTrip = trips.find((trip) => trip.id === selectedTripId);
@@ -70,18 +67,17 @@ export function VotingScreen({ trips, matchupName, onCancel, onComplete }: { tri
     setPhase('choose');
     setReaction(undefined);
     setDealbreaker(undefined);
-    setCommitment(3);
     setReason('');
   };
 
   const submitWhy = () => {
     if (!selectedTripId) return;
+    const commitment = dealbreaker ? 2 : reaction ? 4 : 3;
     const nextVotes = [...votes, { prompt: prompt.id, tripId: selectedTripId, reaction, dealbreaker, commitment, reason: reason.trim() || reaction, voterName: voterName.trim() }];
     setSelectedTripId(undefined);
     setPhase('choose');
     setReaction(undefined);
     setDealbreaker(undefined);
-    setCommitment(3);
     setReason('');
     if (step >= prompts.length - 1) onComplete(nextVotes);
     else {
@@ -105,7 +101,7 @@ export function VotingScreen({ trips, matchupName, onCancel, onComplete }: { tri
           </View>
           <View style={styles.bottomActions}>
             <Button label="Start Deciding" onPress={() => setPhase('choose')} />
-            <Button label="Cancel" variant="ghost" onPress={onCancel} />
+            <TextAction label="Cancel" onPress={onCancel} />
           </View>
         </>
       ) : (
@@ -130,7 +126,7 @@ export function VotingScreen({ trips, matchupName, onCancel, onComplete }: { tri
             ))}
           </View>
           <View style={styles.bottomActions}>
-            <Button label="Cancel Compare" variant="ghost" onPress={onCancel} />
+            <TextAction label="Cancel compare" onPress={onCancel} />
           </View>
         </View>
       ) : (
@@ -162,29 +158,26 @@ export function VotingScreen({ trips, matchupName, onCancel, onComplete }: { tri
             </View>
           </View>
 
-          <View style={styles.choiceSection}>
-            <Text style={styles.label}>Commitment</Text>
-            <View style={styles.meter}>
-              {commitments.map((item, index) => (
-                <TouchableOpacity key={item} onPress={() => setCommitment(index + 1)} style={[styles.meterItem, commitment === index + 1 && styles.meterActive]}>
-                  <Text style={[styles.meterText, commitment === index + 1 && styles.meterTextActive]}>{item}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-
           <View style={styles.whyActions}>
             <TouchableOpacity onPress={changePick} style={styles.changePick}>
-              <Text style={styles.changePickText}>Back to trip choices</Text>
+              <Text style={styles.changePickText}>Change trip choice</Text>
             </TouchableOpacity>
             <Button label={step >= prompts.length - 1 ? 'See Results' : 'Next Question'} disabled={!reason.trim() && !reaction} onPress={submitWhy} />
-            <Button label="Cancel Compare" variant="ghost" onPress={onCancel} />
+            <TextAction label="Cancel compare" onPress={onCancel} />
           </View>
         </View>
       )}
         </>
       )}
     </View>
+  );
+}
+
+function TextAction({ label, onPress }: { label: string; onPress: () => void }) {
+  return (
+    <TouchableOpacity onPress={onPress} style={styles.textAction}>
+      <Text style={styles.textActionLabel}>{label}</Text>
+    </TouchableOpacity>
   );
 }
 
@@ -249,13 +242,10 @@ const styles = StyleSheet.create({
   label: { color: colors.charcoal, fontFamily: font.heading, fontWeight: '700', fontSize: 18, marginBottom: 5, letterSpacing: -0.12 },
   sectionHint: { color: colors.muted, fontFamily: font.body, fontWeight: '400', fontSize: 13, lineHeight: 18, marginBottom: 12 },
   wrap: { flexDirection: 'row', flexWrap: 'wrap', columnGap: 10, rowGap: 10 },
-  meter: { gap: 9 },
-  meterItem: { minHeight: 48, borderRadius: 16, paddingHorizontal: 14, justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.78)', borderWidth: 1, borderColor: 'rgba(32,38,35,0.07)' },
-  meterActive: { backgroundColor: colors.teal, borderColor: colors.tealDark },
-  meterText: { color: colors.charcoal, fontFamily: font.semibold, fontWeight: '600' },
-  meterTextActive: { color: colors.charcoal, fontWeight: '700' },
   whyActions: { gap: 11, marginTop: 22, marginBottom: 112 },
-  changePick: { minHeight: 46, borderRadius: 16, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.68)', borderWidth: 1, borderColor: 'rgba(32,38,35,0.07)' },
+  changePick: { minHeight: 44, alignItems: 'center', justifyContent: 'center' },
   changePickText: { color: colors.tealDark, fontFamily: font.semibold, fontWeight: '600', fontSize: 14 },
-  bottomActions: { marginTop: 18, marginBottom: 112 },
+  textAction: { minHeight: 44, alignItems: 'center', justifyContent: 'center' },
+  textActionLabel: { color: colors.tealDark, fontFamily: font.semibold, fontWeight: '600', fontSize: 14 },
+  bottomActions: { gap: 11, marginTop: 18, marginBottom: 112 },
 });

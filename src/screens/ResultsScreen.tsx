@@ -42,7 +42,7 @@ export function ResultsScreen({ trips, votes, matchupName, onRestart, onMoveToPl
         <ResultStat label="Most exciting" value={[...results].sort((a, b) => b.excitement - a.excitement)[0].trip.title} />
         <ResultStat label="Easiest yes" value={[...results].sort((a, b) => b.easyYes - a.easyYes)[0].trip.title} />
         <ResultStat label="Concerns" value={`${winner.dealbreakers} flagged`} />
-        <ResultStat label="Commitment" value={winner.commitment > 14 ? 'Strong' : 'Building'} />
+        <ResultStat label="Reasons shared" value={`${votes.filter((vote) => vote.reason).length} notes`} />
       </View>
 
       {!!votes.length && (
